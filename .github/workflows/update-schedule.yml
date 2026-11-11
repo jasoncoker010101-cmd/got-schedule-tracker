@@ -27,7 +27,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Check Discord for a new schedule
         id: fetch
@@ -43,14 +44,27 @@ jobs:
           installed=false
 
           for attempt in 1 2 3; do
-            if sudo timeout 120s apt-get update -qq && \
-               sudo timeout 180s apt-get install -y -qq tesseract-ocr python3-pil; then
+            echo "APT attempt $attempt of 3: updating package lists..."
+
+            if ! sudo timeout 180s apt-get \
+              -o Acquire::Retries=3 \
+              -o Acquire::http::Timeout=30 \
+              -o Acquire::https::Timeout=30 \
+              update; then
+              echo "apt-get update failed or timed out."
+            elif ! sudo timeout 180s apt-get \
+              -o Acquire::Retries=3 \
+              -o Acquire::http::Timeout=30 \
+              -o Acquire::https::Timeout=30 \
+              install -y tesseract-ocr python3-pil; then
+              echo "Installing Tesseract or Pillow failed or timed out."
+            else
               installed=true
               break
             fi
 
             if [ "$attempt" -lt 3 ]; then
-              echo "APT failed or timed out; retrying in 10 seconds (attempt $attempt of 3)..."
+              echo "Retrying in 10 seconds..."
               sleep 10
             fi
           done
