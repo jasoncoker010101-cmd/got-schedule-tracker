@@ -292,7 +292,7 @@ function render(){
         (isPatreon(ev) || ev.status === "posted");
       const row = el("div", "ev" +
         (predicted ? " predicted" : "") +
-        (d && d < now && !live && !posted && status !== "delayed" ? " past" : "") +
+        (d && d < now && !live && status !== "delayed" ? " past" : "") +
         (live ? " live" : ""));
       row.style.setProperty("--c", p.color);
       const t = el("div", "t", d ? fmtTime.format(d) : "All day");
