@@ -11,6 +11,7 @@
 :root{
   color-scheme:light dark;
   --bg:#eef1f4; --card:#ffffff; --ink:#16212c; --mute:#5d6b79; --line:#d3dae1;
+  --accent:#e5b82a;
   --today:#16212c; --today-ink:#ffffff;
   --yt:#ff0000; --ytl:#c2255c; --tw:#9146ff; --x:#16212c; --th:#7a8794; --ot:#2f9e8f;
   --rb:#85c742;
@@ -24,88 +25,147 @@
 [hidden]{display:none !important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.45}
 .wrap{max-width:1200px;margin:0 auto;padding:20px 16px 48px}
+
+/* Header */
+.hero{
+  padding:18px 18px 16px;margin:0 0 18px;border-radius:16px;
+  background:radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--card);
+  border:1px solid var(--line);border-top:4px solid var(--accent);
+}
 h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:800;letter-spacing:-.02em}
 .sub{color:var(--mute);margin:0}
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;color:var(--mute);font-size:.9rem}
 .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 0}
 .controls label{font-weight:600;font-size:.9rem}
 .controls select{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
-.next{margin:22px 0;padding:16px 18px;background:var(--today);color:var(--today-ink);border-radius:14px}
-.next b{display:block;font-size:1.25rem;font-weight:800}
-.next span{opacity:.8;font-size:.95rem}
+
+/* Next up */
+.next{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;
+  margin:0 0 22px;padding:16px 18px;background:var(--today);color:var(--today-ink);
+  border-radius:14px;border-left:6px solid var(--accent);
+}
+.next b{display:block;font-size:1.35rem;font-weight:800;line-height:1.15}
+.next span{opacity:.8;font-size:.95rem;display:block}
+.next .poster{width:96px;aspect-ratio:2/3;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.25)}
+
+/* Legend */
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--mute);margin:0 0 14px}
 .sw{display:inline-block;width:22px;height:0;border-top:3px solid var(--ink);vertical-align:middle;margin-right:6px}
 .sw.p{border-top-style:dashed}
+
+/* Week grid */
 .week{
   display:grid;
   gap:12px;
   grid-template-columns:repeat(auto-fit,minmax(15.5rem,1fr));
   align-items:start;
 }
-.day{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:7rem}
-.day.today{border:2px solid var(--ink)}
+.day{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:7rem;
+  transition:transform .18s ease, box-shadow .18s ease;
+  animation:fadeUp .45s ease both;animation-delay:calc(var(--i,0) * 60ms);
+}
+.day:hover{transform:translateY(-2px);box-shadow:0 8px 20px -10px rgba(0,0,0,.35)}
+.day.today{border:2px solid var(--accent)}
 .day h2{margin:0 0 10px;font-size:1.05rem;font-weight:800;display:flex;justify-content:space-between;align-items:baseline}
 .day h2 small{font-weight:400;color:var(--mute);font-size:.85rem}
-.day.today h2 small::after{content:" · today"}
+.day.today h2 small::after{content:" · today";color:var(--accent);font-weight:600}
 .none{color:var(--mute);font-size:.9rem;margin:0}
-.ev{border-left:4px solid var(--c,var(--mute));padding:6px 0 6px 10px;margin:0 0 10px}
+
+/* Events */
+.ev{
+  display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;
+  border-left:4px solid var(--c,var(--mute));padding:6px 0 6px 10px;margin:0 0 10px;
+  border-radius:0 8px 8px 0;transition:background .2s ease, box-shadow .2s ease;
+}
 .ev.predicted{border-left-style:dashed;opacity:.78}
 .ev.past{opacity:.5}
-.ev.live{background:color-mix(in srgb, var(--c) 12%, transparent);border-radius:8px}
+.ev.live{
+  background:color-mix(in srgb, var(--c) 14%, transparent);
+  box-shadow:0 0 18px -4px color-mix(in srgb, var(--c) 60%, transparent);
+}
+.thumb{width:44px;aspect-ratio:2/3;object-fit:contain;border-radius:4px;background:color-mix(in srgb, var(--c) 18%, transparent)}
+.thumb.empty{display:block}
 .ev .t{font-weight:600;font-size:.95rem}
 .ev .n{font-weight:400;display:block;margin:1px 0}
 .ev .k{font-size:.8rem;color:var(--mute)}
 .ev a{color:inherit;text-underline-offset:3px}
+
+/* Status dots */
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;
   vertical-align:middle;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.dot.sm{width:8px;height:8px}
 .dot.live{background:#ff2d2d;animation:pulse 1.6s ease-out infinite}
-.dot.posted{background:#2ecc71;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
-.dot.delayed{background:#f5a623;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
-.dot.ended{background:#8a96a3;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.dot.posted{background:#2ecc71}
+.dot.delayed{background:#f5a623}
+.dot.ended{background:#8a96a3}
 @keyframes pulse{
   0%{box-shadow:0 0 0 0 rgba(255,45,45,.7)}
   70%{box-shadow:0 0 0 8px rgba(255,45,45,0)}
   100%{box-shadow:0 0 0 0 rgba(255,45,45,0)}
 }
-@media (prefers-reduced-motion:reduce){.dot.live{animation:none}}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .dot.live{animation:none}
+  .day{animation:none}
+  .day:hover{transform:none}
+}
+
+/* Notes and footer */
 .notes{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
 .notes h2{margin:0 0 8px;font-size:1.1rem}
 .notes p{margin:0 0 8px;white-space:pre-line}
 .notes p:last-child{margin-bottom:0}
 footer.site-foot{margin-top:32px;text-align:center;color:var(--mute);font-size:.82rem}
 footer.site-foot p{margin:0 0 14px}
-a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .links a{padding:8px 16px;border-radius:999px;font-weight:600;text-decoration:none;color:#fff;font-size:.95rem}
 .links a:hover{opacity:.85}
 .links .yt{background:var(--yt)}
 .links .tw{background:var(--tw)}
 .links .rb{background:var(--rb)}
+
+@media (max-width:520px){
+  .next{grid-template-columns:minmax(0,1fr)}
+  .next .poster{width:72px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>G.O.T. Games schedule</h1>
-  <p class="sub">Luke Fitzpatrick's week. Times default to your local time, and you can switch timezone with the dropdown. Base times are GMT (Europe/London).</p>
-  <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
-  <div class="controls">
-    <label for="tz">Timezone</label>
-    <select id="tz" aria-label="Choose timezone"></select>
-  </div>
+  <header class="hero">
+    <h1>G.O.T. Games schedule</h1>
+    <p class="sub">Luke Fitzpatrick's week. Times default to your local time, and you can switch timezone with the dropdown. Base times are GMT (Europe/London).</p>
+    <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
+    <div class="controls">
+      <label for="tz">Timezone</label>
+      <select id="tz" aria-label="Choose timezone"></select>
+    </div>
+  </header>
+
   <div class="next" id="next" hidden></div>
-    <p class="legend">
+
+  <p class="legend">
     <span><i class="sw"></i>Confirmed</span>
     <span><i class="sw p"></i>Predicted</span>
-    <span><i class="dot live" style="width:8px;height:8px"></i>Live now</span>
-    <span><i class="dot delayed" style="width:8px;height:8px"></i>Delayed</span>
-    <span><i class="dot ended" style="width:8px;height:8px"></i>Ended</span>
-    <span><i class="dot posted" style="width:8px;height:8px"></i>Posted (Patreon)</span>
+    <span><i class="dot live sm"></i>Live now</span>
+    <span><i class="dot delayed sm"></i>Delayed</span>
+    <span><i class="dot ended sm"></i>Ended</span>
+    <span><i class="dot posted sm"></i>Posted (Patreon)</span>
   </p>
+
   <main class="week" id="week" aria-live="polite"></main>
+
   <section class="notes" id="notes" aria-label="Notes" hidden>
     <h2>Notes</h2>
     <div id="notesBody"></div>
   </section>
+
   <footer class="site-foot">
     <p>Unofficial fan-made schedule. Not affiliated with or endorsed by G.O.T. Games. Checks for new schedules every few minutes. Predicted events are guesses based on past weeks.</p>
     <nav class="links" aria-label="Watch the games">
@@ -115,8 +175,10 @@ a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
     </nav>
   </footer>
 </div>
+
 <script>
 const BASE_TZ = "Europe/London";
+const ENDED_AFTER_MS = 3 * 60 * 60 * 1000;
 const TIMEZONES = [
   ["Europe/London", "UK (London), GMT/BST"],
   ["UTC", "UTC / GMT"],
@@ -151,12 +213,17 @@ const PLATFORMS = {
   got:{label:"G.O.T. Games",color:"#e5b82a"}
 };
 
+// Strips season and episode text, e.g. "My Hero Academia Season 5 E8" becomes "My Hero Academia"
+const EPISODE_RE = /\s+(?:Season\s*\d+\s*)?(?:S\d+\s*)?E\d+(?:\s*-\s*\d+)?\s*$/i;
+const cleanTitle = t => (t || "").replace(EPISODE_RE, "").trim();
+
 const fmtUpd = () => new Intl.DateTimeFormat("en-US",{timeZone:tz,dateStyle:"medium",timeStyle:"short"});
 const fmtDay = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"long"});
 const fmtMd  = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"});
 
 let data = null;
 let liveFeed = null;
+let shows = {};
 let tz = pickStartZone();
 
 // Events the page has seen go live, saved in the browser so "Ended" survives a refresh
@@ -216,19 +283,40 @@ function eventKey(ev){
   return (ev.start || ev.date || "") + "|" + ev.platform + "|" + (ev.title || "");
 }
 
+// Poster for a show, or null if there isn't one
+function posterFor(title){
+  const show = shows[cleanTitle(title)];
+  return show && show.poster ? show.poster : null;
+}
+
+// On each platform, only the most recent event that has already started can be live.
+// Returns the set of event keys that are live right now, based on live.json.
+function currentLiveKeys(events, now){
+  const keys = new Set();
+  if (!liveFeed || !liveFeed.platforms) return keys;
+  for (const platform of Object.keys(liveFeed.platforms)){
+    if (!liveFeed.platforms[platform]) continue;
+    const started = events
+      .filter(ev => ev.platform === platform && !isPatreon(ev) && eventDate(ev) && eventDate(ev) <= now)
+      .sort((a,b) => eventDate(b) - eventDate(a));
+    if (started.length) keys.add(eventKey(started[0]));
+  }
+  return keys;
+}
+
 // Returns "upcoming", "delayed", "live", "ended", or "none".
-// Status comes only from live.json. Nothing is assumed live from the schedule time.
-function liveStatus(ev, now){
+// Live status comes only from live.json. Nothing is assumed live from the schedule time.
+function liveStatus(ev, now, liveKeys){
   const d = eventDate(ev);
   if (!d || isPatreon(ev) || !liveFeed || !liveFeed.platforms) return "none";
+  if (!(ev.platform in liveFeed.platforms)) return "none"; // no live checker for this platform
   if (now < d) return "upcoming";
   const key = eventKey(ev);
-  const p = liveFeed.platforms;
-  if (ev.platform in p && p[ev.platform]){
+  if (liveKeys.has(key)){
     if (!seenLive.has(key)){ seenLive.add(key); saveSeen(); }
     return "live";
   }
-  if (seenLive.has(key)) return "ended";
+  if (seenLive.has(key) || now - d > ENDED_AFTER_MS) return "ended";
   return "delayed";
 }
 
@@ -266,6 +354,7 @@ function render(){
   const fmtTime = new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"numeric",minute:"2-digit",timeZoneName:"short"});
   const events = (data.events || []).slice().sort((a,b) =>
     (eventDate(a) || utc(eventDay(a))) - (eventDate(b) || utc(eventDay(b))));
+  const liveKeys = currentLiveKeys(events, now);
 
   document.getElementById("range").textContent =
     "Week of " + fmtMd.format(utc(weekStart)) + " – " + fmtMd.format(utc(addDays(weekStart,6))) + " (" + zoneName(now) + ")";
@@ -277,6 +366,7 @@ function render(){
   for (let i = 0; i < 7; i++){
     const ds = addDays(weekStart, i);
     const box = el("section", "day" + (ds === today ? " today" : ""));
+    box.style.setProperty("--i", i);
     const h = el("h2", null, fmtDay.format(utc(ds)));
     h.append(el("small", null, fmtMd.format(utc(ds))));
     box.append(h);
@@ -286,7 +376,7 @@ function render(){
       const p = PLATFORMS[ev.platform] || PLATFORMS.other;
       const predicted = ev.status === "predicted";
       const d = eventDate(ev);
-      const status = predicted ? "none" : liveStatus(ev, now);
+      const status = predicted ? "none" : liveStatus(ev, now, liveKeys);
       const live = status === "live";
       const posted = !live && !predicted && !!d && d <= now &&
         (isPatreon(ev) || ev.status === "posted");
@@ -295,6 +385,17 @@ function render(){
         (d && d < now && !live && status !== "delayed" ? " past" : "") +
         (live ? " live" : ""));
       row.style.setProperty("--c", p.color);
+
+      const src = posterFor(ev.title);
+      if (src){
+        const img = el("img", "thumb");
+        img.src = src; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+        row.append(img);
+      } else {
+        row.append(el("div", "thumb empty"));
+      }
+
+      const body = el("div");
       const t = el("div", "t", d ? fmtTime.format(d) : "All day");
       const dotClass = live ? " live" : status === "delayed" ? " delayed" :
         status === "ended" ? " ended" : posted ? " posted" : "";
@@ -310,7 +411,8 @@ function render(){
       t.append(name);
       const statusText = predicted ? "Predicted" : posted ? "Posted" : live ? "Live now" :
         status === "delayed" ? "Delayed" : status === "ended" ? "Ended" : "Confirmed";
-      row.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + statusText));
+      body.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + statusText));
+      row.append(body);
       box.append(row);
     }
     week.append(box);
@@ -323,8 +425,16 @@ function render(){
     const when = mins < 60 ? "in " + mins + " min"
       : mins < 1440 ? "in " + Math.floor(mins/60) + " h " + (mins % 60) + " min"
       : fmtDay.format(utc(dayKey(d))) + " at " + fmtTime.format(d);
-    nx.replaceChildren(el("span", null, "Next up"), el("b", null, nextEv.title), el("span", null,
+    const info = el("div");
+    info.append(el("span", null, "Next up"), el("b", null, nextEv.title), el("span", null,
       (PLATFORMS[nextEv.platform] || PLATFORMS.other).label + " · " + when));
+    nx.replaceChildren(info);
+    const nextPoster = posterFor(nextEv.title);
+    if (nextPoster){
+      const img = el("img", "poster");
+      img.src = nextPoster; img.alt = ""; img.loading = "lazy";
+      nx.append(img);
+    }
     nx.hidden = false;
   } else nx.hidden = true;
 
@@ -346,6 +456,16 @@ async function load(){
   }
 }
 
+async function loadShows(){
+  try{
+    const r = await fetch("shows.json?t=" + Date.now(), {cache:"no-store"});
+    if (!r.ok) return;
+    const j = await r.json();
+    shows = j.shows || {};
+    render();
+  }catch(e){}
+}
+
 // live.json is optional. Without it, live and delayed states are not shown.
 async function loadLive(){
   try{
@@ -357,8 +477,10 @@ async function loadLive(){
 
 buildZoneOptions();
 load();
+loadShows();
 loadLive();
 setInterval(load, 5 * 60 * 1000);
+setInterval(loadShows, 5 * 60 * 1000);
 setInterval(loadLive, 2 * 60 * 1000);
 setInterval(render, 60 * 1000);
 </script>
