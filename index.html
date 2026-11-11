@@ -31,7 +31,12 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--mute);margin:0 0 14px}
 .sw{display:inline-block;width:22px;height:0;border-top:3px solid var(--ink);vertical-align:middle;margin-right:6px}
 .sw.p{border-top-style:dashed}
-.week{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(15.5rem,1fr))}
+.week{
+  display:grid;
+  gap:12px;
+  grid-template-columns:repeat(auto-fit,minmax(15.5rem,1fr));
+  align-items:start;
+}
 .day{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:7rem}
 .day.today{border:2px solid var(--ink)}
 .day h2{margin:0 0 10px;font-size:1.05rem;font-weight:800;display:flex;justify-content:space-between;align-items:baseline}
