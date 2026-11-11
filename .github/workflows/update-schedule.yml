@@ -9,6 +9,10 @@ on:
         description: "Test mode: accept any image in the channel"
         type: boolean
         default: false
+      reparse:
+        description: "Re-read the saved image into the schedule"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -31,14 +35,14 @@ jobs:
           ANY_IMAGE: ${{ inputs.any_image }}
         run: python3 Script/fetch_schedule.py
 
-      - name: Read the text in the image
-        if: steps.fetch.outputs.new == 'true'
+      - name: Read the events from the image
+        if: steps.fetch.outputs.new == 'true' || inputs.reparse
+        continue-on-error: true
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq tesseract-ocr
-          img=$(ls schedule/latest.* | head -n 1)
-          tesseract "$img" schedule/ocr_default
-          tesseract "$img" schedule/ocr_sparse --psm 11
+          sudo apt-get install -y -qq tesseract-ocr python3-pil
+          python3 -c "import PIL" || python3 -m pip install --break-system-packages pillow
+          python3 Script/parse_schedule.py
 
       - name: Save changes
         run: |
