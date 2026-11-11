@@ -129,6 +129,7 @@ a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .links .yt{background:var(--yt)}
 .links .tw{background:var(--tw)}
 .links .rb{background:var(--rb)}
+.links .patreon{background:#f96854}
 
 @media (max-width:520px){
   .next{grid-template-columns:minmax(0,1fr)}
@@ -172,6 +173,7 @@ a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       <a class="yt" href="https://www.youtube.com/@GOTGames" target="_blank" rel="noopener noreferrer">YouTube</a>
       <a class="tw" href="https://www.twitch.tv/gotgames_tb" target="_blank" rel="noopener noreferrer">Twitch</a>
       <a class="rb" href="https://rumble.com/c/GOTGames" target="_blank" rel="noopener noreferrer">Rumble</a>
+      <a class="patreon" href="https://www.patreon.com/cw/gotgames" target="_blank" rel="noopener noreferrer">Patreon</a>
     </nav>
   </footer>
 </div>
@@ -404,7 +406,8 @@ function render(){
         status === "ended" ? "Ended" : posted ? "Posted" : "Not live";
       dot.setAttribute("aria-label", dotLabel);
       t.prepend(dot);
-      const url = safeUrl(ev.url);
+      const url = safeUrl(ev.url) ||
+        (isPatreon(ev) ? "https://www.patreon.com/cw/gotgames" : "");
       const name = el("span", "n");
       if (url){ const a = el("a", null, ev.title); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; name.append(a); }
       else name.textContent = ev.title;
