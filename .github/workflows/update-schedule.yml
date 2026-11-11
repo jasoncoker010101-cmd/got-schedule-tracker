@@ -24,11 +24,11 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check Discord for a new schedule
         id: fetch
@@ -39,7 +39,7 @@ jobs:
         run: python3 Script/fetch_schedule.py
 
       - name: Read the events from the image
-        if: steps.fetch.outputs.new == 'true' || github.event.inputs.reparse == 'true'
+        if: ${{ steps.fetch.outputs.new == 'true' || inputs.reparse }}
         run: |
           installed=false
 
