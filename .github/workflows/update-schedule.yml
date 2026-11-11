@@ -23,7 +23,7 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-        run: python3 script/fetch_schedule.py
+        run: python3 Script/fetch_schedule.py
 
       - name: Read the text in the image
         if: steps.fetch.outputs.new == 'true'
