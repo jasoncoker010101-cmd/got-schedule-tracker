@@ -61,11 +61,6 @@ a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
   <div class="next" id="next" hidden></div>
   <p class="legend"><span><i class="sw"></i>Confirmed</span><span><i class="sw p"></i>Predicted</span></p>
   <main class="week" id="week" aria-live="polite"></main>
-  <section class="shot" id="shot" hidden>
-    <h2>Original schedule</h2>
-    <a id="shotLink" href="#" target="_blank" rel="noopener"><img id="shotImg" alt="Original weekly schedule image from Discord"></a>
-    <p class="sub"><a id="src" href="#" target="_blank" rel="noopener" hidden>Open the original announcement</a></p>
-  </section>
   <footer>Checks for new schedules every few minutes. Predicted events are guesses based on past weeks.</footer>
 </div>
 <script>
@@ -159,16 +154,6 @@ function render(){
       (PLATFORMS[nextEv.platform] || PLATFORMS.other).label + " · " + when));
     nx.hidden = false;
   } else nx.hidden = true;
-
-  const shot = document.getElementById("shot");
-  const img = safeUrl(data.image) || (data.image && !/^[a-z]+:/i.test(data.image) ? data.image : "");
-  if (img){
-    document.getElementById("shotImg").src = img;
-    document.getElementById("shotLink").href = img;
-    shot.hidden = false;
-  } else shot.hidden = true;
-  const src = safeUrl(data.sourceUrl), s = document.getElementById("src");
-  if (src){ s.href = src; s.hidden = false; } else s.hidden = true;
 }
 
 async function load(){
