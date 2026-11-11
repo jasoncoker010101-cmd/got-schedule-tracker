@@ -1,0 +1,29 @@
+{
+  "updated": "2026-11-10T09:00:00-05:00",
+  "weekStart": "2026-11-09",
+  "image": "",
+  "sourceUrl": "",
+  "events": [
+    {
+      "title": "Sample premiere (replace me)",
+      "platform": "youtube",
+      "start": "2026-11-11T18:00:00-05:00",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Sample Twitch stream (replace me)",
+      "platform": "twitch",
+      "start": "2026-11-12T20:00:00-05:00",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Sample livestream (replace me)",
+      "platform": "youtube-live",
+      "start": "2026-11-14T15:00:00-05:00",
+      "status": "predicted",
+      "url": ""
+    }
+  ]
+}
