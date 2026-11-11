@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>G.O.T. Games Schedule</title>
+<title>G.O.T. Games Schedule (Unofficial Fan Site)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
@@ -51,10 +51,20 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .ev{border-left:4px solid var(--c,var(--mute));padding:6px 0 6px 10px;margin:0 0 10px}
 .ev.predicted{border-left-style:dashed;opacity:.78}
 .ev.past{opacity:.5}
+.ev.live{background:color-mix(in srgb, var(--c) 12%, transparent);border-radius:8px}
 .ev .t{font-weight:600;font-size:.95rem}
 .ev .n{font-weight:400;display:block;margin:1px 0}
 .ev .k{font-size:.8rem;color:var(--mute)}
 .ev a{color:inherit;text-underline-offset:3px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;
+  vertical-align:middle;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.dot.live{background:#ff2d2d;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(255,45,45,.7)}
+  70%{box-shadow:0 0 0 8px rgba(255,45,45,0)}
+  100%{box-shadow:0 0 0 0 rgba(255,45,45,0)}
+}
+@media (prefers-reduced-motion:reduce){.dot.live{animation:none}}
 .notes{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
 .notes h2{margin:0 0 8px;font-size:1.1rem}
 .notes p{margin:0 0 8px;white-space:pre-line}
@@ -80,14 +90,14 @@ a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
     <select id="tz" aria-label="Choose timezone"></select>
   </div>
   <div class="next" id="next" hidden></div>
-  <p class="legend"><span><i class="sw"></i>Confirmed</span><span><i class="sw p"></i>Predicted</span></p>
+  <p class="legend"><span><i class="sw"></i>Confirmed</span><span><i class="sw p"></i>Predicted</span><span><i class="dot live" style="width:8px;height:8px"></i>Live now</span></p>
   <main class="week" id="week" aria-live="polite"></main>
   <section class="notes" id="notes" aria-label="Notes" hidden>
     <h2>Notes</h2>
     <div id="notesBody"></div>
   </section>
   <footer class="site-foot">
-    <p>Checks for new schedules every few minutes. Predicted events are guesses based on past weeks.</p>
+    <p>Unofficial fan-made schedule. Not affiliated with or endorsed by G.O.T. Games. Checks for new schedules every few minutes. Predicted events are guesses based on past weeks.</p>
     <nav class="links" aria-label="Watch the games">
       <a class="yt" href="https://www.youtube.com/@GOTGames" target="_blank" rel="noopener noreferrer">YouTube</a>
       <a class="tw" href="https://www.twitch.tv/gotgames_tb" target="_blank" rel="noopener noreferrer">Twitch</a>
@@ -130,11 +140,14 @@ const PLATFORMS = {
   rumble:{label:"Rumble",color:"#85c742"},
   got:{label:"G.O.T. Games",color:"#e5b82a"}
 };
+const LIVE_WINDOW_MS = 3 * 60 * 60 * 1000; // without a live check, treat an event as airing for 3 hours
+
 const fmtUpd = () => new Intl.DateTimeFormat("en-US",{timeZone:tz,dateStyle:"medium",timeStyle:"short"});
 const fmtDay = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"long"});
 const fmtMd  = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"});
 
 let data = null;
+let liveFeed = null;
 let tz = pickStartZone();
 
 function detectZone(){
@@ -185,6 +198,15 @@ function noteList(n){
   return [];
 }
 
+// Live if the event is airing now. If live.json has a status for this platform, that wins.
+function isLive(ev, now){
+  const d = eventDate(ev);
+  if (!d || now < d || now - d >= LIVE_WINDOW_MS) return false;
+  const p = liveFeed && liveFeed.platforms;
+  if (p && ev.platform in p) return !!p[ev.platform];
+  return true;
+}
+
 function buildZoneOptions(){
   const sel = document.getElementById("tz");
   const detected = detectZone();
@@ -228,9 +250,13 @@ function render(){
       const p = PLATFORMS[ev.platform] || PLATFORMS.other;
       const predicted = ev.status === "predicted";
       const d = eventDate(ev);
-      const row = el("div", "ev" + (predicted ? " predicted" : "") + (d && d < now ? " past" : ""));
+      const live = isLive(ev, now);
+      const row = el("div", "ev" + (predicted ? " predicted" : "") + (d && d < now && !live ? " past" : "") + (live ? " live" : ""));
       row.style.setProperty("--c", p.color);
       const t = el("div", "t", d ? fmtTime.format(d) : "All day");
+      const dot = el("span", "dot" + (live ? " live" : ""));
+      dot.setAttribute("aria-label", live ? "Live now" : "Not live");
+      t.prepend(dot);
       const url = safeUrl(ev.url);
       const name = el("span", "n");
       if (url){ const a = el("a", null, ev.title); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; name.append(a); }
@@ -272,11 +298,21 @@ async function load(){
   }
 }
 
+// live.json is optional. If it's missing, the page uses the schedule time instead.
+async function loadLive(){
+  try{
+    const r = await fetch("live.json?t=" + Date.now(), {cache:"no-store"});
+    liveFeed = r.ok ? await r.json() : null;
+  }catch(e){ liveFeed = null; }
+  render();
+}
+
 buildZoneOptions();
 load();
+loadLive();
 setInterval(load, 5 * 60 * 1000);
+setInterval(loadLive, 2 * 60 * 1000);
 setInterval(render, 60 * 1000);
 </script>
 </body>
 </html>
-
