@@ -1,0 +1,50 @@
+{
+  "shows": {
+    "Charlotte": {
+      "poster": "https://image.tmdb.org/t/p/w500/udiCs1RBGfda1z52cBxu8j9JNmP.jpg",
+      "tmdb_id": 63145,
+      "tmdb_type": "tv",
+      "matched_name": "Charlotte",
+      "searched_as": "Charlotte"
+    },
+    "Hell's Paradise": {
+      "poster": "https://image.tmdb.org/t/p/w500/1V9I7SvZbYoMbSvdtnlkkq9SB1k.jpg",
+      "tmdb_id": 117465,
+      "tmdb_type": "tv",
+      "matched_name": "Hell's Paradise",
+      "searched_as": "Hell's Paradise"
+    },
+    "Jojo's P7 (SBR)": {
+      "poster": "https://image.tmdb.org/t/p/w500/ogAWwbh3frWtiTyyXrZaVFtqCgp.jpg",
+      "tmdb_id": 45790,
+      "tmdb_type": "tv",
+      "matched_name": "JoJo's Bizarre Adventure",
+      "searched_as": "JoJo's Bizarre Adventure"
+    },
+    "My Hero Academia": {
+      "poster": "https://image.tmdb.org/t/p/w500/phuYuzqWW9ru8EA3HVjE9W2Rr3M.jpg",
+      "tmdb_id": 65930,
+      "tmdb_type": "tv",
+      "matched_name": "My Hero Academia",
+      "searched_as": "My Hero Academia"
+    },
+    "ONE PIECE": {
+      "poster": "https://image.tmdb.org/t/p/w500/dB4EDhre2dsC2kxYDavyKWqLQwi.jpg",
+      "tmdb_id": 37854,
+      "tmdb_type": "tv",
+      "matched_name": "One Piece",
+      "searched_as": "ONE PIECE"
+    },
+    "The Bodyguard": {
+      "poster": "https://image.tmdb.org/t/p/w500/1vSKvcsUEusZRv7iX3hF1O0R2UJ.jpg",
+      "tmdb_id": 241111,
+      "tmdb_type": "tv",
+      "matched_name": "The Bodyguard",
+      "searched_as": "The Bodyguard"
+    },
+    "Wuthering Waves": {
+      "poster": null,
+      "skipped": true
+    }
+  }
+}
