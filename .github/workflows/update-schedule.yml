@@ -3,6 +3,7 @@ name: Update schedule
 on:
   schedule:
     - cron: "*/10 * * * *"
+
   workflow_dispatch:
     inputs:
       any_image:
@@ -24,6 +25,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -32,21 +34,41 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-          ANY_IMAGE: ${{ inputs.any_image }}
+          ANY_IMAGE: ${{ github.event.inputs.any_image || 'false' }}
         run: python3 Script/fetch_schedule.py
 
       - name: Read the events from the image
-        if: steps.fetch.outputs.new == 'true' || inputs.reparse
-        continue-on-error: true
+        if: steps.fetch.outputs.new == 'true' || github.event.inputs.reparse == 'true'
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq tesseract-ocr python3-pil
-          python3 -c "import PIL" || python3 -m pip install --break-system-packages pillow
+          installed=false
+
+          for attempt in 1 2 3; do
+            if sudo apt-get update -qq && \
+               sudo apt-get install -y -qq tesseract-ocr python3-pil; then
+              installed=true
+              break
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              echo "APT failed; retrying in 10 seconds (attempt $attempt of 3)..."
+              sleep 10
+            fi
+          done
+
+          if [ "$installed" != "true" ]; then
+            echo "Could not install OCR packages after 3 attempts."
+            exit 1
+          fi
+
+          python3 -c "import PIL" || \
+            python3 -m pip install --break-system-packages pillow
+
           python3 Script/parse_schedule.py
 
       - name: Save changes
         run: |
           git config user.name "schedule-bot"
-          git config user.email "schedule-bot@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --staged --quiet || (git commit -m "Update schedule" && git push)
+          git diff --staged --quiet || \
+            (git commit -m "Update schedule" && git push)
