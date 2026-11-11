@@ -4,8 +4,8 @@ import urllib.request
 import urllib.parse
 from datetime import datetime, timezone
 
-TWITCH_USER = "gotgames"       # Twitch username, without "@"
-YOUTUBE_HANDLE = "@GOTGames"   # YouTube handle, with "@"
+TWITCH_USER = "gotgames_tb"   # Twitch username, without "@"
+YOUTUBE_HANDLE = "@GOTGames"  # YouTube handle, with "@"
 
 
 def check_twitch():
@@ -17,8 +17,7 @@ def check_twitch():
         return {"live": False}
 
     try:
-        # Get an app access token.
-        token_data = urllib.parse.urlencode({
+        token_body = urllib.parse.urlencode({
             "client_id": client_id,
             "client_secret": client_secret,
             "grant_type": "client_credentials",
@@ -26,26 +25,20 @@ def check_twitch():
 
         token_req = urllib.request.Request(
             "https://id.twitch.tv/oauth2/token",
-            data=token_data,
+            data=token_body,
             method="POST",
         )
-
         with urllib.request.urlopen(token_req, timeout=10) as response:
-            token_data = json.loads(response.read().decode("utf-8"))
-            access_token = token_data["access_token"]
+            access_token = json.loads(response.read().decode("utf-8"))["access_token"]
 
-        # Check whether the Twitch channel is live.
         query = urllib.parse.urlencode({"user_login": TWITCH_USER})
-        streams_url = f"https://api.twitch.tv/helix/streams?{query}"
-
         streams_req = urllib.request.Request(
-            streams_url,
+            f"https://api.twitch.tv/helix/streams?{query}",
             headers={
                 "Client-Id": client_id,
                 "Authorization": f"Bearer {access_token}",
             },
         )
-
         with urllib.request.urlopen(streams_req, timeout=10) as response:
             streams = json.loads(response.read().decode("utf-8")).get("data", [])
 
@@ -70,17 +63,13 @@ def check_youtube():
             url,
             headers={"User-Agent": "Mozilla/5.0"},
         )
-
         with urllib.request.urlopen(request, timeout=10) as response:
             html = response.read().decode("utf-8", errors="ignore")
 
         # YouTube's page markup can change, so this check may need updating
         # if YouTube changes how it marks active livestreams.
         if '"isLive":true' in html:
-            return {
-                "live": True,
-                "url": url,
-            }
+            return {"live": True, "url": url}
 
     except Exception as error:
         print("YouTube check error:", repr(error))
@@ -94,9 +83,14 @@ def main():
 
     data = {
         "updated": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "live": twitch["live"] or youtube["live"],
-        "twitch": twitch,
-        "youtube": youtube,
+        "platforms": {
+            "twitch": twitch["live"],
+            "youtube": youtube["live"],
+        },
+        "details": {
+            "twitch": twitch,
+            "youtube": youtube,
+        },
     }
 
     with open("live.json", "w", encoding="utf-8") as file:
