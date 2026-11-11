@@ -43,14 +43,14 @@ jobs:
           installed=false
 
           for attempt in 1 2 3; do
-            if sudo apt-get update -qq && \
-               sudo apt-get install -y -qq tesseract-ocr python3-pil; then
+            if sudo timeout 120s apt-get update -qq && \
+               sudo timeout 180s apt-get install -y -qq tesseract-ocr python3-pil; then
               installed=true
               break
             fi
 
             if [ "$attempt" -lt 3 ]; then
-              echo "APT failed; retrying in 10 seconds (attempt $attempt of 3)..."
+              echo "APT failed or timed out; retrying in 10 seconds (attempt $attempt of 3)..."
               sleep 10
             fi
           done
