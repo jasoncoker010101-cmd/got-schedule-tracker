@@ -9,6 +9,7 @@ import urllib.request
 
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "").strip()
 CHANNEL = os.environ.get("DISCORD_CHANNEL_ID", "").strip()
+ANY_IMAGE = os.environ.get("ANY_IMAGE") == "true"
 UA = "DiscordBot (https://github.com/jasoncoker010101-cmd/got-schedule-tracker, 1.0)"
 OUT = pathlib.Path("schedule")
 CROSSPOSTED = 2  # Discord flag: message was forwarded by Channel Following
@@ -62,10 +63,10 @@ def main():
     msgs = json.loads(get(api, auth=True))
     found = [
         m for m in msgs
-        if (m.get("flags", 0) & CROSSPOSTED or m.get("webhook_id")) and images(m)
+        if (ANY_IMAGE or m.get("flags", 0) & CROSSPOSTED or m.get("webhook_id")) and images(m)
     ]
     if not found:
-        print("No forwarded schedule image in the last 100 messages.")
+        print("No schedule image found in the last 100 messages.")
         set_output("false")
         return
     m = max(found, key=lambda x: int(x["id"]))
