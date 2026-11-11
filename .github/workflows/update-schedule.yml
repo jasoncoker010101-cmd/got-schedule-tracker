@@ -79,6 +79,11 @@ jobs:
 
           python3 Script/parse_schedule.py
 
+      - name: Fetch show posters
+        env:
+          TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}
+        run: python3 Script/fetch_posters.py
+
       - name: Save changes
         run: |
           git config user.name "schedule-bot"
