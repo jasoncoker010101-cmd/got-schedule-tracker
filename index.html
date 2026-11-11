@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G.O.T. Games Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#eef1f4; --card:#ffffff; --ink:#16212c; --mute:#5d6b79; --line:#d3dae1;
+  --today:#16212c; --today-ink:#ffffff;
+  --yt:#e03131; --ytl:#c2255c; --tw:#8a5cf5; --x:#16212c; --th:#7a8794; --ot:#2f9e8f;
+  --font:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#10161c; --card:#19222b; --ink:#e9eef3; --mute:#98a6b3; --line:#2b3743;
+    --today:#e9eef3; --today-ink:#10161c; --x:#e9eef3; --th:#98a6b3;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.45}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;color:var(--mute);font-size:.9rem}
+.next{margin:22px 0;padding:16px 18px;background:var(--today);color:var(--today-ink);border-radius:14px}
+.next b{display:block;font-size:1.25rem;font-weight:800}
+.next span{opacity:.8;font-size:.95rem}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--mute);margin:0 0 14px}
+.sw{display:inline-block;width:22px;height:0;border-top:3px solid var(--ink);vertical-align:middle;margin-right:6px}
+.sw.p{border-top-style:dashed}
+.week{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(15.5rem,1fr))}
+.day{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:7rem}
+.day.today{border:2px solid var(--ink)}
+.day h2{margin:0 0 10px;font-size:1.05rem;font-weight:800;display:flex;justify-content:space-between;align-items:baseline}
+.day h2 small{font-weight:400;color:var(--mute);font-size:.85rem}
+.day.today h2 small::after{content:" · today"}
+.none{color:var(--mute);font-size:.9rem;margin:0}
+.ev{border-left:4px solid var(--c,var(--mute));padding:6px 0 6px 10px;margin:0 0 10px}
+.ev.predicted{border-left-style:dashed;opacity:.78}
+.ev.past{opacity:.5}
+.ev .t{font-weight:600;font-size:.95rem}
+.ev .n{font-weight:400;display:block;margin:1px 0}
+.ev .k{font-size:.8rem;color:var(--mute)}
+.ev a{color:inherit;text-underline-offset:3px}
+.shot{margin-top:28px}
+.shot h2{font-size:1.2rem;margin:0 0 10px}
+.shot img{max-width:100%;height:auto;border-radius:10px;border:1px solid var(--line);display:block}
+.shot a{color:inherit}
+footer{margin-top:28px;color:var(--mute);font-size:.82rem}
+a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>G.O.T. Games schedule</h1>
+  <p class="sub">Luke Fitzpatrick's week, in Georgia time (Eastern).</p>
+  <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
+  <div class="next" id="next" hidden></div>
+  <p class="legend"><span><i class="sw"></i>Confirmed</span><span><i class="sw p"></i>Predicted</span></p>
+  <main class="week" id="week" aria-live="polite"></main>
+  <section class="shot" id="shot" hidden>
+    <h2>Original schedule</h2>
+    <a id="shotLink" href="#" target="_blank" rel="noopener"><img id="shotImg" alt="Original weekly schedule image from Discord"></a>
+    <p class="sub"><a id="src" href="#" target="_blank" rel="noopener" hidden>Open the original announcement</a></p>
+  </section>
+  <footer>Checks for new schedules every few minutes. Predicted events are guesses based on past weeks.</footer>
+</div>
+<script>
+const TZ = "America/New_York";
+const PLATFORMS = {
+  youtube:{label:"YouTube",color:"var(--yt)"},
+  "youtube-live":{label:"YouTube Live",color:"var(--ytl)"},
+  twitch:{label:"Twitch",color:"var(--tw)"},
+  x:{label:"X",color:"var(--x)"},
+  threads:{label:"Threads",color:"var(--th)"},
+  other:{label:"Other",color:"var(--ot)"}
+};
+const fmtDate = new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"});
+const fmtTime = new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"});
+const fmtZone = new Intl.DateTimeFormat("en-US",{timeZone:TZ,timeZoneName:"short"});
+const fmtUpd  = new Intl.DateTimeFormat("en-US",{timeZone:TZ,dateStyle:"medium",timeStyle:"short"});
+const fmtDay  = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"long"});
+const fmtMd   = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"});
+let data = null;
+
+const etDay = d => fmtDate.format(d);
+const utc = s => { const [y,m,d] = s.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
+const addDays = (s,n) => { const d = utc(s); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+const zone = d => fmtZone.formatToParts(d).find(p => p.type === "timeZoneName").value;
+const safeUrl = u => /^https?:\/\//i.test(u || "") ? u : "";
+
+function mondayOf(s){ const wd = utc(s).getUTCDay(); return addDays(s, wd === 0 ? -6 : 1 - wd); }
+
+function el(tag, cls, text){
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function eventDate(ev){ return ev.start ? new Date(ev.start) : null; }
+function eventDay(ev){ return ev.start ? etDay(new Date(ev.start)) : ev.date; }
+
+function render(){
+  if (!data) return;
+  const now = new Date();
+  const today = etDay(now);
+  const weekStart = data.weekStart || mondayOf(today);
+  const events = (data.events || []).slice().sort((a,b) =>
+    (eventDate(a) || utc(eventDay(a))) - (eventDate(b) || utc(eventDay(b))));
+
+  document.getElementById("range").textContent =
+    "Week of " + fmtMd.format(utc(weekStart)) + " – " + fmtMd.format(utc(addDays(weekStart,6))) + " (" + zone(now) + ")";
+  document.getElementById("updated").textContent =
+    data.updated ? "Last updated " + fmtUpd.format(new Date(data.updated)) : "";
+
+  const week = document.getElementById("week");
+  week.replaceChildren();
+  for (let i = 0; i < 7; i++){
+    const ds = addDays(weekStart, i);
+    const box = el("section", "day" + (ds === today ? " today" : ""));
+    const h = el("h2", null, fmtDay.format(utc(ds)));
+    h.append(el("small", null, fmtMd.format(utc(ds))));
+    box.append(h);
+    const list = events.filter(ev => eventDay(ev) === ds);
+    if (!list.length) box.append(el("p", "none", "Nothing posted yet"));
+    for (const ev of list){
+      const p = PLATFORMS[ev.platform] || PLATFORMS.other;
+      const predicted = ev.status === "predicted";
+      const d = eventDate(ev);
+      const row = el("div", "ev" + (predicted ? " predicted" : "") + (d && d < now ? " past" : ""));
+      row.style.setProperty("--c", p.color);
+      const t = el("div", "t", d ? fmtTime.format(d) : "All day");
+      const url = safeUrl(ev.url);
+      const name = el("span", "n");
+      if (url){ const a = el("a", null, ev.title); a.href = url; a.target = "_blank"; a.rel = "noopener"; name.append(a); }
+      else name.textContent = ev.title;
+      t.append(name);
+      row.append(t, el("div", "k", p.label + " · " + (predicted ? "Predicted" : "Confirmed")));
+      box.append(row);
+    }
+    week.append(box);
+  }
+
+  const nextEv = events.find(ev => { const d = eventDate(ev); return d && d > now; });
+  const nx = document.getElementById("next");
+  if (nextEv){
+    const d = eventDate(nextEv), mins = Math.round((d - now) / 60000);
+    const when = mins < 60 ? "in " + mins + " min"
+      : mins < 1440 ? "in " + Math.floor(mins/60) + " h " + (mins % 60) + " min"
+      : fmtDay.format(utc(etDay(d))) + " at " + fmtTime.format(d);
+    nx.replaceChildren(el("span", null, "Next up"), el("b", null, nextEv.title), el("span", null,
+      (PLATFORMS[nextEv.platform] || PLATFORMS.other).label + " · " + when));
+    nx.hidden = false;
+  } else nx.hidden = true;
+
+  const shot = document.getElementById("shot");
+  const img = safeUrl(data.image) || (data.image && !/^[a-z]+:/i.test(data.image) ? data.image : "");
+  if (img){
+    document.getElementById("shotImg").src = img;
+    document.getElementById("shotLink").href = img;
+    shot.hidden = false;
+  } else shot.hidden = true;
+  const src = safeUrl(data.sourceUrl), s = document.getElementById("src");
+  if (src){ s.href = src; s.hidden = false; } else s.hidden = true;
+}
+
+async function load(){
+  try{
+    const r = await fetch("schedule.json?t=" + Date.now(), {cache:"no-store"});
+    if (!r.ok) throw new Error(r.status);
+    data = await r.json();
+    render();
+  }catch(e){
+    if (!data){
+      document.getElementById("range").textContent = "Couldn't load the schedule. Refresh to try again.";
+    }
+  }
+}
+load();
+setInterval(load, 5 * 60 * 1000);
+setInterval(render, 60 * 1000);
+</script>
+</body>
+</html>
