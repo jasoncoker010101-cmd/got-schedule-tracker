@@ -1,29 +1,110 @@
 {
-  "updated": "2026-11-10T09:00:00-05:00",
+  "updated": "2026-11-11T05:10:52.887586Z",
   "weekStart": "2026-11-09",
   "image": "schedule/latest.png?v=1569936441486745650",
   "sourceUrl": "",
   "events": [
     {
-      "title": "Sample premiere (replace me)",
-      "platform": "youtube",
-      "start": "2026-11-11T18:00:00-05:00",
+      "title": "My Hero Academia Season 5 E8",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T. Games"
+      ],
+      "start": "2026-11-09T18:30:00Z",
       "status": "confirmed",
       "url": ""
     },
     {
-      "title": "Sample Twitch stream (replace me)",
+      "title": "Wuthering Waves",
       "platform": "twitch",
-      "start": "2026-11-12T20:00:00-05:00",
+      "labels": [
+        "Twitch",
+        "G.O.T. Games"
+      ],
+      "start": "2026-11-10T20:30:00Z",
       "status": "confirmed",
       "url": ""
     },
     {
-      "title": "Sample livestream (replace me)",
-      "platform": "youtube-live",
-      "start": "2026-11-14T15:00:00-05:00",
-      "status": "predicted",
+      "title": "My Hero Academia Season 5 E9",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T. Games"
+      ],
+      "start": "2026-11-11T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "ONE PIECE E36-39",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-11-12T20:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Jojo's P7 (SBR) E9",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T. Games"
+      ],
+      "start": "2026-11-13T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "The Bodyguard",
+      "platform": "patreon",
+      "labels": [
+        "Patreon"
+      ],
+      "start": "2026-11-13T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 5 E10",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T. Games"
+      ],
+      "start": "2026-11-14T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Hell's Paradise S2 E7-10",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-11-14T20:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Charlotte E9-13",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-11-15T20:30:00Z",
+      "status": "confirmed",
       "url": ""
     }
+  ],
+  "notes": [
+    "Streams at 8:30 PM GMT/3:30 PM EST",
+    "Subathon on hold due to twitch, restart with current amount when resolved.",
+    "Saturday slot is flexible.",
+    "March/dr stone to be covered on stream.",
+    "Tanya to be caught up with as soon as available"
   ]
 }
