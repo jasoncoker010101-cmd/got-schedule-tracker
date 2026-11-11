@@ -1,0 +1,42 @@
+name: Update schedule
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-schedule
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Discord for a new schedule
+        id: fetch
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+        run: python3 scripts/fetch_schedule.py
+
+      - name: Read the text in the image
+        if: steps.fetch.outputs.new == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq tesseract-ocr
+          img=$(ls schedule/latest.* | head -n 1)
+          tesseract "$img" schedule/ocr_default
+          tesseract "$img" schedule/ocr_sparse --psm 11
+
+      - name: Save changes
+        run: |
+          git config user.name "schedule-bot"
+          git config user.email "schedule-bot@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || (git commit -m "Update schedule" && git push)
