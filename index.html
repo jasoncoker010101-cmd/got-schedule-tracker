@@ -205,7 +205,9 @@ function noteList(n){
 }
 
 // Live if the event is airing now. If live.json has a status for this platform, that wins.
+// Patreon posts are never live; they show as posted instead.
 function isLive(ev, now){
+  if (ev.platform === "patreon") return false;
   const d = eventDate(ev);
   if (!d || now < d || now - d >= LIVE_WINDOW_MS) return false;
   const p = liveFeed && liveFeed.platforms;
@@ -257,18 +259,21 @@ function render(){
       const predicted = ev.status === "predicted";
       const d = eventDate(ev);
       const live = isLive(ev, now);
-      const row = el("div", "ev" + (predicted ? " predicted" : "") + (d && d < now && !live ? " past" : "") + (live ? " live" : ""));
+      const posted = !live && !predicted && !!d && d <= now &&
+        (ev.platform === "patreon" || ev.status === "posted");
+      const row = el("div", "ev" + (predicted ? " predicted" : "") + (d && d < now && !live && !posted ? " past" : "") + (live ? " live" : ""));
       row.style.setProperty("--c", p.color);
       const t = el("div", "t", d ? fmtTime.format(d) : "All day");
-      const dot = el("span", "dot" + (live ? " live" : ""));
-      dot.setAttribute("aria-label", live ? "Live now" : "Not live");
+      const dot = el("span", "dot" + (live ? " live" : posted ? " posted" : ""));
+      dot.setAttribute("aria-label", live ? "Live now" : posted ? "Posted" : "Not live");
       t.prepend(dot);
       const url = safeUrl(ev.url);
       const name = el("span", "n");
       if (url){ const a = el("a", null, ev.title); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; name.append(a); }
       else name.textContent = ev.title;
       t.append(name);
-      row.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + (predicted ? "Predicted" : "Confirmed")));
+      const status = predicted ? "Predicted" : posted ? "Posted" : "Confirmed";
+      row.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + status));
       box.append(row);
     }
     week.append(box);
