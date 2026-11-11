@@ -56,6 +56,12 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .shot a{color:inherit}
 footer{margin-top:28px;color:var(--mute);font-size:.82rem}
 a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.links a{padding:8px 16px;border-radius:999px;font-weight:600;text-decoration:none;color:#fff;font-size:.95rem}
+.links a:hover{opacity:.85}
+.links .yt{background:var(--yt)}
+.links .tw{background:var(--tw)}
+.links .rb{background:#85c742}
 </style>
 </head>
 <body>
@@ -67,6 +73,11 @@ a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
   <p class="legend"><span><i class="sw"></i>Confirmed</span><span><i class="sw p"></i>Predicted</span></p>
   <main class="week" id="week" aria-live="polite"></main>
   <footer>Checks for new schedules every few minutes. Predicted events are guesses based on past weeks.</footer>
+  <nav class="links" aria-label="Watch the games">
+    <a class="yt" href="https://www.youtube.com/@GOTGames" target="_blank" rel="noopener noreferrer">YouTube</a>
+    <a class="tw" href="https://www.twitch.tv/gotgames_tb" target="_blank" rel="noopener noreferrer">Twitch</a>
+    <a class="rb" href="https://rumble.com/c/GOTGames" target="_blank" rel="noopener noreferrer">Rumble</a>
+  </nav>
 </div>
 <script>
 const TZ = "America/New_York";
@@ -178,4 +189,4 @@ setInterval(load, 5 * 60 * 1000);
 setInterval(render, 60 * 1000);
 </script>
 </body>
-</html> 
+</html>
