@@ -76,7 +76,10 @@ const PLATFORMS = {
   twitch:{label:"Twitch",color:"var(--tw)"},
   x:{label:"X",color:"var(--x)"},
   threads:{label:"Threads",color:"var(--th)"},
-  other:{label:"Other",color:"var(--ot)"}
+  other:{label:"Other",color:"var(--ot)"},
+  patreon:{label:"Patreon",color:"#f96854"},
+  rumble:{label:"Rumble",color:"#85c742"},
+  got:{label:"G.O.T. Games",color:"#e5b82a"}
 };
 const fmtDate = new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"});
 const fmtTime = new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"});
@@ -139,7 +142,7 @@ function render(){
       if (url){ const a = el("a", null, ev.title); a.href = url; a.target = "_blank"; a.rel = "noopener"; name.append(a); }
       else name.textContent = ev.title;
       t.append(name);
-      row.append(t, el("div", "k", p.label + " · " + (predicted ? "Predicted" : "Confirmed")));
+      row.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + (predicted ? "Predicted" : "Confirmed")));
       box.append(row);
     }
     week.append(box);
@@ -185,4 +188,4 @@ setInterval(load, 5 * 60 * 1000);
 setInterval(render, 60 * 1000);
 </script>
 </body>
-</html>
+</html> 
