@@ -80,8 +80,10 @@ jobs:
           python3 Script/parse_schedule.py
 
       - name: Fetch show posters
+        continue-on-error: true
         env:
-          TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}
+          # The secret is saved as TMBD_READ_TOKEN (typo), so check both spellings
+          TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN || secrets.TMBD_READ_TOKEN }}
         run: python3 Script/fetch_posters.py
 
       - name: Save changes
@@ -90,4 +92,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --staged --quiet || \
-            (git commit -m "Update schedule" && git push)
+            (git commit -m "Update schedule" && git pull --rebase && git push)
