@@ -59,7 +59,9 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;
   vertical-align:middle;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
 .dot.live{background:#ff2d2d;animation:pulse 1.6s ease-out infinite}
-  .dot.posted{background:#2ecc71;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.dot.posted{background:#2ecc71;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.dot.delayed{background:#f5a623;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.dot.ended{background:#8a96a3;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
 @keyframes pulse{
   0%{box-shadow:0 0 0 0 rgba(255,45,45,.7)}
   70%{box-shadow:0 0 0 8px rgba(255,45,45,0)}
@@ -95,6 +97,8 @@ a:focus-visible{outline:3px solid var(--tw);outline-offset:2px}
     <span><i class="sw"></i>Confirmed</span>
     <span><i class="sw p"></i>Predicted</span>
     <span><i class="dot live" style="width:8px;height:8px"></i>Live now</span>
+    <span><i class="dot delayed" style="width:8px;height:8px"></i>Delayed</span>
+    <span><i class="dot ended" style="width:8px;height:8px"></i>Ended</span>
     <span><i class="dot posted" style="width:8px;height:8px"></i>Posted (Patreon)</span>
   </p>
   <main class="week" id="week" aria-live="polite"></main>
@@ -146,7 +150,6 @@ const PLATFORMS = {
   rumble:{label:"Rumble",color:"#85c742"},
   got:{label:"G.O.T. Games",color:"#e5b82a"}
 };
-const LIVE_WINDOW_MS = 3 * 60 * 60 * 1000; // without a live check, treat an event as airing for 3 hours
 
 const fmtUpd = () => new Intl.DateTimeFormat("en-US",{timeZone:tz,dateStyle:"medium",timeStyle:"short"});
 const fmtDay = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"long"});
@@ -155,6 +158,16 @@ const fmtMd  = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day
 let data = null;
 let liveFeed = null;
 let tz = pickStartZone();
+
+// Events the page has seen go live, saved in the browser so "Ended" survives a refresh
+const SEEN_KEY = "gotLiveSeen";
+let seenLive = (() => {
+  try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); }
+  catch(e){ return new Set(); }
+})();
+function saveSeen(){
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seenLive].slice(-200))); } catch(e){}
+}
 
 function detectZone(){
   try { return Intl.DateTimeFormat().resolvedOptions().timeZone || BASE_TZ; }
@@ -193,6 +206,32 @@ function el(tag, cls, text){
 function eventDate(ev){ return ev.start ? new Date(ev.start) : null; }
 function eventDay(ev){ const d = eventDate(ev); return d ? dayKey(d) : ev.date; }
 
+// Patreon if the platform is patreon, or if a label says so
+function isPatreon(ev){
+  return ev.platform === "patreon" ||
+    (Array.isArray(ev.labels) && ev.labels.some(l => /patreon/i.test(l)));
+}
+
+function eventKey(ev){
+  return (ev.start || ev.date || "") + "|" + ev.platform + "|" + (ev.title || "");
+}
+
+// Returns "upcoming", "delayed", "live", "ended", or "none".
+// Status comes only from live.json. Nothing is assumed live from the schedule time.
+function liveStatus(ev, now){
+  const d = eventDate(ev);
+  if (!d || isPatreon(ev) || !liveFeed || !liveFeed.platforms) return "none";
+  if (now < d) return "upcoming";
+  const key = eventKey(ev);
+  const p = liveFeed.platforms;
+  if (ev.platform in p && p[ev.platform]){
+    if (!seenLive.has(key)){ seenLive.add(key); saveSeen(); }
+    return "live";
+  }
+  if (seenLive.has(key)) return "ended";
+  return "delayed";
+}
+
 // Accepts notes as a string, an array of strings, or an array of {text} objects
 function noteList(n){
   if (!n) return [];
@@ -202,17 +241,6 @@ function noteList(n){
     .map(s => s.trim())
     .filter(Boolean);
   return [];
-}
-
-// Live if the event is airing now. If live.json has a status for this platform, that wins.
-// Patreon posts are never live; they show as posted instead.
-function isLive(ev, now){
-  if (ev.platform === "patreon") return false;
-  const d = eventDate(ev);
-  if (!d || now < d || now - d >= LIVE_WINDOW_MS) return false;
-  const p = liveFeed && liveFeed.platforms;
-  if (p && ev.platform in p) return !!p[ev.platform];
-  return true;
 }
 
 function buildZoneOptions(){
@@ -258,22 +286,31 @@ function render(){
       const p = PLATFORMS[ev.platform] || PLATFORMS.other;
       const predicted = ev.status === "predicted";
       const d = eventDate(ev);
-      const live = isLive(ev, now);
+      const status = predicted ? "none" : liveStatus(ev, now);
+      const live = status === "live";
       const posted = !live && !predicted && !!d && d <= now &&
-        (ev.platform === "patreon" || ev.status === "posted");
-      const row = el("div", "ev" + (predicted ? " predicted" : "") + (d && d < now && !live && !posted ? " past" : "") + (live ? " live" : ""));
+        (isPatreon(ev) || ev.status === "posted");
+      const row = el("div", "ev" +
+        (predicted ? " predicted" : "") +
+        (d && d < now && !live && !posted && status !== "delayed" ? " past" : "") +
+        (live ? " live" : ""));
       row.style.setProperty("--c", p.color);
       const t = el("div", "t", d ? fmtTime.format(d) : "All day");
-      const dot = el("span", "dot" + (live ? " live" : posted ? " posted" : ""));
-      dot.setAttribute("aria-label", live ? "Live now" : posted ? "Posted" : "Not live");
+      const dotClass = live ? " live" : status === "delayed" ? " delayed" :
+        status === "ended" ? " ended" : posted ? " posted" : "";
+      const dot = el("span", "dot" + dotClass);
+      const dotLabel = live ? "Live now" : status === "delayed" ? "Delayed" :
+        status === "ended" ? "Ended" : posted ? "Posted" : "Not live";
+      dot.setAttribute("aria-label", dotLabel);
       t.prepend(dot);
       const url = safeUrl(ev.url);
       const name = el("span", "n");
       if (url){ const a = el("a", null, ev.title); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; name.append(a); }
       else name.textContent = ev.title;
       t.append(name);
-      const status = predicted ? "Predicted" : posted ? "Posted" : "Confirmed";
-      row.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + status));
+      const statusText = predicted ? "Predicted" : posted ? "Posted" : live ? "Live now" :
+        status === "delayed" ? "Delayed" : status === "ended" ? "Ended" : "Confirmed";
+      row.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + statusText));
       box.append(row);
     }
     week.append(box);
@@ -309,7 +346,7 @@ async function load(){
   }
 }
 
-// live.json is optional. If it's missing, the page uses the schedule time instead.
+// live.json is optional. Without it, live and delayed states are not shown.
 async function loadLive(){
   try{
     const r = await fetch("live.json?t=" + Date.now(), {cache:"no-store"});
