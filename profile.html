@@ -356,6 +356,157 @@
       font-weight: 700;
     }
 
+    /* ACHIEVEMENTS */
+
+    .achievement-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .achievement-total {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid rgba(229, 184, 42, .3);
+      border-radius: 10px;
+      background: rgba(229, 184, 42, .08);
+    }
+
+    .achievement-total-icon { font-size: 24px; }
+
+    .achievement-total strong {
+      display: block;
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .achievement-total small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .achievement-progress {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .achievement-progress-track {
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      border-radius: 20px;
+      background: var(--surface);
+    }
+
+    .achievement-progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #b88919, #f5d477);
+      transition: width .4s ease;
+    }
+
+    .achievement-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .achievement-card {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--surface);
+      transition: border-color .2s, transform .2s;
+    }
+
+    .achievement-card.earned {
+      border-color: rgba(229, 184, 42, .45);
+      background: linear-gradient(120deg, rgba(229, 184, 42, .09), var(--surface));
+    }
+
+    .achievement-card.earned:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .achievement-card.locked { opacity: .58; }
+
+    .achievement-icon {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface-light);
+      font-size: 26px;
+    }
+
+    .achievement-card.earned .achievement-icon {
+      border-color: rgba(229, 184, 42, .35);
+      background: rgba(229, 184, 42, .1);
+    }
+
+    .achievement-card.locked .achievement-icon { filter: grayscale(1); }
+
+    .achievement-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .achievement-info h3 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .achievement-info p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      white-space: normal;
+    }
+
+    .achievement-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .achievement-status { color: #f5d477; }
+    .achievement-card.locked .achievement-status { color: var(--muted); }
+
+    .achievement-empty {
+      grid-column: 1 / -1;
+      padding: 25px 15px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .achievement-error { color: var(--danger); }
+
     .social-list {
       display: flex;
       flex-wrap: wrap;
@@ -562,6 +713,7 @@
       .stats-grid { gap: 7px; }
       .stat-card { padding: 14px 6px; }
       .stat-label { font-size: 10px; }
+      .achievement-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 380px) {
@@ -576,6 +728,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .owner-crown { animation: none; }
+      .achievement-card { transition: none; }
     }
   </style>
 </head>
@@ -663,6 +816,32 @@
               <span id="wins" class="stat-number">0</span>
               <span class="stat-label">Wins</span>
             </div>
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <h2>🏆 Achievements</h2>
+
+          <div class="achievement-summary">
+            <div class="achievement-total">
+              <span class="achievement-total-icon">🏆</span>
+              <div>
+                <strong id="achievementPoints">0</strong>
+                <small>Achievement Points</small>
+              </div>
+            </div>
+
+            <span id="achievementCount" class="achievement-progress">
+              0 of 0 unlocked
+            </span>
+          </div>
+
+          <div class="achievement-progress-track">
+            <div id="achievementProgressFill" class="achievement-progress-fill"></div>
+          </div>
+
+          <div id="achievementGrid" class="achievement-grid">
+            <div class="achievement-empty">Loading achievements...</div>
           </div>
         </section>
 
@@ -953,6 +1132,139 @@
       stats?.wins ?? 0;
   }
 
+  // ACHIEVEMENT FUNCTIONS
+
+  async function loadPlayerAchievements(userId) {
+    const { data: achievements, error: achievementsError } =
+      await supabaseClient
+        .from("achievements")
+        .select("id, slug, name, description, icon, points, sort_order")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+
+    if (achievementsError) {
+      console.error("Could not load achievements:", achievementsError);
+      return null;
+    }
+
+    const { data: earned, error: earnedError } =
+      await supabaseClient
+        .from("player_achievements")
+        .select("achievement_id, earned_at")
+        .eq("user_id", userId);
+
+    if (earnedError) {
+      console.error("Could not load earned achievements:", earnedError);
+      return null;
+    }
+
+    const earnedMap = new Map(
+      (earned || []).map(item => [
+        item.achievement_id,
+        item.earned_at
+      ])
+    );
+
+    return (achievements || []).map(achievement => ({
+      ...achievement,
+      earned: earnedMap.has(achievement.id),
+      earnedAt: earnedMap.get(achievement.id) || null
+    }));
+  }
+
+  function renderAchievements(achievements) {
+    const grid = document.getElementById("achievementGrid");
+    const count = document.getElementById("achievementCount");
+    const points = document.getElementById("achievementPoints");
+    const progressFill = document.getElementById("achievementProgressFill");
+
+    grid.replaceChildren();
+
+    if (achievements === null) {
+      count.textContent = "Could not load achievements";
+      points.textContent = "—";
+      progressFill.style.width = "0%";
+
+      const errorMessage = document.createElement("div");
+      errorMessage.className = "achievement-empty achievement-error";
+      errorMessage.textContent =
+        "Achievements couldn't be loaded. Please try again later.";
+      grid.appendChild(errorMessage);
+      return;
+    }
+
+    const unlocked = achievements.filter(item => item.earned);
+
+    const totalPoints = unlocked.reduce(
+      (total, item) => total + (Number(item.points) || 0),
+      0
+    );
+
+    count.textContent =
+      `${unlocked.length} of ${achievements.length} unlocked`;
+
+    points.textContent = totalPoints.toLocaleString();
+
+    const percentage = achievements.length
+      ? (unlocked.length / achievements.length) * 100
+      : 0;
+
+    progressFill.style.width = `${percentage}%`;
+
+    if (achievements.length === 0) {
+      const emptyMessage = document.createElement("div");
+      emptyMessage.className = "achievement-empty";
+      emptyMessage.textContent =
+        "No achievements have been added yet.";
+      grid.appendChild(emptyMessage);
+      return;
+    }
+
+    achievements.forEach(achievement => {
+      const card = document.createElement("div");
+
+      card.className = achievement.earned
+        ? "achievement-card earned"
+        : "achievement-card locked";
+
+      const icon = document.createElement("div");
+      icon.className = "achievement-icon";
+      icon.textContent = achievement.icon || "🏆";
+
+      const info = document.createElement("div");
+      info.className = "achievement-info";
+
+      const name = document.createElement("h3");
+      name.textContent = achievement.name;
+
+      const description = document.createElement("p");
+      description.textContent = achievement.description;
+
+      const meta = document.createElement("div");
+      meta.className = "achievement-meta";
+
+      const status = document.createElement("span");
+      status.className = "achievement-status";
+
+      if (achievement.earned) {
+        status.textContent = achievement.earnedAt
+          ? `Unlocked · ${formatJoinDate(achievement.earnedAt)}`
+          : "Unlocked";
+      } else {
+        status.textContent = "Locked";
+      }
+
+      const pointValue = document.createElement("span");
+      pointValue.textContent =
+        `${Number(achievement.points) || 0} points`;
+
+      meta.append(status, pointValue);
+      info.append(name, description, meta);
+      card.append(icon, info);
+      grid.appendChild(card);
+    });
+  }
+
   function renderSocialLinks(profile) {
     const container = document.getElementById("socialLinks");
     container.replaceChildren();
@@ -1003,7 +1315,7 @@
     }
   }
 
-  function showProfile(profile, roles = [], stats = null) {
+  function showProfile(profile, roles = [], stats = null, achievements = null) {
     currentProfile = profile;
     currentRoles = roles;
 
@@ -1032,6 +1344,7 @@
     renderRoles(roles);
     renderSocialLinks(profile);
     displayStats(stats);
+    renderAchievements(achievements);
 
     document.title = profile.username + " | G.O.T. Games";
 
@@ -1105,12 +1418,13 @@
         return;
       }
 
-      const [roles, stats] = await Promise.all([
+      const [roles, stats, achievements] = await Promise.all([
         loadProfileRoles(profile.id),
-        loadPlayerStats(profile.id)
+        loadPlayerStats(profile.id),
+        loadPlayerAchievements(profile.id)
       ]);
 
-      showProfile(profile, roles, stats);
+      showProfile(profile, roles, stats, achievements);
 
     } catch (error) {
       console.error("Profile loading error:", error);
@@ -1338,7 +1652,12 @@
 
       if (error) throw error;
 
-      showProfile(data, currentRoles, await loadPlayerStats(currentUser.id));
+      showProfile(
+        data,
+        currentRoles,
+        await loadPlayerStats(currentUser.id),
+        await loadPlayerAchievements(currentUser.id)
+      );
 
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.set("username", data.username);
