@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-12T23:06:44.246379Z",
+  "updated": "2026-11-12T23:39:20.584748Z",
   "platforms": {
     "twitch": true,
     "youtube": false,
@@ -20,8 +20,8 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 3,
-      "next_page": 4,
+      "page_checked": 4,
+      "next_page": 5,
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
       "session_state": "waiting",
@@ -35,8 +35,8 @@
     "state": "waiting",
     "twitch_seen_live": true,
     "rumble_seen_live": false,
-    "rumble_page": 4,
-    "next_rumble_check_at": "2026-11-12T23:11:44.246379Z",
+    "rumble_page": 5,
+    "next_rumble_check_at": "2026-11-12T23:44:20.584748Z",
     "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
   }
 }
