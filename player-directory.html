@@ -7,7 +7,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -15,127 +15,389 @@
 :root{
   color-scheme:light dark;
   --bg:#eef1f4;
-  --card:#fff;
+  --card:#ffffff;
+  --card2:#f7f8fa;
   --ink:#16212c;
-  --mute:#5d6b79;
+  --mute:#657382;
   --line:#d3dae1;
   --accent:#e5b82a;
+  --shadow:0 10px 30px rgba(20,32,45,.07);
   --font:"Bricolage Grotesque",system-ui,sans-serif;
 }
+
 @media(prefers-color-scheme:dark){
   :root{
     --bg:#10161c;
     --card:#19222b;
+    --card2:#202c37;
     --ink:#e9eef3;
     --mute:#98a6b3;
     --line:#2b3743;
+    --shadow:0 12px 35px rgba(0,0,0,.2);
   }
 }
+
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+
 body{
   margin:0;
-  background:var(--bg);
+  background:
+    radial-gradient(ellipse at 50% -15%,rgba(229,184,42,.12),transparent 55%),
+    var(--bg);
   color:var(--ink);
   font-family:var(--font);
+  min-height:100vh;
 }
+
+button,input{font:inherit}
+
 .wrap{
-  max-width:950px;
+  width:min(1100px,100%);
   margin:auto;
-  padding:20px 16px 50px;
+  padding:22px 18px 55px;
 }
-header{
-  padding:22px;
+
+/* Navigation */
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:22px;
+  flex-wrap:wrap;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+  font-size:1.05rem;
+}
+
+.brand-mark{
+  display:grid;
+  place-items:center;
+  width:38px;
+  height:38px;
+  border-radius:11px;
+  background:var(--accent);
+  color:#16212c;
+  font-weight:800;
+  font-size:1.1rem;
+}
+
+.back{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:9px 14px;
+  border:1px solid var(--line);
+  border-radius:9px;
   background:var(--card);
+  color:var(--ink);
+  text-decoration:none;
+  font-size:.88rem;
+  font-weight:700;
+  transition:border-color .2s,transform .2s;
+}
+
+.back:hover{
+  border-color:var(--accent);
+  transform:translateY(-1px);
+}
+
+/* Hero */
+
+.hero{
+  position:relative;
+  overflow:hidden;
+  padding:32px;
+  margin-bottom:18px;
   border:1px solid var(--line);
   border-top:4px solid var(--accent);
-  border-radius:16px;
-  margin-bottom:20px;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 90% 10%,rgba(229,184,42,.16),transparent 35%),
+    var(--card);
+  box-shadow:var(--shadow);
 }
+
+.hero::after{
+  content:"G.O.T.";
+  position:absolute;
+  right:20px;
+  bottom:-35px;
+  font-size:clamp(5rem,15vw,10rem);
+  font-weight:800;
+  letter-spacing:-.09em;
+  color:var(--ink);
+  opacity:.035;
+  pointer-events:none;
+}
+
+.eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:var(--mute);
+  font-size:.76rem;
+  font-weight:800;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+
+.eyebrow::before{
+  content:"";
+  width:20px;
+  height:3px;
+  border-radius:5px;
+  background:var(--accent);
+}
+
 h1{
-  font-size:clamp(2rem,6vw,3rem);
+  position:relative;
+  z-index:1;
+  font-size:clamp(2.3rem,7vw,4rem);
+  line-height:1;
+  letter-spacing:-.045em;
   margin:0;
   font-weight:800;
 }
-.subtitle{color:var(--mute);margin:5px 0 0}
-.back{
-  display:inline-block;
-  margin-bottom:15px;
-  color:var(--ink);
-  text-decoration:none;
-  font-weight:600;
+
+.hero-description{
+  position:relative;
+  z-index:1;
+  color:var(--mute);
+  margin:12px 0 0;
+  max-width:560px;
+  font-size:1rem;
+  line-height:1.6;
 }
-.back:hover{text-decoration:underline}
+
+/* Statistics */
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:30px;
+}
+
+.stat{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:17px;
+  box-shadow:var(--shadow);
+}
+
+.stat-number{
+  display:block;
+  font-size:1.8rem;
+  font-weight:800;
+  line-height:1.1;
+}
+
+.stat-label{
+  display:block;
+  color:var(--mute);
+  font-size:.78rem;
+  font-weight:600;
+  margin-top:5px;
+}
+
+/* Sections */
+
+.section{
+  margin-top:30px;
+}
+
+.section-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.section-heading h2{
+  font-size:1.35rem;
+  font-weight:800;
+  margin:0;
+  letter-spacing:-.02em;
+}
+
+.section-heading p{
+  color:var(--mute);
+  font-size:.85rem;
+  margin:4px 0 0;
+}
+
+.section-count{
+  color:var(--mute);
+  font-size:.82rem;
+  font-weight:700;
+}
+
+/* Search */
+
+.search-area{
+  padding:17px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--card);
+  box-shadow:var(--shadow);
+  margin-bottom:25px;
+}
+
+.search-label{
+  display:block;
+  font-size:.85rem;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+.search-wrap{
+  position:relative;
+}
+
+.search-icon{
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--mute);
+  font-size:1.1rem;
+  pointer-events:none;
+}
+
 .search{
   width:100%;
-  padding:13px 15px;
+  padding:13px 14px 13px 42px;
   border:1px solid var(--line);
   border-radius:10px;
-  background:var(--card);
+  background:var(--card2);
   color:var(--ink);
-  font:inherit;
-  margin-bottom:18px;
   outline:none;
+  transition:border-color .2s,box-shadow .2s;
 }
-.search:focus{border-color:var(--accent)}
-.stats{
-  color:var(--mute);
-  font-size:.9rem;
-  margin:0 0 12px;
+
+.search:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(229,184,42,.13);
 }
-.player-list{
+
+.search::placeholder{color:var(--mute)}
+
+/* Player cards */
+
+.player-grid{
   display:grid;
-  gap:10px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;
 }
+
 .player{
+  position:relative;
   display:flex;
   align-items:center;
   gap:13px;
-  padding:13px;
-  background:var(--card);
+  min-width:0;
+  padding:16px;
   border:1px solid var(--line);
-  border-radius:12px;
+  border-radius:14px;
+  background:var(--card);
   color:var(--ink);
   text-decoration:none;
-  transition:transform .15s,border-color .15s;
+  box-shadow:var(--shadow);
+  transition:transform .18s,border-color .18s,box-shadow .18s;
+  overflow:hidden;
 }
+
 .player:hover{
-  transform:translateY(-2px);
+  transform:translateY(-3px);
   border-color:var(--accent);
+  box-shadow:0 13px 28px rgba(20,32,45,.12);
 }
-.avatar{
-  width:48px;
-  height:48px;
-  flex-shrink:0;
+
+.player.staff{
+  border-left:3px solid var(--role-color,var(--accent));
+}
+
+.player.staff::after{
+  content:"";
+  position:absolute;
+  right:-35px;
+  top:-45px;
+  width:110px;
+  height:110px;
   border-radius:50%;
+  background:var(--role-color,var(--accent));
+  opacity:.055;
+  pointer-events:none;
+}
+
+.avatar{
+  width:58px;
+  height:58px;
+  flex-shrink:0;
+  border-radius:15px;
   object-fit:cover;
-  background:var(--line);
+  background:var(--card2);
+  border:1px solid var(--line);
 }
+
 .avatar-placeholder{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.3rem;
+  display:grid;
+  place-items:center;
+  color:var(--ink);
+  font-size:1.45rem;
   font-weight:800;
+  background:
+    linear-gradient(135deg,rgba(229,184,42,.2),transparent),
+    var(--card2);
 }
-.player-info{min-width:0;flex:1}
+
+.player-info{
+  min-width:0;
+  flex:1;
+}
+
 .username{
+  font-size:1.05rem;
   font-weight:800;
   overflow-wrap:anywhere;
 }
+
+.player-caption{
+  color:var(--mute);
+  font-size:.76rem;
+  margin-top:2px;
+}
+
 .badges{
   display:flex;
   flex-wrap:wrap;
   gap:5px;
-  margin-top:4px;
+  margin-top:8px;
 }
+
 .badge{
-  display:inline-block;
-  padding:3px 8px;
-  border-radius:999px;
-  font-size:.7rem;
+  display:inline-flex;
+  align-items:center;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:.65rem;
   font-weight:800;
-  letter-spacing:.03em;
+  letter-spacing:.045em;
 }
+
 .owner{background:#f5d36b;color:#493500}
 .administrator{background:#ffd1d1;color:#8d2020}
 .moderator{background:#cce4ff;color:#174d83}
@@ -143,21 +405,83 @@ h1{
 .vip{background:#ffd4ed;color:#90245f}
 .verified{background:#c9f1d6;color:#176b39}
 .member{background:#dce2e8;color:#46515c}
-.empty{
+
+.player-arrow{
+  flex-shrink:0;
+  color:var(--mute);
+  font-size:1.25rem;
+  transition:transform .18s,color .18s;
+}
+
+.player:hover .player-arrow{
+  transform:translateX(3px);
+  color:var(--accent);
+}
+
+/* Empty/loading states */
+
+.empty,.loading{
+  grid-column:1/-1;
   text-align:center;
-  padding:35px 15px;
+  padding:35px 18px;
   background:var(--card);
   border:1px solid var(--line);
-  border-radius:12px;
+  border-radius:13px;
   color:var(--mute);
 }
-.loading{text-align:center;padding:35px;color:var(--mute)}
+
+.empty strong{
+  display:block;
+  color:var(--ink);
+  font-size:1.05rem;
+  margin-bottom:5px;
+}
+
 .error{color:#e05252}
+
+.retry{
+  margin-top:12px;
+  padding:9px 15px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--card2);
+  color:var(--ink);
+  font-weight:700;
+  cursor:pointer;
+}
+
+.retry:hover{border-color:var(--accent)}
+
+/* Footer */
+
 footer{
+  margin-top:45px;
+  padding-top:20px;
+  border-top:1px solid var(--line);
   text-align:center;
-  margin-top:30px;
   color:var(--mute);
   font-size:.82rem;
+}
+
+.footer-brand{
+  color:var(--ink);
+  font-weight:800;
+  margin-bottom:5px;
+}
+
+@media(max-width:650px){
+  .player-grid{grid-template-columns:1fr}
+  .hero{padding:25px 20px}
+}
+
+@media(max-width:420px){
+  .wrap{padding:15px 12px 40px}
+  .stats-grid{gap:7px}
+  .stat{padding:12px}
+  .stat-number{font-size:1.5rem}
+  .stat-label{font-size:.7rem}
+  .player{padding:13px}
+  .avatar{width:51px;height:51px;border-radius:12px}
 }
 </style>
 </head>
@@ -165,29 +489,84 @@ footer{
 <body>
 <div class="wrap">
 
-  <a class="back" href="index.html">← Back to Schedule</a>
+  <nav class="topbar" aria-label="Main navigation">
+    <div class="brand">
+      <div class="brand-mark">G</div>
+      <span>G.O.T. GAMES</span>
+    </div>
+    <a class="back" href="index.html">← Back to Schedule</a>
+  </nav>
 
-  <header>
+  <header class="hero">
+    <div class="eyebrow">Community Hub</div>
     <h1>Player Directory</h1>
-    <p class="subtitle">Meet the G.O.T. Games community.</p>
+    <p class="hero-description">
+      Meet the players, discover the people behind the community,
+      and find their profiles.
+    </p>
   </header>
 
-  <input
-    class="search"
-    id="search"
-    type="search"
-    placeholder="Search players..."
-    aria-label="Search players"
-  >
+  <section class="stats-grid" aria-label="Directory statistics">
+    <div class="stat">
+      <span class="stat-number" id="totalCount">—</span>
+      <span class="stat-label">Registered Players</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number" id="staffCount">—</span>
+      <span class="stat-label">Staff Members</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number" id="memberCount">—</span>
+      <span class="stat-label">Community Members</span>
+    </div>
+  </section>
 
-  <p class="stats" id="stats">Loading players...</p>
+  <section class="search-area">
+    <label class="search-label" for="search">Find a player</label>
+    <div class="search-wrap">
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input
+        class="search"
+        id="search"
+        type="search"
+        placeholder="Search by username..."
+        autocomplete="off"
+        aria-label="Search players by username"
+      >
+    </div>
+  </section>
 
-  <main class="player-list" id="playerList">
-    <div class="loading">Loading players...</div>
+  <main>
+    <section class="section" id="staffSection">
+      <div class="section-heading">
+        <div>
+          <h2>Staff & Management</h2>
+          <p>Meet the people helping run the community.</p>
+        </div>
+        <span class="section-count" id="staffResults"></span>
+      </div>
+      <div class="player-grid" id="staffList">
+        <div class="loading">Loading staff...</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <div>
+          <h2>Community Players</h2>
+          <p>Explore the members of G.O.T. Games.</p>
+        </div>
+        <span class="section-count" id="memberResults"></span>
+      </div>
+      <div class="player-grid" id="memberList">
+        <div class="loading">Loading players...</div>
+      </div>
+    </section>
   </main>
 
   <footer>
-    G.O.T. Games · Community Player Directory
+    <div class="footer-brand">G.O.T. GAMES</div>
+    <div>Community Player Directory · Unofficial Fan Site</div>
   </footer>
 
 </div>
@@ -204,20 +583,67 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_KEY
 );
 
-const playerList = document.getElementById("playerList");
 const searchInput = document.getElementById("search");
-const stats = document.getElementById("stats");
+const staffList = document.getElementById("staffList");
+const memberList = document.getElementById("memberList");
+const totalCount = document.getElementById("totalCount");
+const staffCount = document.getElementById("staffCount");
+const memberCount = document.getElementById("memberCount");
+const staffResults = document.getElementById("staffResults");
+const memberResults = document.getElementById("memberResults");
 
 let players = [];
 
 const roleInfo = {
-  owner:{label:"OWNER",className:"owner",priority:1},
-  administrator:{label:"ADMINISTRATOR",className:"administrator",priority:2},
-  moderator:{label:"MODERATOR",className:"moderator",priority:3},
-  developer:{label:"DEVELOPER",className:"developer",priority:4},
-  vip:{label:"VIP",className:"vip",priority:5},
-  verified:{label:"VERIFIED",className:"verified",priority:6},
-  member:{label:"MEMBER",className:"member",priority:7}
+  owner:{
+    label:"OWNER",
+    className:"owner",
+    priority:1,
+    staff:true,
+    color:"#e5b82a"
+  },
+  administrator:{
+    label:"ADMINISTRATOR",
+    className:"administrator",
+    priority:2,
+    staff:true,
+    color:"#e05252"
+  },
+  moderator:{
+    label:"MODERATOR",
+    className:"moderator",
+    priority:3,
+    staff:true,
+    color:"#3995dc"
+  },
+  developer:{
+    label:"DEVELOPER",
+    className:"developer",
+    priority:4,
+    staff:true,
+    color:"#a16bdf"
+  },
+  vip:{
+    label:"VIP",
+    className:"vip",
+    priority:5,
+    staff:false,
+    color:"#e477b4"
+  },
+  verified:{
+    label:"VERIFIED",
+    className:"verified",
+    priority:6,
+    staff:false,
+    color:"#39a66a"
+  },
+  member:{
+    label:"MEMBER",
+    className:"member",
+    priority:7,
+    staff:false,
+    color:"#8493a1"
+  }
 };
 
 function getPrimaryRole(roles){
@@ -227,6 +653,124 @@ function getPrimaryRole(roles){
   )[0] || "member";
 }
 
+function isStaff(player){
+  return player.roles.some(roleName =>
+    roleInfo[roleName]?.staff === true
+  );
+}
+
+function sortPlayers(a,b){
+  const roleA =
+    roleInfo[getPrimaryRole(a.roles)]?.priority ?? 99;
+  const roleB =
+    roleInfo[getPrimaryRole(b.roles)]?.priority ?? 99;
+
+  if(roleA !== roleB) return roleA-roleB;
+
+  return a.username.localeCompare(b.username);
+}
+
+function makeEmpty(message,detail=""){
+  const box = document.createElement("div");
+  box.className = "empty";
+
+  const heading = document.createElement("strong");
+  heading.textContent = message;
+  box.append(heading);
+
+  if(detail){
+    const description = document.createElement("span");
+    description.textContent = detail;
+    box.append(description);
+  }
+
+  return box;
+}
+
+function makeAvatar(player){
+  if(player.avatar_url){
+    const avatar = document.createElement("img");
+    avatar.className = "avatar";
+    avatar.src = player.avatar_url;
+    avatar.alt = "";
+    avatar.loading = "lazy";
+
+    avatar.onerror = ()=>{
+      const placeholder = makePlaceholder(player);
+      avatar.replaceWith(placeholder);
+    };
+
+    return avatar;
+  }
+
+  return makePlaceholder(player);
+}
+
+function makePlaceholder(player){
+  const placeholder = document.createElement("div");
+  placeholder.className = "avatar avatar-placeholder";
+  placeholder.textContent =
+    player.username.charAt(0).toUpperCase();
+  return placeholder;
+}
+
+function makePlayerCard(player){
+  const primaryRole = getPrimaryRole(player.roles);
+  const role = roleInfo[primaryRole] || roleInfo.member;
+
+  const link = document.createElement("a");
+  link.className = "player" + (isStaff(player) ? " staff" : "");
+  link.href =
+    "profile.html?username=" +
+    encodeURIComponent(player.username);
+
+  link.style.setProperty("--role-color",role.color);
+
+  link.append(makeAvatar(player));
+
+  const info = document.createElement("div");
+  info.className = "player-info";
+
+  const username = document.createElement("div");
+  username.className = "username";
+  username.textContent = player.username;
+
+  const caption = document.createElement("div");
+  caption.className = "player-caption";
+  caption.textContent = isStaff(player)
+    ? "G.O.T. Games Staff"
+    : "Community Member";
+
+  const badges = document.createElement("div");
+  badges.className = "badges";
+
+  const sortedRoles = [...player.roles].sort((a,b)=>
+    (roleInfo[a]?.priority ?? 99) -
+    (roleInfo[b]?.priority ?? 99)
+  );
+
+  for(const roleName of sortedRoles){
+    const badgeInfo = roleInfo[roleName];
+    if(!badgeInfo) continue;
+
+    const badge = document.createElement("span");
+    badge.className = "badge " + badgeInfo.className;
+    badge.textContent = badgeInfo.label;
+    badges.append(badge);
+  }
+
+  info.append(username,caption,badges);
+
+  const arrow = document.createElement("span");
+  arrow.className = "player-arrow";
+  arrow.textContent = "›";
+  arrow.setAttribute("aria-hidden","true");
+
+  link.append(info,arrow);
+
+  return link;
+}
+
 function renderPlayers(){
   const query = searchInput.value.trim().toLowerCase();
 
@@ -234,152 +778,144 @@ function renderPlayers(){
     player.username.toLowerCase().includes(query)
   );
 
-  stats.textContent =
-    `${filtered.length} player${filtered.length===1?"":"s"} found`;
+  const staff = filtered.filter(isStaff);
+  const members = filtered.filter(player => !isStaff(player));
 
-  playerList.replaceChildren();
+  staffList.replaceChildren();
+  memberList.replaceChildren();
 
-  if(!filtered.length){
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.textContent = query
-      ? "No players match your search."
-      : "No players found yet.";
-    playerList.append(empty);
-    return;
+  staffResults.textContent =
+    `${staff.length} shown`;
+
+  memberResults.textContent =
+    `${members.length} shown`;
+
+  if(staff.length){
+    for(const player of staff){
+      staffList.append(makePlayerCard(player));
+    }
+  }else{
+    staffList.append(makeEmpty(
+      query ? "No matching staff members" : "No staff members found",
+      query ? "Try another username." : "Staff profiles will appear here."
+    ));
   }
 
-  for(const player of filtered){
-    const primaryRole = getPrimaryRole(player.roles);
-    const role = roleInfo[primaryRole] || roleInfo.member;
-
-    const link = document.createElement("a");
-    link.className = "player";
-    link.href =
-      "profile.html?username=" +
-      encodeURIComponent(player.username);
-
-    if(player.avatar_url){
-      const avatar = document.createElement("img");
-      avatar.className = "avatar";
-      avatar.src = player.avatar_url;
-      avatar.alt = "";
-      avatar.loading = "lazy";
-
-      avatar.onerror = () => {
-        const placeholder = document.createElement("div");
-        placeholder.className = "avatar avatar-placeholder";
-        placeholder.textContent =
-          player.username.charAt(0).toUpperCase();
-        avatar.replaceWith(placeholder);
-      };
-
-      link.append(avatar);
-    }else{
-      const placeholder = document.createElement("div");
-      placeholder.className = "avatar avatar-placeholder";
-      placeholder.textContent =
-        player.username.charAt(0).toUpperCase();
-      link.append(placeholder);
+  if(members.length){
+    for(const player of members){
+      memberList.append(makePlayerCard(player));
     }
-
-    const info = document.createElement("div");
-    info.className = "player-info";
-
-    const name = document.createElement("div");
-    name.className = "username";
-    name.textContent = player.username;
-
-    const badges = document.createElement("div");
-    badges.className = "badges";
-
-    for(const roleName of player.roles){
-      const badgeInfo = roleInfo[roleName];
-      if(!badgeInfo) continue;
-
-      const badge = document.createElement("span");
-      badge.className = "badge " + badgeInfo.className;
-      badge.textContent = badgeInfo.label;
-      badges.append(badge);
-    }
-
-    info.append(name, badges);
-    link.append(info);
-    playerList.append(link);
+  }else{
+    memberList.append(makeEmpty(
+      query ? "No matching players" : "No community players yet",
+      query ? "Try another username." : "Registered community members will appear here."
+    ));
   }
 }
 
+function showLoadError(message){
+  staffList.replaceChildren();
+  memberList.replaceChildren();
+
+  const error = makeEmpty("Something went wrong",message);
+  error.classList.add("error");
+
+  const retry = document.createElement("button");
+  retry.className = "retry";
+  retry.type = "button";
+  retry.textContent = "Try again";
+  retry.addEventListener("click",loadPlayers);
+
+  error.append(retry);
+  staffList.append(error);
+
+  totalCount.textContent = "—";
+  staffCount.textContent = "—";
+  memberCount.textContent = "—";
+}
+
 async function loadPlayers(){
-  playerList.replaceChildren();
+  staffList.replaceChildren();
+  memberList.replaceChildren();
 
-  const loading = document.createElement("div");
-  loading.className = "loading";
-  loading.textContent = "Loading players...";
-  playerList.append(loading);
+  staffList.append(
+    Object.assign(document.createElement("div"),{
+      className:"loading",
+      textContent:"Loading staff..."
+    })
+  );
 
-  const [profilesResult, rolesResult] = await Promise.all([
-    supabaseClient
-      .from("profiles")
-      .select("id, username, avatar_url")
-      .order("username", {ascending:true}),
+  memberList.append(
+    Object.assign(document.createElement("div"),{
+      className:"loading",
+      textContent:"Loading players..."
+    })
+  );
 
-    supabaseClient
-      .from("user_roles")
-      .select("user_id, role")
-  ]);
+  try{
+    const [profilesResult,rolesResult] = await Promise.all([
+      supabaseClient
+        .from("profiles")
+        .select("id, username, avatar_url")
+        .order("username",{ascending:true}),
 
-  if(profilesResult.error){
-    console.error(profilesResult.error);
-    playerList.replaceChildren();
+      supabaseClient
+        .from("user_roles")
+        .select("user_id, role")
+    ]);
 
-    const error = document.createElement("div");
-    error.className = "empty error";
-    error.textContent =
-      "Couldn't load players. Please refresh the page.";
-    playerList.append(error);
-    stats.textContent = "Player list unavailable";
-    return;
-  }
-
-  if(rolesResult.error){
-    console.error(rolesResult.error);
-    playerList.replaceChildren();
-
-    const error = document.createElement("div");
-    error.className = "empty error";
-    error.textContent =
-      "Couldn't load player roles. Please check the database permissions.";
-    playerList.append(error);
-    stats.textContent = "Player roles unavailable";
-    return;
-  }
-
-  const rolesByUser = {};
-
-  for(const entry of rolesResult.data || []){
-    if(!rolesByUser[entry.user_id]){
-      rolesByUser[entry.user_id] = [];
+    if(profilesResult.error){
+      console.error("Profiles error:",profilesResult.error);
+      showLoadError(
+        "Couldn't load players. Please refresh the page."
+      );
+      return;
     }
-    rolesByUser[entry.user_id].push(entry.role);
+
+    if(rolesResult.error){
+      console.error("Roles error:",rolesResult.error);
+      showLoadError(
+        "Couldn't load player roles. Please check the database permissions."
+      );
+      return;
+    }
+
+    const rolesByUser = {};
+
+    for(const entry of rolesResult.data || []){
+      if(!rolesByUser[entry.user_id]){
+        rolesByUser[entry.user_id] = [];
+      }
+
+      rolesByUser[entry.user_id].push(entry.role);
+    }
+
+    players = (profilesResult.data || []).map(profile=>({
+      id:profile.id,
+      username:profile.username,
+      avatar_url:profile.avatar_url,
+      roles:rolesByUser[profile.id]?.length
+        ? rolesByUser[profile.id]
+        : ["member"]
+    }));
+
+    players.sort(sortPlayers);
+
+    const staff = players.filter(isStaff);
+    const members = players.filter(player => !isStaff(player));
+
+    totalCount.textContent = players.length;
+    staffCount.textContent = staff.length;
+    memberCount.textContent = members.length;
+
+    renderPlayers();
+
+  }catch(error){
+    console.error("Directory loading error:",error);
+    showLoadError(
+      "A connection error occurred. Please try again."
+    );
   }
-
-  players = (profilesResult.data || []).map(profile=>({
-    id:profile.id,
-    username:profile.username,
-    avatar_url:profile.avatar_url,
-    roles:rolesByUser[profile.id] || ["member"]
-  }));
-
-  players.sort((a,b)=>{
-    const roleA = roleInfo[getPrimaryRole(a.roles)]?.priority ?? 99;
-    const roleB = roleInfo[getPrimaryRole(b.roles)]?.priority ?? 99;
-
-    if(roleA !== roleB) return roleA-roleB;
-
-    return a.username.localeCompare(b.username);
-  });
-
-  renderPlayers();
 }
 
 searchInput.addEventListener("input",renderPlayers);
