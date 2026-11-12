@@ -140,7 +140,8 @@ button{font:inherit}
   overflow:hidden;
   border-radius:12px;
   background:#0b1218;
-  border:2px solid #34434f;
+  border:2px solid #6b5a2b;
+  box-shadow:inset 0 0 40px rgba(230,185,79,.08);
   touch-action:none;
 }
 canvas{
@@ -340,10 +341,14 @@ const pauseBtn = document.getElementById("pauseBtn");
 const restartBtn = document.getElementById("restartBtn");
 const boardWrap = document.getElementById("boardWrap");
 
+const DEFAULT_TITLE = "SNAKE";
+const DEFAULT_TEXT = "Grab the glowing food, grow your snake, and avoid hitting yourself or the walls.";
+
 let snake = [];
-let food = {x:10,y:10};
-let direction = {x:1,y:0};
-let nextDirection = {x:1,y:0};
+let previousSnake = [];
+let food = {x:10, y:10};
+let direction = {x:1, y:0};
+let nextDirection = {x:1, y:0};
 
 let score = 0;
 let best = 0;
@@ -355,11 +360,6 @@ let lastTime = 0;
 let accumulator = 0;
 let stepTime = 125;
 
-let previousSnake = [];
-let growth = false;
-let foodAnimation = 0;
-let eatFlash = 0;
-
 let audioContext = null;
 let soundEnabled = true;
 
@@ -369,51 +369,46 @@ try{
 
 bestElement.textContent = best;
 
-function sound(frequency,duration,type="sine",volume=.045){
-  if(!soundEnabled)return;
+function sound(frequency, duration, type="sine", volume=.045){
+  if(!soundEnabled) return;
 
   try{
     audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
-
-    if(audioContext.state === "suspended")audioContext.resume();
+    if(audioContext.state === "suspended") audioContext.resume();
 
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
 
     oscillator.type = type;
-    oscillator.frequency.setValueAtTime(frequency,audioContext.currentTime);
-    gain.gain.setValueAtTime(volume,audioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(
-      .001,audioContext.currentTime+duration
-    );
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    gain.gain.setValueAtTime(volume, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime + duration);
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
 
     oscillator.start();
-    oscillator.stop(audioContext.currentTime+duration);
+    oscillator.stop(audioContext.currentTime + duration);
   }catch(e){}
 }
 
 function resetGame(){
   snake = [
-    {x:9,y:10},
-    {x:8,y:10},
-    {x:7,y:10},
-    {x:6,y:10}
+    {x:9, y:10},
+    {x:8, y:10},
+    {x:7, y:10},
+    {x:6, y:10}
   ];
 
-  previousSnake = snake.map(p=>({...p}));
+  previousSnake = snake.map(p => ({...p}));
 
-  direction = {x:1,y:0};
-  nextDirection = {x:1,y:0};
+  direction = {x:1, y:0};
+  nextDirection = {x:1, y:0};
 
   score = 0;
   stepTime = 125;
   accumulator = 0;
   lastTime = 0;
-  growth = false;
-  eatFlash = 0;
   paused = false;
   gameOver = false;
   running = false;
@@ -423,7 +418,7 @@ function resetGame(){
   pauseBtn.disabled = true;
 
   placeFood();
-  draw(1);
+  draw(1, performance.now());
 }
 
 function placeFood(){
@@ -431,18 +426,18 @@ function placeFood(){
 
   do{
     food = {
-      x:Math.floor(Math.random()*CELLS),
-      y:Math.floor(Math.random()*CELLS)
+      x: Math.floor(Math.random() * CELLS),
+      y: Math.floor(Math.random() * CELLS)
     };
     attempts++;
   }while(
-    snake.some(p=>p.x===food.x && p.y===food.y) &&
-    attempts<1000
+    snake.some(p => p.x === food.x && p.y === food.y) &&
+    attempts < 1000
   );
 }
 
 function startGame(){
-  if(gameOver || snake.length===0)resetGame();
+  if(gameOver || snake.length === 0) resetGame();
 
   running = true;
   paused = false;
@@ -455,7 +450,7 @@ function startGame(){
   lastTime = 0;
   accumulator = 0;
 
-  sound(500,.09);
+  sound(500, .09);
 }
 
 function endGame(){
@@ -467,15 +462,15 @@ function endGame(){
 
   overlayTitle.textContent = "GAME OVER";
   overlayText.textContent =
-    "You scored "+score+" point"+(score===1?"":"s")+". Want another round?";
+    "You scored " + score + " point" + (score === 1 ? "" : "s") + ". Want another round?";
   startBtn.textContent = "PLAY AGAIN";
   overlay.hidden = false;
 
-  sound(180,.35,"sawtooth",.035);
+  sound(180, .35, "sawtooth", .035);
 }
 
 function togglePause(){
-  if(!running && !paused)return;
+  if(!running && !paused) return;
 
   paused = !paused;
 
@@ -497,427 +492,345 @@ function togglePause(){
 }
 
 function changeDirection(name){
-  const directions = {
-    up:{x:0,y:-1},
-    down:{x:0,y:1},
-    left:{x:-1,y:0},
-    right:{x:1,y:0}
+  const options = {
+    up:{x:0, y:-1},
+    down:{x:0, y:1},
+    left:{x:-1, y:0},
+    right:{x:1, y:0}
   };
 
-  const chosen = directions[name];
-  if(!chosen)return;
+  const chosen = options[name];
+  if(!chosen) return;
 
-  if(chosen.x===-direction.x && chosen.y===-direction.y)return;
+  // Compare against the queued direction so quick double-presses can't reverse the snake
+  if(chosen.x === -nextDirection.x && chosen.y === -nextDirection.y) return;
 
   nextDirection = chosen;
-
-  if(!running && !gameOver && !paused){
-    direction = chosen;
-    nextDirection = chosen;
-    draw(1);
-  }
 }
 
 function update(){
   direction = {...nextDirection};
 
-  const oldSnake = snake.map(p=>({...p}));
+  const oldSnake = snake.map(p => ({...p}));
   const head = {
-    x:snake[0].x+direction.x,
-    y:snake[0].y+direction.y
+    x: snake[0].x + direction.x,
+    y: snake[0].y + direction.y
   };
 
   // Wall collision
-  if(
-    head.x<0 || head.x>=CELLS ||
-    head.y<0 || head.y>=CELLS
-  ){
+  if(head.x < 0 || head.x >= CELLS || head.y < 0 || head.y >= CELLS){
     endGame();
     return;
   }
 
-  const eating = head.x===food.x && head.y===food.y;
-  const bodyToCheck = eating ? snake : snake.slice(0,-1);
+  const eating = head.x === food.x && head.y === food.y;
+  const bodyToCheck = eating ? snake : snake.slice(0, -1);
 
   // Self collision
-  if(bodyToCheck.some(p=>p.x===head.x && p.y===head.y)){
+  if(bodyToCheck.some(p => p.x === head.x && p.y === head.y)){
     endGame();
     return;
   }
 
   previousSnake = oldSnake;
-
   snake.unshift(head);
 
   if(eating){
     score += 10;
     scoreElement.textContent = score;
 
-    growth = true;
-    eatFlash = 1;
-
-    if(score>best){
+    if(score > best){
       best = score;
       bestElement.textContent = best;
-
       try{
-        localStorage.setItem("gotSnakeBest",best);
+        localStorage.setItem("gotSnakeBest", best);
       }catch(e){}
     }
 
-    // Slightly increase speed as the player progresses
-    stepTime = Math.max(65,125-score/15);
+    // Speed up gradually as the score climbs
+    stepTime = Math.max(65, 125 - score / 15);
 
     placeFood();
-
-    sound(650,.1,"sine",.055);
+    sound(650, .1, "sine", .055);
   }else{
     snake.pop();
-    growth = false;
   }
 }
 
-function smoothPosition(index,progress){
+// Position of a segment between its old and new spot, so movement glides
+function smoothPosition(index, progress){
   const current = snake[index];
 
-  if(index===0){
+  if(index === 0){
     const old = previousSnake[0] || current;
-
     return {
-      x:old.x+(current.x-old.x)*progress,
-      y:old.y+(current.y-old.y)*progress
+      x: old.x + (current.x - old.x) * progress,
+      y: old.y + (current.y - old.y) * progress
     };
   }
 
-  if(index<previousSnake.length){
+  if(index < previousSnake.length){
     const from = previousSnake[index];
-    const to = previousSnake[index-1];
-
+    const to = previousSnake[index - 1];
     return {
-      x:from.x+(to.x-from.x)*progress,
-      y:from.y+(to.y-from.y)*progress
+      x: from.x + (to.x - from.x) * progress,
+      y: from.y + (to.y - from.y) * progress
     };
   }
 
   return current;
 }
 
-function roundedRect(x,y,w,h,r){
-  ctx.beginPath();
-  ctx.roundRect(x,y,w,h,r);
-}
-
 function drawBackground(){
-  ctx.fillStyle="#0b1218";
-  ctx.fillRect(0,0,SIZE,SIZE);
+  ctx.fillStyle = "#0b1218";
+  ctx.fillRect(0, 0, SIZE, SIZE);
 
-  // Subtle board pattern
-  ctx.strokeStyle="rgba(255,255,255,.035)";
-  ctx.lineWidth=1;
+  // Faint board grid
+  ctx.strokeStyle = "rgba(255,255,255,.035)";
+  ctx.lineWidth = 1;
 
-  for(let i=0;i<=CELLS;i++){
-    const pos=i*TILE;
+  for(let i = 0; i <= CELLS; i++){
+    const pos = i * TILE;
 
     ctx.beginPath();
-    ctx.moveTo(pos,0);
-    ctx.lineTo(pos,SIZE);
+    ctx.moveTo(pos, 0);
+    ctx.lineTo(pos, SIZE);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(0,pos);
-    ctx.lineTo(SIZE,pos);
+    ctx.moveTo(0, pos);
+    ctx.lineTo(SIZE, pos);
     ctx.stroke();
   }
 
-  // Soft edge lighting
-  const gradient=ctx.createRadialGradient(
-    SIZE/2,SIZE/2,40,
-    SIZE/2,SIZE/2,SIZE*.75
-  );
+  // Vignette
+  const vignette = ctx.createRadialGradient(SIZE/2, SIZE/2, 40, SIZE/2, SIZE/2, SIZE*.75);
+  vignette.addColorStop(0, "rgba(30,70,48,0)");
+  vignette.addColorStop(1, "rgba(0,0,0,.3)");
 
-  gradient.addColorStop(0,"rgba(30,70,48,0)");
-  gradient.addColorStop(1,"rgba(0,0,0,.23)");
-
-  ctx.fillStyle=gradient;
-  ctx.fillRect(0,0,SIZE,SIZE);
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, SIZE, SIZE);
 }
 
 function drawFood(time){
-  const x=food.x*TILE+TILE/2;
-  const y=food.y*TILE+TILE/2;
+  const x = food.x * TILE + TILE / 2;
+  const y = food.y * TILE + TILE / 2;
 
-  const pulse=1+Math.sin(time/160)*.08;
-  const radius=7.2*pulse;
+  const pulse = 1 + Math.sin(time / 160) * .08;
+  const radius = 7 * pulse;
 
-  // Glow
-  const glow=ctx.createRadialGradient(x,y,2,x,y,19);
-  glow.addColorStop(0,"rgba(255,209,91,.42)");
-  glow.addColorStop(1,"rgba(255,209,91,0)");
-
-  ctx.fillStyle=glow;
+  // Ruby glow
+  const glow = ctx.createRadialGradient(x, y, 2, x, y, 19);
+  glow.addColorStop(0, "rgba(255,70,90,.4)");
+  glow.addColorStop(1, "rgba(255,70,90,0)");
+  ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(x,y,19,0,Math.PI*2);
+  ctx.arc(x, y, 19, 0, Math.PI * 2);
   ctx.fill();
 
-  // Gold fruit
-  ctx.shadowColor="#f5c85d";
-  ctx.shadowBlur=15;
-  ctx.fillStyle="#f5c85d";
+  // Gem body
+  ctx.shadowColor = "#ff4d63";
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = "#d62a45";
   ctx.beginPath();
-  ctx.arc(x,y,radius,0,Math.PI*2);
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.shadowBlur=0;
+  ctx.shadowBlur = 0;
 
   // Highlight
-  ctx.fillStyle="#fff2bf";
+  ctx.fillStyle = "rgba(255,220,225,.85)";
   ctx.beginPath();
-  ctx.arc(x-2.5,y-2.5,2.1,0,Math.PI*2);
+  ctx.arc(x - 2.5, y - 2.5, 2, 0, Math.PI * 2);
   ctx.fill();
+}
 
-  // Tiny leaf
-  ctx.fillStyle="#70d58b";
+function drawHead(x, y){
+  // Gold glow
+  ctx.shadowColor = "rgba(255,200,80,.7)";
+  ctx.shadowBlur = 12;
+
+  const gradient = ctx.createRadialGradient(x - 3, y - 4, 2, x, y, 12);
+  gradient.addColorStop(0, "#fff1b0");
+  gradient.addColorStop(0.5, "#f5c542");
+  gradient.addColorStop(1, "#b9851b");
+
+  ctx.fillStyle = gradient;
   ctx.beginPath();
-  ctx.ellipse(x+4,y-8,4,2.2,-.6,0,Math.PI*2);
+  ctx.arc(x, y, 11.5, 0, Math.PI * 2);
   ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.strokeStyle = "#5c3d06";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Engraved G
+  ctx.fillStyle = "#3d2805";
+  ctx.font = 'bold 15px Georgia, "Times New Roman", serif';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("G", x, y + 1);
 }
 
 function drawSnake(progress){
-  if(!snake.length)return;
+  if(!snake.length) return;
 
-  const points=snake.map((_,i)=>smoothPosition(i,progress));
-
-  // Draw connected body
-  if(points.length>1){
-    ctx.lineCap="round";
-    ctx.lineJoin="round";
-
-    // Dark outline
-    ctx.beginPath();
-    points.forEach((p,i)=>{
-      const x=p.x*TILE+TILE/2;
-      const y=p.y*TILE+TILE/2;
-
-      if(i===0)ctx.moveTo(x,y);
-      else ctx.lineTo(x,y);
-    });
-
-    ctx.strokeStyle="#174b34";
-    ctx.lineWidth=19;
-    ctx.stroke();
-
-    // Green body
-    ctx.beginPath();
-    points.forEach((p,i)=>{
-      const x=p.x*TILE+TILE/2;
-      const y=p.y*TILE+TILE/2;
-
-      if(i===0)ctx.moveTo(x,y);
-      else ctx.lineTo(x,y);
-    });
-
-    ctx.strokeStyle="#45b975";
-    ctx.lineWidth=14;
-    ctx.stroke();
-  }
-
-  // Rounded individual body segments
-  points.forEach((p,i)=>{
-    if(i===0)return;
-
-    const x=p.x*TILE+TILE/2;
-    const y=p.y*TILE+TILE/2;
-
-    const shade=Math.max(.65,1-i*.012);
-
-    ctx.fillStyle=i%2===0?"#58c982":"#4abd78";
-    ctx.beginPath();
-    ctx.arc(x,y,7.2,0,Math.PI*2);
-    ctx.fill();
-
-    // Small shine
-    ctx.fillStyle="rgba(220,255,230,.25)";
-    ctx.beginPath();
-    ctx.arc(x-2,y-2,2.2*shade,0,Math.PI*2);
-    ctx.fill();
+  const points = snake.map((_, i) => {
+    const p = smoothPosition(i, progress);
+    return {
+      x: p.x * TILE + TILE / 2,
+      y: p.y * TILE + TILE / 2
+    };
   });
 
-  drawHead(points[0]);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  const tracePath = () => {
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      if(i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+  };
+
+  if(points.length > 1){
+    // Dark outline
+    ctx.strokeStyle = "#07140f";
+    ctx.lineWidth = 21;
+    tracePath();
+
+    // Bronze-green body
+    ctx.strokeStyle = "#2f7a55";
+    ctx.lineWidth = 16;
+    tracePath();
+
+    // Light scale stripe
+    ctx.strokeStyle = "rgba(150,230,180,.28)";
+    ctx.lineWidth = 5;
+    tracePath();
+  }
+
+  // Tail tip
+  const tail = points[points.length - 1];
+  ctx.fillStyle = "#2f7a55";
+  ctx.beginPath();
+  ctx.arc(tail.x, tail.y, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Gold head on top
+  drawHead(points[0].x, points[0].y);
 }
 
-function drawHead(p){
-  const x=p.x*TILE+TILE/2;
-  const y=p.y*TILE+TILE/2;
-
-  const angle=Math.atan2(direction.y,direction.x);
-
-  ctx.save();
-  ctx.translate(x,y);
-  ctx.rotate(angle);
-
-  // Gold head glow
-  ctx.shadowColor="rgba(230,185,79,.65)";
-  ctx.shadowBlur=13;
-
-  roundedRect(-11,-11,22,22,7);
-  ctx.fillStyle="#e6b94f";
-  ctx.fill();
-
-  ctx.shadowBlur=0;
-
-  // Gold highlight
-  ctx.fillStyle="#f7d77f";
-  roundedRect(-8,-9,14,3,2);
-  ctx.fill();
-
-  // G logo
-  ctx.fillStyle="#17130a";
-  ctx.font="bold 15px Arial";
-  ctx.textAlign="center";
-  ctx.textBaseline="middle";
-  ctx.fillText("G",0,1);
-
-  // Small eyes
-  ctx.fillStyle="#fff8df";
-  ctx.beginPath();
-  ctx.arc(6,-6,2.3,0,Math.PI*2);
-  ctx.arc(6,6,2.3,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.fillStyle="#17130a";
-  ctx.beginPath();
-  ctx.arc(6.8,-6,1,0,Math.PI*2);
-  ctx.arc(6.8,6,1,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function draw(time=0,progress=1){
-  ctx.clearRect(0,0,SIZE,SIZE);
+function draw(progress = 1, time = performance.now()){
   drawBackground();
   drawFood(time);
   drawSnake(progress);
-
-  if(eatFlash>0){
-    ctx.fillStyle="rgba(255,220,120,"+(eatFlash*.08)+")";
-    ctx.fillRect(0,0,SIZE,SIZE);
-  }
 }
 
-function loop(timestamp){
-  if(!lastTime)lastTime=timestamp;
+function handleDirection(name){
+  if(gameOver) return;
 
-  const delta=Math.min(timestamp-lastTime,100);
-  lastTime=timestamp;
+  if(!running && !paused) startGame();
 
-  foodAnimation=timestamp;
+  changeDirection(name);
+}
 
-  if(running && !paused){
-    accumulator+=delta;
+function loop(time){
+  if(running){
+    if(!lastTime) lastTime = time;
 
-    while(accumulator>=stepTime && running){
-      accumulator-=stepTime;
+    const delta = time - lastTime;
+    lastTime = time;
+    accumulator += delta;
+
+    while(accumulator >= stepTime && running){
       update();
+      accumulator -= stepTime;
     }
+  }else{
+    lastTime = 0;
   }
 
-  const progress=running
-    ? Math.min(1,accumulator/stepTime)
-    : 1;
+  const progress = running ? Math.min(accumulator / stepTime, 1) : 1;
+  draw(progress, time);
 
-  if(eatFlash>0){
-    eatFlash=Math.max(0,eatFlash-delta/180);
-  }
-
-  draw(foodAnimation,progress);
   requestAnimationFrame(loop);
 }
 
-/* Buttons */
-startBtn.addEventListener("click",()=>{
-  if(paused){
-    togglePause();
-  }else{
-    startGame();
-  }
-});
-
-pauseBtn.addEventListener("click",togglePause);
-
-restartBtn.addEventListener("click",()=>{
-  resetGame();
-  startGame();
-});
-
-/* Keyboard */
-document.addEventListener("keydown",event=>{
-  const key=event.key.toLowerCase();
-
-  const controls={
-    arrowup:"up",w:"up",
-    arrowdown:"down",s:"down",
-    arrowleft:"left",a:"left",
-    arrowright:"right",d:"right"
+// Keyboard
+document.addEventListener("keydown", e => {
+  const keyMap = {
+    ArrowUp:"up", w:"up", W:"up",
+    ArrowDown:"down", s:"down", S:"down",
+    ArrowLeft:"left", a:"left", A:"left",
+    ArrowRight:"right", d:"right", D:"right"
   };
 
-  if(controls[key]){
-    event.preventDefault();
+  if(e.key === " "){
+    e.preventDefault();
 
-    if(!running && !paused && !gameOver)startGame();
-    changeDirection(controls[key]);
+    if(gameOver) startGame();
+    else if(running || paused) togglePause();
+    else startGame();
+
+    return;
   }
 
-  if(key===" "){
-    event.preventDefault();
-    if(running || paused)togglePause();
-  }
-
-  if(key==="enter" && (gameOver || !running)){
-    startGame();
+  if(keyMap[e.key]){
+    e.preventDefault();
+    handleDirection(keyMap[e.key]);
   }
 });
 
-/* Touch direction buttons */
-document.querySelectorAll(".direction").forEach(button=>{
-  button.addEventListener("pointerdown",event=>{
-    event.preventDefault();
+// Buttons
+startBtn.addEventListener("click", () => {
+  if(paused) togglePause();
+  else startGame();
+});
 
-    if(!running && !paused && !gameOver)startGame();
+pauseBtn.addEventListener("click", togglePause);
 
-    changeDirection(button.dataset.dir);
+restartBtn.addEventListener("click", () => {
+  resetGame();
+  overlayTitle.textContent = DEFAULT_TITLE;
+  overlayText.textContent = DEFAULT_TEXT;
+  startBtn.textContent = "PLAY GAME";
+  overlay.hidden = false;
+});
+
+// On-screen direction pad
+document.querySelectorAll(".direction").forEach(btn => {
+  btn.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    handleDirection(btn.dataset.dir);
   });
 });
 
-/* Swipe controls */
-let touchStartX=0;
-let touchStartY=0;
+// Swipe on the board
+let touchStart = null;
 
-boardWrap.addEventListener("touchstart",event=>{
-  const touch=event.changedTouches[0];
-  touchStartX=touch.clientX;
-  touchStartY=touch.clientY;
-},{passive:true});
+boardWrap.addEventListener("touchstart", e => {
+  touchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+}, {passive: true});
 
-boardWrap.addEventListener("touchend",event=>{
-  const touch=event.changedTouches[0];
+boardWrap.addEventListener("touchend", e => {
+  if(!touchStart) return;
 
-  const dx=touch.clientX-touchStartX;
-  const dy=touch.clientY-touchStartY;
+  const dx = e.changedTouches[0].clientX - touchStart.x;
+  const dy = e.changedTouches[0].clientY - touchStart.y;
 
-  if(Math.max(Math.abs(dx),Math.abs(dy))<20)return;
-
-  if(!running && !paused && !gameOver)startGame();
-
-  if(Math.abs(dx)>Math.abs(dy)){
-    changeDirection(dx>0?"right":"left");
-  }else{
-    changeDirection(dy>0?"down":"up");
+  if(Math.max(Math.abs(dx), Math.abs(dy)) > 25){
+    if(Math.abs(dx) > Math.abs(dy)) handleDirection(dx > 0 ? "right" : "left");
+    else handleDirection(dy > 0 ? "down" : "up");
   }
-},{passive:true});
 
-/* Initial screen */
+  touchStart = null;
+});
+
+// Start up
 resetGame();
-overlay.hidden=false;
 requestAnimationFrame(loop);
 </script>
 </body>
