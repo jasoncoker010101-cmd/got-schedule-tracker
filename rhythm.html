@@ -1795,7 +1795,146 @@ drawBackground(performance.now());
 drawCharacter(OPPONENT_CHARACTER_X,390,"opponent",-1,performance.now());
 drawCharacter(PLAYER_CHARACTER_X,390,"player",-1,performance.now());
 drawLanes(performance.now());
+/* ===== SINGING VOICES: paste at the very bottom of the script ===== */
+/* Each arrow is a vowel sound: left = AH, down = OO, up = EE, right = OH */
+const VOWELS=[[730,1090,2440],[300,870,2240],[270,2290,3010],[570,840,2410]];
+const VOICE_VOLUME=.5; /* make the singing louder or quieter */
+const voiceNow={};
 
+function stopVoice(key){
+  const v=voiceNow[key];
+  if(!v||!audioContext)return;
+  voiceNow[key]=null;
+  try{
+    const t=audioContext.currentTime;
+    v.gain.gain.cancelScheduledValues(t);
+    v.gain.gain.setTargetAtTime(.0001,t,.035);
+    v.stopAt(t+.2);
+  }catch(error){}
+}
+
+playVocal=function(side,lane){
+  if(!audioContext||!masterGain)return;
+
+  const opponent=side==="opponent";
+  const pitches=opponent?[220,261.63,293.66,349.23]:[329.63,392,440,523.25];
+  const f0=pitches[lane];
+  if(!f0)return;
+
+  /* Long notes are sung for as long as you hold them */
+  const note=heldNotes[lane];
+  const held=!opponent&&note&&note.holdStatus==="active"?note.len:0;
+  const end=audioContext.currentTime+Math.max(.38,held+.1);
+  const t=audioContext.currentTime;
+  const key=side+lane;
+  stopVoice(key);
+
+  const env=audioContext.createGain();
+  env.gain.setValueAtTime(.0001,t);
+  env.gain.linearRampToValueAtTime(VOICE_VOLUME,t+.03);
+  env.gain.setValueAtTime(VOICE_VOLUME,Math.max(t+.04,end-.09));
+  env.gain.exponentialRampToValueAtTime(.0001,end);
+
+  const smooth=audioContext.createBiquadFilter();
+  smooth.type="lowpass";
+  smooth.frequency.value=opponent?3200:4200;
+  smooth.connect(env);
+  env.connect(masterGain);
+
+  /* The "throat": three filters shape the buzz into a vowel */
+  const throat=audioContext.createGain();
+  throat.gain.value=.6;
+  VOWELS[lane].forEach((freq,i)=>{
+    const filter=audioContext.createBiquadFilter();
+    const level=audioContext.createGain();
+    filter.type="bandpass";
+    filter.frequency.value=freq*(opponent?.92:1.06);
+    filter.Q.value=[5,6,8][i];
+    level.gain.value=[2.4,1.7,1][i];
+    throat.connect(filter);
+    filter.connect(level);
+    level.connect(smooth);
+  });
+
+  /* Vibrato that fades in, like a real singer */
+  const vibrato=audioContext.createOscillator();
+  const vibratoDepth=audioContext.createGain();
+  vibrato.frequency.value=opponent?5.2:5.8;
+  vibratoDepth.gain.setValueAtTime(0,t);
+  vibratoDepth.gain.linearRampToValueAtTime(opponent?14:20,t+.35);
+  vibrato.connect(vibratoDepth);
+
+  const layers=opponent
+    ?[["sawtooth",-7],["sawtooth",7],["square",-1200]]
+    :[["sawtooth",0],["triangle",1200]];
+  const sources=[vibrato];
+
+  for(const [type,detune] of layers){
+    const osc=audioContext.createOscillator();
+    osc.type=type;
+    osc.detune.value=detune;
+    osc.frequency.setValueAtTime(f0*.94,t);
+    osc.frequency.exponentialRampToValueAtTime(f0,t+.06);
+    vibratoDepth.connect(osc.detune);
+    osc.connect(throat);
+    osc.start(t);
+    osc.stop(end+.05);
+    sources.push(osc);
+  }
+
+  vibrato.start(t);
+  vibrato.stop(end+.05);
+
+  const voice={
+    gain:env,
+    stopAt:when=>sources.forEach(source=>{try{source.stop(when)}catch(error){}})
+  };
+  voiceNow[key]=voice;
+  sources[1].onended=()=>{if(voiceNow[key]===voice)voiceNow[key]=null};
+};
+
+/* Soft hit clicks so the singing stays in front */
+playHitSound=function(rank){
+  playTone(rank==="SICK!"?1318.5:rank==="GOOD!"?987.77:783.99,.07,"sine",.035);
+};
+
+/* A miss is a cracked, falling "uh-oh" voice */
+playMissSound=function(){
+  if(!audioContext||!masterGain)return;
+  const t=audioContext.currentTime;
+  const osc=audioContext.createOscillator();
+  const filter=audioContext.createBiquadFilter();
+  const gain=audioContext.createGain();
+
+  osc.type="sawtooth";
+  osc.frequency.setValueAtTime(260,t);
+  osc.frequency.exponentialRampToValueAtTime(90,t+.28);
+  filter.type="bandpass";
+  filter.Q.value=3;
+  filter.frequency.setValueAtTime(900,t);
+  filter.frequency.exponentialRampToValueAtTime(350,t+.28);
+  gain.gain.setValueAtTime(.0001,t);
+  gain.gain.linearRampToValueAtTime(.4,t+.03);
+  gain.gain.exponentialRampToValueAtTime(.0001,t+.3);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+  osc.start(t);
+  osc.stop(t+.32);
+};
+/* Cut the singing when a long note is dropped, or when the music stops */
+const originalFailHold=failHold;
+failHold=function(note){
+  if(note)stopVoice("player"+note.lane);
+  originalFailHold(note);
+};
+
+const originalStopMusic=stopMusic;
+stopMusic=function(){
+  originalStopMusic();
+  Object.keys(voiceNow).forEach(stopVoice);
+};
 </script>
 </body>
 </html>
