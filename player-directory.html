@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Player Directory | G.O.T. Games</title>
+<title>Fanbase | G.O.T. Games</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,7 +59,6 @@ button,input{font:inherit}
 }
 
 /* Navigation */
-
 .topbar{
   display:flex;
   justify-content:space-between;
@@ -106,43 +105,38 @@ button,input{font:inherit}
   text-decoration:none;
   font-size:.88rem;
   font-weight:700;
-  transition:background .2s,border-color .2s,transform .2s;
+  transition:background .2s,border-color .2s,transform .2s,box-shadow .2s;
 }
 
 .site-nav a:hover{
   border-color:var(--accent);
   transform:translateY(-1px);
+  box-shadow:0 7px 16px rgba(20,32,45,.1);
 }
 
 .site-nav a.active{
   background:var(--accent);
   border-color:var(--accent);
   color:#16212c;
+  box-shadow:0 4px 12px rgba(229,184,42,.2);
+}
+
+.site-nav a:focus-visible,.player:focus-visible,.retry:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--accent) 70%,transparent);
+  outline-offset:3px;
 }
 
 @media(max-width:480px){
-  .topbar{
-    align-items:flex-start;
-    flex-direction:column;
-  }
-
-  .site-nav{
-    width:100%;
-  }
-
-  .site-nav a{
-    flex:1;
-    text-align:center;
-    padding:9px 10px;
-  }
+  .topbar{align-items:flex-start;flex-direction:column}
+  .site-nav{width:100%}
+  .site-nav a{flex:1;text-align:center;padding:9px 10px}
 }
 
-/* Hero */
-
+/* Fanbase hero */
 .hero{
   position:relative;
   overflow:hidden;
-  padding:32px;
+  padding:36px 32px;
   margin-bottom:18px;
   border:1px solid var(--line);
   border-top:4px solid var(--accent);
@@ -154,16 +148,17 @@ button,input{font:inherit}
 }
 
 .hero::after{
-  content:"G.O.T.";
+  content:"FANBASE";
   position:absolute;
-  right:20px;
-  bottom:-35px;
-  font-size:clamp(5rem,15vw,10rem);
+  right:18px;
+  bottom:-37px;
+  font-size:clamp(4rem,13vw,9rem);
   font-weight:800;
   letter-spacing:-.09em;
   color:var(--ink);
   opacity:.035;
   pointer-events:none;
+  white-space:nowrap;
 }
 
 .eyebrow{
@@ -189,9 +184,9 @@ button,input{font:inherit}
 h1{
   position:relative;
   z-index:1;
-  font-size:clamp(2.3rem,7vw,4rem);
-  line-height:1;
-  letter-spacing:-.045em;
+  font-size:clamp(2.5rem,8vw,4.2rem);
+  line-height:.98;
+  letter-spacing:-.055em;
   margin:0;
   font-weight:800;
 }
@@ -200,14 +195,13 @@ h1{
   position:relative;
   z-index:1;
   color:var(--mute);
-  margin:12px 0 0;
-  max-width:560px;
+  margin:14px 0 0;
+  max-width:590px;
   font-size:1rem;
-  line-height:1.6;
+  line-height:1.65;
 }
 
 /* Statistics */
-
 .stats-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -216,16 +210,34 @@ h1{
 }
 
 .stat{
+  position:relative;
+  overflow:hidden;
   background:var(--card);
   border:1px solid var(--line);
-  border-radius:13px;
-  padding:17px;
+  border-radius:14px;
+  padding:18px;
   box-shadow:var(--shadow);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+
+.stat::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:3px;
+  background:var(--accent);
+  opacity:.72;
+}
+
+.stat:hover{
+  transform:translateY(-2px);
+  border-color:color-mix(in srgb,var(--accent) 50%,var(--line));
+  box-shadow:0 14px 30px rgba(20,32,45,.1);
 }
 
 .stat-number{
   display:block;
-  font-size:1.8rem;
+  font-size:1.9rem;
   font-weight:800;
   line-height:1.1;
 }
@@ -233,16 +245,13 @@ h1{
 .stat-label{
   display:block;
   color:var(--mute);
-  font-size:.78rem;
+  font-size:.8rem;
   font-weight:600;
   margin-top:5px;
 }
 
 /* Sections */
-
-.section{
-  margin-top:30px;
-}
+.section{margin-top:30px}
 
 .section-heading{
   display:flex;
@@ -254,45 +263,27 @@ h1{
 }
 
 .section-heading h2{
-  font-size:1.35rem;
+  font-size:1.4rem;
   font-weight:800;
   margin:0;
-  letter-spacing:-.02em;
+  letter-spacing:-.025em;
 }
 
-.section-heading p{
-  color:var(--mute);
-  font-size:.85rem;
-  margin:4px 0 0;
-}
-
-.section-count{
-  color:var(--mute);
-  font-size:.82rem;
-  font-weight:700;
-}
+.section-heading p{color:var(--mute);font-size:.85rem;margin:4px 0 0}
+.section-count{color:var(--mute);font-size:.82rem;font-weight:700}
 
 /* Search */
-
 .search-area{
-  padding:17px;
+  padding:18px;
   border:1px solid var(--line);
-  border-radius:14px;
+  border-radius:15px;
   background:var(--card);
   box-shadow:var(--shadow);
-  margin-bottom:25px;
+  margin-bottom:27px;
 }
 
-.search-label{
-  display:block;
-  font-size:.85rem;
-  font-weight:800;
-  margin-bottom:8px;
-}
-
-.search-wrap{
-  position:relative;
-}
+.search-label{display:block;font-size:.9rem;font-weight:800;margin-bottom:9px}
+.search-wrap{position:relative}
 
 .search-icon{
   position:absolute;
@@ -312,18 +303,18 @@ h1{
   background:var(--card2);
   color:var(--ink);
   outline:none;
-  transition:border-color .2s,box-shadow .2s;
+  transition:border-color .2s,box-shadow .2s,background .2s;
 }
 
 .search:focus{
   border-color:var(--accent);
+  background:var(--card);
   box-shadow:0 0 0 3px rgba(229,184,42,.13);
 }
 
 .search::placeholder{color:var(--mute)}
 
 /* Player cards */
-
 .player-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -353,9 +344,7 @@ h1{
   box-shadow:0 13px 28px rgba(20,32,45,.12);
 }
 
-.player.staff{
-  border-left:3px solid var(--role-color,var(--accent));
-}
+.player.staff{border-left:3px solid var(--role-color,var(--accent))}
 
 .player.staff::after{
   content:"";
@@ -386,34 +375,13 @@ h1{
   color:var(--ink);
   font-size:1.45rem;
   font-weight:800;
-  background:
-    linear-gradient(135deg,rgba(229,184,42,.2),transparent),
-    var(--card2);
+  background:linear-gradient(135deg,rgba(229,184,42,.2),transparent),var(--card2);
 }
 
-.player-info{
-  min-width:0;
-  flex:1;
-}
-
-.username{
-  font-size:1.05rem;
-  font-weight:800;
-  overflow-wrap:anywhere;
-}
-
-.player-caption{
-  color:var(--mute);
-  font-size:.76rem;
-  margin-top:2px;
-}
-
-.badges{
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
-  margin-top:8px;
-}
+.player-info{min-width:0;flex:1}
+.username{font-size:1.05rem;font-weight:800;overflow-wrap:anywhere}
+.player-caption{color:var(--mute);font-size:.76rem;margin-top:2px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 
 .badge{
   display:inline-flex;
@@ -440,13 +408,9 @@ h1{
   transition:transform .18s,color .18s;
 }
 
-.player:hover .player-arrow{
-  transform:translateX(3px);
-  color:var(--accent);
-}
+.player:hover .player-arrow{transform:translateX(3px);color:var(--accent)}
 
 /* Empty/loading states */
-
 .empty,.loading{
   grid-column:1/-1;
   text-align:center;
@@ -457,13 +421,7 @@ h1{
   color:var(--mute);
 }
 
-.empty strong{
-  display:block;
-  color:var(--ink);
-  font-size:1.05rem;
-  margin-bottom:5px;
-}
-
+.empty strong{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:5px}
 .error{color:#e05252}
 
 .retry{
@@ -480,7 +438,6 @@ h1{
 .retry:hover{border-color:var(--accent)}
 
 /* Footer */
-
 footer{
   margin-top:45px;
   padding-top:20px;
@@ -490,25 +447,29 @@ footer{
   font-size:.82rem;
 }
 
-.footer-brand{
-  color:var(--ink);
-  font-weight:800;
-  margin-bottom:5px;
-}
+.footer-brand{color:var(--ink);font-weight:800;margin-bottom:5px}
 
 @media(max-width:650px){
   .player-grid{grid-template-columns:1fr}
-  .hero{padding:25px 20px}
+  .hero{padding:27px 22px}
+}
+
+@media(max-width:540px){
+  .stats-grid{grid-template-columns:1fr;gap:9px;margin-bottom:24px}
+  .stat{padding:14px 16px}
+  .stat-number{font-size:1.55rem}
+  .hero::after{right:10px;bottom:-20px;font-size:4rem}
 }
 
 @media(max-width:420px){
   .wrap{padding:15px 12px 40px}
-  .stats-grid{gap:7px}
-  .stat{padding:12px}
-  .stat-number{font-size:1.5rem}
-  .stat-label{font-size:.7rem}
   .player{padding:13px}
   .avatar{width:51px;height:51px;border-radius:12px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+  .player:hover,.stat:hover,.site-nav a:hover{transform:none}
 }
 </style>
 </head>
@@ -525,20 +486,20 @@ footer{
     <div class="site-nav">
       <a href="index.html">Schedule</a>
       <a href="profile.html">Profile</a>
-      <a href="player-directory.html" class="active" aria-current="page">Players</a>
+      <a href="player-directory.html" class="active" aria-current="page">Fanbase</a>
     </div>
   </nav>
 
   <header class="hero">
     <div class="eyebrow">Community Hub</div>
-    <h1>Player Directory</h1>
+    <h1>Fanbase</h1>
     <p class="hero-description">
-      Meet the players, discover the people behind the community,
-      and find their profiles.
+      Meet the players behind G.O.T. Games, find community profiles,
+      and discover the people who make the fanbase what it is.
     </p>
   </header>
 
-  <section class="stats-grid" aria-label="Directory statistics">
+  <section class="stats-grid" aria-label="Fanbase statistics">
     <div class="stat">
       <span class="stat-number" id="totalCount">—</span>
       <span class="stat-label">Registered Players</span>
@@ -598,7 +559,7 @@ footer{
 
   <footer>
     <div class="footer-brand">G.O.T. GAMES</div>
-    <div>Community Player Directory · Unofficial Fan Site</div>
+    <div>Fanbase · Unofficial Fan Site</div>
   </footer>
 
 </div>
