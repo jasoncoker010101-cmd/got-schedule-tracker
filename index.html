@@ -45,6 +45,40 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .controls label{font-weight:600;font-size:.9rem}
 .controls select{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
 
+/* Main navigation */
+.main-nav{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  margin-top:18px;
+}
+.main-nav a{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:11px 8px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--bg);
+  color:var(--ink);
+  text-decoration:none;
+  font-weight:800;
+  font-size:.95rem;
+  transition:background .2s ease,border-color .2s ease;
+}
+.main-nav a:hover{
+  border-color:var(--accent);
+}
+.main-nav a.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#16212c;
+}
+@media(max-width:420px){
+  .main-nav{gap:6px}
+  .main-nav a{font-size:.85rem;padding:10px 4px}
+}
+
 /* Account button */
 .account-area{display:flex;align-items:center;gap:8px}
 .account-button{
@@ -201,13 +235,6 @@ footer.site-foot p{margin:0 0 14px}
 .links .rb{background:var(--rb)}
 .links .patreon{background:#f96854}
 
-/* Player Directory link */
-.links .directory-link{
-  background:var(--today);
-  color:var(--today-ink);
-  border:1px solid var(--line);
-}
-
 @media (max-width:520px){
   .next{grid-template-columns:minmax(0,1fr)}
   .next .poster{width:72px}
@@ -230,6 +257,12 @@ footer.site-foot p{margin:0 0 14px}
         </button>
       </div>
     </div>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html" class="active" aria-current="page">Schedule</a>
+      <a href="player-directory.html">Players</a>
+      <a href="profile.html">Profile</a>
+    </nav>
 
     <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
     <div class="controls">
@@ -303,7 +336,6 @@ footer.site-foot p{margin:0 0 14px}
       <a class="tw" href="https://www.twitch.tv/gotgames_tb" target="_blank" rel="noopener noreferrer">Twitch</a>
       <a class="rb" href="https://rumble.com/c/GOTGames" target="_blank" rel="noopener noreferrer">Rumble</a>
       <a class="patreon" href="https://www.patreon.com/cw/gotgames" target="_blank" rel="noopener noreferrer">Patreon</a>
-      <a class="directory-link" href="player-directory.html">Player Directory</a>
     </nav>
   </footer>
 </div>
