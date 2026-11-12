@@ -259,6 +259,65 @@ footer.site-foot p{margin:0 0 14px}
 .links .rb{background:var(--rb)}
 .links .patreon{background:#f96854}
 
+/* Final visual polish */
+.day.today{
+  box-shadow:0 8px 22px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.day.today h2 small::after{
+  content:"TODAY";
+  display:inline-flex;
+  align-items:center;
+  margin-left:7px;
+  padding:3px 7px;
+  border:1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  border-radius:999px;
+  background:color-mix(in srgb, var(--accent) 14%, var(--card));
+  color:var(--ink);
+  font-size:.62rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  line-height:1;
+  vertical-align:middle;
+}
+
+.main-nav a:hover,
+.account-button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 20px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.day:hover{
+  border-color:color-mix(in srgb, var(--accent) 55%, var(--line));
+  transform:translateY(-3px);
+  box-shadow:0 14px 26px color-mix(in srgb, var(--ink) 13%, transparent);
+}
+
+@media (prefers-color-scheme:dark){
+  .hero{
+    background:
+      radial-gradient(90% 120% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 68%),
+      var(--card);
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .main-nav a,
+  .account-button,
+  .day,
+  .next,
+  .links a{
+    transition:none;
+  }
+  .main-nav a:hover,
+  .account-button:hover,
+  .day:hover,
+  .next:hover,
+  .links a:hover{
+    transform:none;
+  }
+}
+
 @media (max-width:520px){
   .next{grid-template-columns:minmax(0,1fr)}
   .next .poster{width:72px}
