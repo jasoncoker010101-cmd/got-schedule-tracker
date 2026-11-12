@@ -1088,6 +1088,34 @@ setInterval(load,5*60*1000);
 setInterval(loadShows,5*60*1000);
 setInterval(loadLive,2*60*1000);
 setInterval(render,60*1000);
+  /* ===== TWITCH LIVE = RUMBLE LIVE (he streams on both at the same time) ===== */
+const SIMULCAST_PLATFORMS=["twitch","rumble"];
+const SIMULCAST_WINDOW_MS=8*60*60*1000;
+const twitchIsLive=()=>!!(liveFeed&&liveFeed.platforms&&liveFeed.platforms.twitch);
+
+currentLiveKeys=function(events,now){
+  const keys=new Set();
+  if(!twitchIsLive())return keys;
+  for(const platform of SIMULCAST_PLATFORMS){
+    const started=events
+      .filter(ev=>ev.platform===platform&&!isPatreon(ev)&&eventDate(ev)&&eventDate(ev)<=now&&now-eventDate(ev)<=SIMULCAST_WINDOW_MS)
+      .sort((a,b)=>eventDate(b)-eventDate(a));
+    if(started.length)keys.add(eventKey(started[0]));
+  }
+  return keys;
+};
+
+liveStatus=function(ev,now,liveKeys){
+  const d=eventDate(ev);
+  if(!d||isPatreon(ev)||!liveFeed||!SIMULCAST_PLATFORMS.includes(ev.platform))return "none";
+  if(now<d)return "upcoming";
+  const key=eventKey(ev);
+  if(liveKeys.has(key)){
+    if(!seenLive.has(key)){seenLive.add(key);saveSeen()}
+    return "live";
+  }
+  return seenLive.has(key)||now-d>ENDED_AFTER_MS?"ended":"none";
+};
 </script>
 </body>
 </html>
