@@ -48,18 +48,23 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 /* Main navigation */
 .main-nav{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:9px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
   margin-top:18px;
+  padding:5px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:color-mix(in srgb, var(--bg) 72%, var(--card));
 }
 .main-nav a{
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:11px 8px;
-  border:1px solid var(--line);
+  min-height:46px;
+  padding:11px 12px;
+  border:1px solid transparent;
   border-radius:10px;
-  background:var(--bg);
+  background:transparent;
   color:var(--ink);
   text-decoration:none;
   font-weight:800;
@@ -68,13 +73,19 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 }
 .main-nav a:hover{
   border-color:var(--accent);
-  transform:translateY(-2px) scale(1.03);
+  background:var(--card);
+  transform:translateY(-1px);
   box-shadow:0 8px 16px rgba(22,33,44,.08);
 }
 .main-nav a.active{
   background:var(--accent);
   border-color:var(--accent);
   color:#16212c;
+  box-shadow:0 4px 12px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.main-nav a:focus-visible{
+  outline:3px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset:2px;
 }
 @media(max-width:420px){
   .main-nav{gap:6px}
@@ -272,7 +283,6 @@ footer.site-foot p{margin:0 0 14px}
     <nav class="main-nav" aria-label="Main navigation">
       <a href="index.html" class="active" aria-current="page">Schedule</a>
       <a href="player-directory.html">Fanbase</a>
-      <a href="profile.html">Profile</a>
     </nav>
 
     <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
@@ -847,7 +857,7 @@ function render(){
 
       const row=el("div","ev"+
         (predicted ? " predicted" : "")+
-        (d && d<now && !live && status!=="delayed" ? " past" : "")+
+        (d && d<now && !live && status!="delayed" ? " past" : "")+
         (live ? " live" : ""));
 
       row.style.setProperty("--c",p.color);
