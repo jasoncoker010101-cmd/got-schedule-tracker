@@ -1,15 +1,14 @@
 {
-  "updated": "2026-11-12T23:39:20.584748Z",
+  "updated": "2026-11-12T23:53:21.989050Z",
   "platforms": {
-    "twitch": true,
+    "twitch": false,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": true,
-      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
+      "live": false,
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
@@ -20,23 +19,23 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 4,
-      "next_page": 5,
+      "skipped": "Twitch stream ended",
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "session_state": "waiting",
-      "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
+      "session_state": "ended",
+      "message": "The Twitch stream ended, so this Rumble event is marked ended."
     }
   },
   "rumble_session": {
     "event_key": "2026-11-12T20:30:00Z|rumble|ONE PIECE E36-39",
     "title": "ONE PIECE E36-39",
     "scheduled_start": "2026-11-12T20:30:00Z",
-    "state": "waiting",
+    "state": "ended",
     "twitch_seen_live": true,
     "rumble_seen_live": false,
     "rumble_page": 5,
-    "next_rumble_check_at": "2026-11-12T23:44:20.584748Z",
-    "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
+    "next_rumble_check_at": null,
+    "message": "The Twitch stream ended, so this Rumble event is marked ended.",
+    "ended_at": "2026-11-12T23:53:21.989050Z"
   }
 }
