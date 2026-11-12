@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arcade | G.O.T. Games</title>
+<link rel="icon" type="image/png" href="favicon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #101114;
+  --panel: #191b20;
+  --panel2: #22252c;
+  --text: #f5f5f5;
+  --muted: #999da8;
+  --gold: #e6b94f;
+  --border: #30333b;
+  --green: #72d99a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+/* HEADER */
+
+header {
+  min-height: 76px;
+  padding: 14px 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+  background: #15161a;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: var(--gold);
+  color: #17130a;
+  border-radius: 11px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+nav {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 9px 13px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: .2s;
+}
+
+nav a:hover,
+nav a.active {
+  color: var(--gold);
+  background: #29251a;
+}
+
+/* MAIN */
+
+main {
+  width: min(1100px, 92%);
+  margin: 42px auto;
+}
+
+/* ARCADE TITLE */
+
+.arcade-heading {
+  text-align: center;
+  padding: 35px 15px 40px;
+  margin-bottom: 35px;
+  background: linear-gradient(145deg, #202126, #15161a);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.arcade-icon {
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+.arcade-heading h1 {
+  font-size: clamp(42px, 8vw, 65px);
+  letter-spacing: 3px;
+  margin: 0;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.arcade-heading p {
+  color: var(--muted);
+  margin: 10px 0 0;
+  font-size: 15px;
+}
+
+/* SECTION */
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 23px;
+}
+
+.section-heading span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* GAME GRID */
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.game-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform .2s, border-color .2s;
+}
+
+.game-card.available:hover {
+  transform: translateY(-5px);
+  border-color: var(--gold);
+}
+
+.game-art {
+  height: 175px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+  background: #101a15;
+}
+
+.game-art.snake-art {
+  background:
+    linear-gradient(rgba(15, 27, 19, .8), rgba(15, 27, 19, .8)),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 23px,
+      #344c39 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 23px,
+      #344c39 24px
+    );
+}
+
+.snake-preview {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transform: rotate(-12deg);
+}
+
+.snake-preview .head {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: var(--gold);
+  color: #17130a;
+  font-size: 29px;
+  font-weight: 800;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #e6b94f55;
+}
+
+.snake-preview .segment {
+  width: 34px;
+  height: 34px;
+  background: #58c982;
+  border-radius: 8px;
+}
+
+.space-art {
+  background: linear-gradient(145deg, #14152c, #292047);
+}
+
+.brick-art {
+  background: linear-gradient(145deg, #25152a, #43213c);
+}
+
+.pong-art {
+  background: linear-gradient(145deg, #10232b, #193c43);
+}
+
+.game-symbol {
+  font-size: 65px;
+  filter: drop-shadow(0 5px 12px #0008);
+}
+
+.game-info {
+  padding: 17px;
+}
+
+.game-info h3 {
+  font-size: 20px;
+  margin: 0 0 6px;
+}
+
+.game-info p {
+  color: var(--muted);
+  font-size: 13px;
+  min-height: 38px;
+  margin: 0 0 15px;
+  line-height: 1.5;
+}
+
+.game-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.status.available {
+  color: var(--green);
+}
+
+.status.coming {
+  color: var(--gold);
+}
+
+.play-button {
+  display: inline-block;
+  background: var(--gold);
+  color: #17130a;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: .2s;
+}
+
+.play-button:hover {
+  filter: brightness(1.12);
+  transform: scale(1.03);
+}
+
+.coming-label {
+  color: var(--muted);
+  background: var(--panel2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* MORE GAMES */
+
+.more-games {
+  margin-top: 40px;
+  padding: 35px 20px;
+  border: 1px dashed #65552e;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #211e17, #191b20);
+  text-align: center;
+}
+
+.more-games .icon {
+  font-size: 36px;
+}
+
+.more-games h2 {
+  color: var(--gold);
+  margin: 10px 0;
+  font-size: 25px;
+}
+
+.more-games p {
+  color: var(--muted);
+  max-width: 470px;
+  margin: auto;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* FOOTER */
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 30px 15px;
+  margin-top: 35px;
+  border-top: 1px solid var(--border);
+}
+
+/* MOBILE */
+
+@media (max-width: 750px) {
+  .game-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    flex-direction: column;
+  }
+
+  main {
+    margin-top: 25px;
+  }
+
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-art {
+    height: 190px;
+  }
+
+  .arcade-heading {
+    padding: 28px 12px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">G</div>
+    <span>G.O.T. GAMES</span>
+  </div>
+
+  <nav aria-label="Main navigation">
+    <a href="index.html">Schedule</a>
+    <a href="profile.html">Profile</a>
+    <a href="player-directory.html">Players</a>
+    <a href="arcade.html" class="active" aria-current="page">Games</a>
+  </nav>
+</header>
+
+<main>
+
+  <section class="arcade-heading">
+    <div class="arcade-icon">🎮</div>
+    <h1>ARCADE</h1>
+    <p>Welcome to the G.O.T. Games Arcade. Pick a game and have fun!</p>
+  </section>
+
+  <div class="section-heading">
+    <h2>Game Library</h2>
+    <span>Our games</span>
+  </div>
+
+  <section class="game-grid">
+
+    <!-- SNAKE -->
+
+    <article class="game-card available">
+      <div class="game-art snake-art">
+        <div class="snake-preview">
+          <div class="head">G</div>
+          <div class="segment"></div>
+          <div class="segment"></div>
+          <div class="segment"></div>
+        </div>
+      </div>
+
+      <div class="game-info">
+        <h3>Snake</h3>
+        <p>Eat, grow, and try to beat your high score!</p>
+
+        <div class="game-bottom">
+          <span class="status available">● Available</span>
+          <a class="play-button" href="snake.html">Play</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- SPACE INVADERS -->
+
+    <article class="game-card">
+      <div class="game-art space-art">
+        <div class="game-symbol">👾</div>
+      </div>
+
+      <div class="game-info">
+        <h3>Space Invaders</h3>
+        <p>Defend your planet from waves of invaders.</p>
+
+        <div class="game-bottom">
+          <span class="status coming">● Coming Soon</span>
+          <span class="coming-label">Not ready</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- BRICK BREAKER -->
+
+    <article class="game-card">
+      <div class="game-art brick-art">
+        <div class="game-symbol">🧱</div>
+      </div>
+
+      <div class="game-info">
+        <h3>Brick Breaker</h3>
+        <p>Break every brick without losing your ball.</p>
+
+        <div class="game-bottom">
+          <span class="status coming">● Coming Soon</span>
+          <span class="coming-label">Not ready</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- PONG -->
+
+    <article class="game-card">
+      <div class="game-art pong-art">
+        <div class="game-symbol">🏓</div>
+      </div>
+
+      <div class="game-info">
+        <h3>Pong</h3>
+        <p>A classic arcade battle. Can you win?</p>
+
+        <div class="game-bottom">
+          <span class="status coming">● Coming Soon</span>
+          <span class="coming-label">Not ready</span>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="more-games">
+    <div class="icon">🕹️</div>
+    <h2>NEW GAMES COMING SOON!</h2>
+    <p>
+      We're working on bringing more games to the G.O.T. Games Arcade.
+      Check back later to see what's new!
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  G.O.T. Games · Unofficial Fan Site
+</footer>
+
+</body>
+</html>
