@@ -5,433 +5,91 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arcade | G.O.T. Games</title>
 <link rel="icon" type="image/png" href="favicon.png">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <style>
-:root {
-  --bg: #101114;
-  --panel: #191b20;
-  --panel2: #22252c;
-  --text: #f5f5f5;
-  --muted: #999da8;
-  --gold: #e6b94f;
-  --border: #30333b;
-  --green: #72d99a;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Bricolage Grotesque', sans-serif;
-}
-
-/* HEADER */
-
-header {
-  min-height: 76px;
-  padding: 14px 5%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid var(--border);
-  background: #15161a;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.brand-mark {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  background: var(--gold);
-  color: #17130a;
-  border-radius: 11px;
-  font-size: 22px;
-  font-weight: 800;
-}
-
-nav {
-  display: flex;
-  gap: 9px;
-  flex-wrap: wrap;
-}
-
-nav a {
-  color: var(--muted);
-  text-decoration: none;
-  padding: 9px 13px;
-  border-radius: 9px;
-  font-size: 14px;
-  font-weight: 700;
-  transition: .2s;
-}
-
-nav a:hover,
-nav a.active {
-  color: var(--gold);
-  background: #29251a;
-}
-
-/* MAIN */
-
-main {
-  width: min(1100px, 92%);
-  margin: 42px auto;
-}
-
-/* ARCADE TITLE */
-
-.arcade-heading {
-  text-align: center;
-  padding: 35px 15px 40px;
-  margin-bottom: 35px;
-  background: linear-gradient(145deg, #202126, #15161a);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-}
-
-.arcade-icon {
-  font-size: 42px;
-  margin-bottom: 8px;
-}
-
-.arcade-heading h1 {
-  font-size: clamp(42px, 8vw, 65px);
-  letter-spacing: 3px;
-  margin: 0;
-  color: var(--gold);
-  font-weight: 800;
-}
-
-.arcade-heading p {
-  color: var(--muted);
-  margin: 10px 0 0;
-  font-size: 15px;
-}
-
-/* SECTION */
-
-.section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.section-heading h2 {
-  margin: 0;
-  font-size: 23px;
-}
-
-.section-heading span {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-/* GAME GRID */
-
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.game-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: transform .2s, border-color .2s;
-}
-
-.game-card.available:hover {
-  transform: translateY(-5px);
-  border-color: var(--gold);
-}
-
-.game-art {
-  height: 175px;
-  display: grid;
-  place-items: center;
-  position: relative;
-  overflow: hidden;
-  background: #101a15;
-}
-
-.game-art.snake-art {
-  background:
-    linear-gradient(rgba(15, 27, 19, .8), rgba(15, 27, 19, .8)),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 23px,
-      #344c39 24px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 23px,
-      #344c39 24px
-    );
-}
-
-.snake-preview {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transform: rotate(-12deg);
-}
-
-.snake-preview .head {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: var(--gold);
-  color: #17130a;
-  font-size: 29px;
-  font-weight: 800;
-  border-radius: 10px;
-  box-shadow: 0 0 20px #e6b94f55;
-}
-
-.snake-preview .segment {
-  width: 34px;
-  height: 34px;
-  background: #58c982;
-  border-radius: 8px;
-}
-
-/* G.O.T. RHYTHM PREVIEW */
-
-.rhythm-preview {
-  min-height: 175px;
-  background:
-    radial-gradient(circle at 50% 40%, #59417e, #211b3a 65%, #11101b);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  overflow: hidden;
-}
-
-.rhythm-arrows {
-  display: flex;
-  gap: 10px;
-}
-
-.rhythm-arrows span {
-  width: 39px;
-  height: 39px;
-  display: grid;
-  place-items: center;
-  background: #e6b94f;
-  color: #17131a;
-  border: 3px solid #080710;
-  border-radius: 8px;
-  font-size: 25px;
-  font-weight: 900;
-  text-shadow: 1px 1px #fff8;
-  transform: rotate(-5deg);
-}
-
-.rhythm-arrows span:nth-child(even) {
-  transform: rotate(5deg);
-  background: #ff5e9d;
-}
-
-.rhythm-title {
-  font-size: 22px;
-  font-weight: 900;
-  color: white;
-  letter-spacing: 2px;
-  text-shadow: 3px 3px #000;
-}
-
-.space-art {
-  background: linear-gradient(145deg, #14152c, #292047);
-}
-
-.brick-art {
-  background: linear-gradient(145deg, #25152a, #43213c);
-}
-
-.pong-art {
-  background: linear-gradient(145deg, #10232b, #193c43);
-}
-
-.game-symbol {
-  font-size: 65px;
-  filter: drop-shadow(0 5px 12px #0008);
-}
-
-/* GAME INFO */
-
-.game-info {
-  padding: 17px;
-}
-
-.game-info h3 {
-  font-size: 20px;
-  margin: 0 0 6px;
-}
-
-.game-info p {
-  color: var(--muted);
-  font-size: 13px;
-  min-height: 38px;
-  margin: 0 0 15px;
-  line-height: 1.5;
-}
-
-.game-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-
-.status.available {
-  color: var(--green);
-}
-
-.status.coming {
-  color: var(--gold);
-}
-
-.play-button {
-  display: inline-block;
-  background: var(--gold);
-  color: #17130a;
-  text-decoration: none;
-  border-radius: 8px;
-  padding: 9px 15px;
-  font-size: 13px;
-  font-weight: 800;
-  transition: .2s;
-}
-
-.play-button:hover {
-  filter: brightness(1.12);
-  transform: scale(1.03);
-}
-
-.coming-label {
-  color: var(--muted);
-  background: var(--panel2);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* MORE GAMES */
-
-.more-games {
-  margin-top: 40px;
-  padding: 35px 20px;
-  border: 1px dashed #65552e;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #211e17, #191b20);
-  text-align: center;
-}
-
-.more-games .icon {
-  font-size: 36px;
-}
-
-.more-games h2 {
-  color: var(--gold);
-  margin: 10px 0;
-  font-size: 25px;
-}
-
-.more-games p {
-  color: var(--muted);
-  max-width: 470px;
-  margin: auto;
-  line-height: 1.6;
-  font-size: 14px;
-}
-
-/* FOOTER */
-
-footer {
-  text-align: center;
-  color: var(--muted);
-  font-size: 12px;
-  padding: 30px 15px;
-  margin-top: 35px;
-  border-top: 1px solid var(--border);
-}
-
-/* MOBILE */
-
-@media (max-width: 750px) {
-  .game-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 480px) {
-  header {
-    flex-direction: column;
-  }
-
-  main {
-    margin-top: 25px;
-  }
-
-  .game-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .game-art {
-    height: 190px;
-  }
-
-  .arcade-heading {
-    padding: 28px 12px;
-  }
-}
+:root{--bg:#101114;--panel:#191b20;--panel2:#22252c;--text:#f5f5f5;--muted:#999da8;--gold:#e6b94f;--border:#30333b;--green:#72d99a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Bricolage Grotesque',sans-serif}
+header{min-height:76px;padding:14px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--border);background:#15161a}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:1px}
+.brand-mark{width:38px;height:38px;display:grid;place-items:center;background:var(--gold);color:#17130a;border-radius:11px;font-size:22px;font-weight:800}
+nav{display:flex;gap:9px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;padding:9px 13px;border-radius:9px;font-size:14px;font-weight:700;transition:.2s}
+nav a:hover,nav a.active{color:var(--gold);background:#29251a}
+main{width:min(1100px,92%);margin:38px auto}
+.arcade-heading{text-align:center;padding:35px 15px 40px;margin-bottom:32px;background:linear-gradient(145deg,#202126,#15161a);border:1px solid var(--border);border-radius:20px}
+.arcade-icon{font-size:42px;margin-bottom:8px}
+.arcade-heading h1{font-size:clamp(42px,8vw,65px);letter-spacing:3px;margin:0;color:var(--gold);font-weight:800}
+.arcade-heading p{color:var(--muted);margin:10px 0 0;font-size:15px}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:30px 0 16px}
+.section-heading h2{margin:0;font-size:23px}
+.section-heading span{color:var(--muted);font-size:13px}
+.library-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.search-wrap{flex:1;min-width:210px}
+.library-tools input,.library-tools select{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 14px;font:inherit;outline:none}
+.library-tools input:focus,.library-tools select:focus{border-color:var(--gold)}
+.library-tools select{width:auto;min-width:150px}
+.game-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.game-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .2s,border-color .2s}
+.game-card.available:hover{transform:translateY(-5px);border-color:var(--gold)}
+.game-art{height:175px;display:grid;place-items:center;position:relative;overflow:hidden;background:#101a15}
+.snake-art{background:linear-gradient(rgba(15,27,19,.8),rgba(15,27,19,.8)),repeating-linear-gradient(0deg,transparent 0 23px,#344c39 24px),repeating-linear-gradient(90deg,transparent 0 23px,#344c39 24px)}
+.snake-preview{display:flex;align-items:center;gap:5px;transform:rotate(-12deg)}
+.snake-preview .head{width:48px;height:48px;display:grid;place-items:center;background:var(--gold);color:#17130a;font-size:29px;font-weight:800;border-radius:10px;box-shadow:0 0 20px #e6b94f55}
+.snake-preview .segment{width:34px;height:34px;background:#58c982;border-radius:8px}
+.rhythm-preview{min-height:175px;background:radial-gradient(circle at 50% 40%,#59417e,#211b3a 65%,#11101b);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden}
+.rhythm-arrows{display:flex;gap:10px}
+.rhythm-arrows span{width:39px;height:39px;display:grid;place-items:center;background:#e6b94f;color:#17131a;border:3px solid #080710;border-radius:8px;font-size:25px;font-weight:900;text-shadow:1px 1px #fff8;transform:rotate(-5deg)}
+.rhythm-arrows span:nth-child(even){transform:rotate(5deg);background:#ff5e9d}
+.rhythm-title{font-size:22px;font-weight:900;color:white;letter-spacing:2px;text-shadow:3px 3px #000}
+.space-art{background:linear-gradient(145deg,#14152c,#292047)}
+.brick-art{background:linear-gradient(145deg,#25152a,#43213c)}
+.pong-art{background:linear-gradient(145deg,#10232b,#193c43)}
+.game-symbol{font-size:65px;filter:drop-shadow(0 5px 12px #0008)}
+.game-info{padding:17px}
+.game-info h3{font-size:20px;margin:0 0 6px}
+.game-info p{color:var(--muted);font-size:13px;min-height:38px;margin:0 0 15px;line-height:1.5}
+.game-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.status.available{color:var(--green)}.status.coming{color:var(--gold)}
+.play-button,.details-button{display:inline-block;background:var(--gold);color:#17130a;text-decoration:none;border:0;border-radius:8px;padding:9px 15px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:.2s}
+.play-button:hover,.details-button:hover{filter:brightness(1.12);transform:scale(1.03)}
+.details-button{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+.card-actions{display:flex;gap:7px;align-items:center}
+.coming-label{color:var(--muted);background:var(--panel2);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700}
+.empty-state{display:none;text-align:center;color:var(--muted);padding:35px 15px;background:var(--panel);border:1px dashed var(--border);border-radius:14px}
+.achievement-section{margin-top:42px;padding:25px;background:linear-gradient(145deg,#211e17,#191b20);border:1px solid #65552e;border-radius:18px}
+.achievement-intro{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}
+.achievement-intro h2{margin:0;color:var(--gold);font-size:24px}
+.achievement-intro p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.preview-tag{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--gold);background:#3a301c;padding:7px 10px;border-radius:20px;white-space:nowrap}
+.achievement-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.achievement{display:flex;align-items:center;gap:12px;padding:14px;background:#17181c;border:1px solid var(--border);border-radius:12px}
+.achievement-icon{width:43px;height:43px;flex:0 0 43px;display:grid;place-items:center;background:#2b271d;border-radius:12px;font-size:22px}
+.achievement h3{font-size:14px;margin:0 0 4px}
+.achievement p{font-size:12px;color:var(--muted);margin:0;line-height:1.4}
+.more-games{margin-top:35px;padding:30px 20px;border:1px dashed #65552e;border-radius:18px;background:linear-gradient(145deg,#211e17,#191b20);text-align:center}
+.more-games .icon{font-size:36px}.more-games h2{color:var(--gold);margin:10px 0;font-size:25px}
+.more-games p{color:var(--muted);max-width:470px;margin:auto;line-height:1.6;font-size:14px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:30px 15px;margin-top:35px;border-top:1px solid var(--border)}
+.modal-backdrop{display:none;position:fixed;inset:0;background:#000b;z-index:10;align-items:center;justify-content:center;padding:18px}
+.modal-backdrop.open{display:flex}
+.game-modal{width:min(480px,100%);background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:24px;box-shadow:0 20px 70px #0009}
+.modal-top{display:flex;justify-content:space-between;gap:15px;align-items:start}
+.modal-top h2{margin:0;color:var(--gold);font-size:25px}
+.close-modal{border:0;background:var(--panel2);color:var(--text);border-radius:8px;width:34px;height:34px;font-size:20px;cursor:pointer}
+.game-modal p,.game-modal li{color:var(--muted);font-size:14px;line-height:1.6}
+.game-modal h3{font-size:15px;margin:20px 0 6px}
+.modal-actions{display:flex;gap:9px;margin-top:20px;flex-wrap:wrap}
+@media(max-width:750px){.game-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.achievement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){header{flex-direction:column}main{margin-top:25px}.game-grid,.achievement-grid{grid-template-columns:1fr}.game-art{height:190px}.arcade-heading{padding:28px 12px}.section-heading{align-items:flex-start;flex-direction:column}.library-tools select{flex:1}.achievement-intro{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
-
 <body>
-
 <header>
-  <div class="brand">
-    <div class="brand-mark">G</div>
-    <span>G.O.T. GAMES</span>
-  </div>
-
+  <div class="brand"><div class="brand-mark">G</div><span>G.O.T. GAMES</span></div>
   <nav aria-label="Main navigation">
     <a href="index.html">Schedule</a>
     <a href="profile.html">Profile</a>
@@ -441,7 +99,6 @@ footer {
 </header>
 
 <main>
-
   <section class="arcade-heading">
     <div class="arcade-icon">🎮</div>
     <h1>ARCADE</h1>
@@ -450,129 +107,154 @@ footer {
 
   <div class="section-heading">
     <h2>Game Library</h2>
-    <span>Our games</span>
+    <span id="game-count">5 games</span>
   </div>
 
-  <section class="game-grid">
+  <div class="library-tools">
+    <div class="search-wrap"><input id="game-search" type="search" placeholder="Search games..." aria-label="Search games"></div>
+    <select id="status-filter" aria-label="Filter by availability">
+      <option value="all">All games</option>
+      <option value="available">Available</option>
+      <option value="coming">Coming soon</option>
+    </select>
+    <select id="sort-games" aria-label="Sort games">
+      <option value="default">Default order</option>
+      <option value="az">Name: A to Z</option>
+    </select>
+  </div>
 
-    <!-- SNAKE -->
-
-    <article class="game-card available">
-      <div class="game-art snake-art">
-        <div class="snake-preview">
-          <div class="head">G</div>
-          <div class="segment"></div>
-          <div class="segment"></div>
-          <div class="segment"></div>
-        </div>
-      </div>
-
-      <div class="game-info">
-        <h3>Snake</h3>
-        <p>Eat, grow, and try to beat your high score!</p>
-
-        <div class="game-bottom">
-          <span class="status available">● Available</span>
-          <a class="play-button" href="snake.html">Play</a>
-        </div>
-      </div>
+  <section class="game-grid" id="game-grid">
+    <article class="game-card available" data-name="Snake" data-status="available" data-description="Eat, grow, and try to beat your high score!" data-instructions="Use the arrow keys or on-screen controls to guide the snake. Eat the food to grow. Avoid hitting the walls or your own tail." data-link="snake.html" data-controls="Arrow keys / on-screen controls">
+      <div class="game-art snake-art"><div class="snake-preview"><div class="head">G</div><div class="segment"></div><div class="segment"></div><div class="segment"></div></div></div>
+      <div class="game-info"><h3>Snake</h3><p>Eat, grow, and try to beat your high score!</p><div class="game-bottom"><span class="status available">● Available</span><div class="card-actions"><button class="details-button" type="button">Details</button><a class="play-button" href="snake.html">Play</a></div></div></div>
     </article>
 
-    <!-- G.O.T. RHYTHM -->
-
-    <article class="game-card available">
-      <div class="game-art rhythm-preview">
-        <div class="rhythm-arrows">
-          <span>←</span>
-          <span>↓</span>
-          <span>↑</span>
-          <span>→</span>
-        </div>
-
-        <div class="rhythm-title">G.O.T. RHYTHM</div>
-      </div>
-
-      <div class="game-info">
-        <h3>G.O.T. Rhythm</h3>
-        <p>Hit the arrows, follow the beat, and own the stage!</p>
-
-        <div class="game-bottom">
-          <span class="status available">● Available</span>
-          <a class="play-button" href="rhythm.html">Play</a>
-        </div>
-      </div>
+    <article class="game-card available" data-name="G.O.T. Rhythm" data-status="available" data-description="Hit the arrows, follow the beat, and own the stage!" data-instructions="Choose a song and difficulty, then press the matching arrow keys when notes reach the receptors. Try to keep your combo going." data-link="rhythm.html" data-controls="Arrow keys / touch controls">
+      <div class="game-art rhythm-preview"><div class="rhythm-arrows"><span>←</span><span>↓</span><span>↑</span><span>→</span></div><div class="rhythm-title">G.O.T. RHYTHM</div></div>
+      <div class="game-info"><h3>G.O.T. Rhythm</h3><p>Hit the arrows, follow the beat, and own the stage!</p><div class="game-bottom"><span class="status available">● Available</span><div class="card-actions"><button class="details-button" type="button">Details</button><a class="play-button" href="rhythm.html">Play</a></div></div></div>
     </article>
 
-    <!-- SPACE INVADERS -->
-
-    <article class="game-card">
-      <div class="game-art space-art">
-        <div class="game-symbol">👾</div>
-      </div>
-
-      <div class="game-info">
-        <h3>Space Invaders</h3>
-        <p>Defend your planet from waves of invaders.</p>
-
-        <div class="game-bottom">
-          <span class="status coming">● Coming Soon</span>
-          <span class="coming-label">Not ready</span>
-        </div>
-      </div>
+    <article class="game-card" data-name="Space Invaders" data-status="coming" data-description="Defend your planet from waves of invaders." data-instructions="This game is still in development. Check back later for its controls and instructions." data-link="" data-controls="Coming soon">
+      <div class="game-art space-art"><div class="game-symbol">👾</div></div>
+      <div class="game-info"><h3>Space Invaders</h3><p>Defend your planet from waves of invaders.</p><div class="game-bottom"><span class="status coming">● Coming Soon</span><div class="card-actions"><button class="details-button" type="button">Details</button><span class="coming-label">Not ready</span></div></div></div>
     </article>
 
-    <!-- BRICK BREAKER -->
-
-    <article class="game-card">
-      <div class="game-art brick-art">
-        <div class="game-symbol">🧱</div>
-      </div>
-
-      <div class="game-info">
-        <h3>Brick Breaker</h3>
-        <p>Break every brick without losing your ball.</p>
-
-        <div class="game-bottom">
-          <span class="status coming">● Coming Soon</span>
-          <span class="coming-label">Not ready</span>
-        </div>
-      </div>
+    <article class="game-card" data-name="Brick Breaker" data-status="coming" data-description="Break every brick without losing your ball." data-instructions="This game is still in development. Check back later for its controls and instructions." data-link="" data-controls="Coming soon">
+      <div class="game-art brick-art"><div class="game-symbol">🧱</div></div>
+      <div class="game-info"><h3>Brick Breaker</h3><p>Break every brick without losing your ball.</p><div class="game-bottom"><span class="status coming">● Coming Soon</span><div class="card-actions"><button class="details-button" type="button">Details</button><span class="coming-label">Not ready</span></div></div></div>
     </article>
 
-    <!-- PONG -->
-
-    <article class="game-card">
-      <div class="game-art pong-art">
-        <div class="game-symbol">🏓</div>
-      </div>
-
-      <div class="game-info">
-        <h3>Pong</h3>
-        <p>A classic arcade battle. Can you win?</p>
-
-        <div class="game-bottom">
-          <span class="status coming">● Coming Soon</span>
-          <span class="coming-label">Not ready</span>
-        </div>
-      </div>
+    <article class="game-card" data-name="Pong" data-status="coming" data-description="A classic arcade battle. Can you win?" data-instructions="This game is still in development. Check back later for its controls and instructions." data-link="" data-controls="Coming soon">
+      <div class="game-art pong-art"><div class="game-symbol">🏓</div></div>
+      <div class="game-info"><h3>Pong</h3><p>A classic arcade battle. Can you win?</p><div class="game-bottom"><span class="status coming">● Coming Soon</span><div class="card-actions"><button class="details-button" type="button">Details</button><span class="coming-label">Not ready</span></div></div></div>
     </article>
+  </section>
+  <div class="empty-state" id="empty-state">No games match your search. Try another name or filter.</div>
 
+  <section class="achievement-section" aria-labelledby="achievement-title">
+    <div class="achievement-intro">
+      <div><h2 id="achievement-title">🏆 Achievement Hall</h2><p>Milestones players will be able to earn across G.O.T. Games.</p></div>
+      <span class="preview-tag">ACHIEVEMENT PREVIEW</span>
+    </div>
+    <div class="achievement-grid">
+      <article class="achievement"><div class="achievement-icon">🎮</div><div><h3>First Game</h3><p>Play your first G.O.T. game.</p></div></article>
+      <article class="achievement"><div class="achievement-icon">🐍</div><div><h3>Snake Starter</h3><p>Finish your first Snake run.</p></div></article>
+      <article class="achievement"><div class="achievement-icon">🎵</div><div><h3>Feel the Beat</h3><p>Complete your first Rhythm song.</p></div></article>
+      <article class="achievement"><div class="achievement-icon">⭐</div><div><h3>High Scorer</h3><p>Set a new personal best.</p></div></article>
+      <article class="achievement"><div class="achievement-icon">🕹️</div><div><h3>Game Explorer</h3><p>Try every available game.</p></div></article>
+      <article class="achievement"><div class="achievement-icon">🔥</div><div><h3>On a Roll</h3><p>Reach a five-game play streak.</p></div></article>
+    </div>
   </section>
 
-  <section class="more-games">
-    <div class="icon">🕹️</div>
-    <h2>NEW GAMES COMING SOON!</h2>
-    <p>
-      We're working on bringing more games to the G.O.T. Games Arcade.
-      Check back later to see what's new!
-    </p>
-  </section>
-
+  <section class="more-games"><div class="icon">🕹️</div><h2>NEW GAMES COMING SOON!</h2><p>We're working on bringing more games to the G.O.T. Games Arcade. Check back later to see what's new!</p></section>
 </main>
 
-<footer>
-  G.O.T. Games · Unofficial Fan Site
-</footer>
+<div class="modal-backdrop" id="game-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="game-modal">
+    <div class="modal-top"><h2 id="modal-title">Game details</h2><button class="close-modal" id="close-modal" type="button" aria-label="Close">×</button></div>
+    <p id="modal-description"></p>
+    <h3>How to play</h3><p id="modal-instructions"></p>
+    <h3>Controls</h3><p id="modal-controls"></p>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
 
+<footer>G.O.T. Games · Unofficial Fan Site</footer>
+
+<script>
+(() => {
+  const cards = Array.from(document.querySelectorAll('.game-card'));
+  const search = document.getElementById('game-search');
+  const statusFilter = document.getElementById('status-filter');
+  const sortSelect = document.getElementById('sort-games');
+  const grid = document.getElementById('game-grid');
+  const count = document.getElementById('game-count');
+  const empty = document.getElementById('empty-state');
+  const modal = document.getElementById('game-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalDescription = document.getElementById('modal-description');
+  const modalInstructions = document.getElementById('modal-instructions');
+  const modalControls = document.getElementById('modal-controls');
+  const modalActions = document.getElementById('modal-actions');
+
+  function updateLibrary() {
+    const term = search.value.trim().toLowerCase();
+    const status = statusFilter.value;
+    let visible = 0;
+    cards.forEach(card => {
+      const matchesText = card.dataset.name.toLowerCase().includes(term) ||
+        card.dataset.description.toLowerCase().includes(term);
+      const matchesStatus = status === 'all' || card.dataset.status === status;
+      const show = matchesText && matchesStatus;
+      card.hidden = !show;
+      if (show) visible++;
+    });
+    count.textContent = visible + (visible === 1 ? ' game' : ' games');
+    empty.style.display = visible ? 'none' : 'block';
+  }
+
+  search.addEventListener('input', updateLibrary);
+  statusFilter.addEventListener('change', updateLibrary);
+  sortSelect.addEventListener('change', () => {
+    const sorted = [...cards];
+    if (sortSelect.value === 'az') sorted.sort((a,b) => a.dataset.name.localeCompare(b.dataset.name));
+    else sorted.sort((a,b) => cards.indexOf(a) - cards.indexOf(b));
+    sorted.forEach(card => grid.appendChild(card));
+    updateLibrary();
+  });
+
+  function openDetails(card) {
+    modalTitle.textContent = card.dataset.name;
+    modalDescription.textContent = card.dataset.description;
+    modalInstructions.textContent = card.dataset.instructions;
+    modalControls.textContent = card.dataset.controls;
+    modalActions.replaceChildren();
+    if (card.dataset.link) {
+      const link = document.createElement('a');
+      link.className = 'play-button';
+      link.href = card.dataset.link;
+      link.textContent = 'Play game';
+      modalActions.appendChild(link);
+    } else {
+      const label = document.createElement('span');
+      label.className = 'coming-label';
+      label.textContent = 'Not available yet';
+      modalActions.appendChild(label);
+    }
+    modal.classList.add('open');
+    document.getElementById('close-modal').focus();
+  }
+
+  cards.forEach(card => {
+    card.querySelector('.details-button').addEventListener('click', () => openDetails(card));
+  });
+  function closeModal() { modal.classList.remove('open'); }
+  document.getElementById('close-modal').addEventListener('click', closeModal);
+  modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+
+  updateLibrary();
+})();
+</script>
 </body>
 </html>
