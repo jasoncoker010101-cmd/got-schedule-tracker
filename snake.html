@@ -5,181 +5,266 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Snake | G.O.T. Games</title>
 <style>
-  :root { --gold: #d4af37; --bg: #0d0d12; }
+  :root { --gold: #d4af37; --gold-soft: rgba(212, 175, 55, 0.35); --bg: #0b0b10; --panel: rgba(20, 20, 28, 0.94); }
   * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
   body {
-    margin: 0;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at top, #1b1b26, var(--bg));
+    background: radial-gradient(circle at top, #1b1b26 0%, var(--bg) 70%);
     color: #eee;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     user-select: none;
+    overflow: hidden;
   }
-  h1 {
-    color: var(--gold);
-    letter-spacing: 4px;
-    margin: 8px 0;
-    font-size: 2rem;
+
+  /* ---------- Top nav (matches G.O.T. Games site header) ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 28px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    background: rgba(12, 12, 18, 0.9);
+    flex-shrink: 0;
   }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: 1.5px; }
+  .logo {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: var(--gold);
+    color: #111;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+  }
+  nav { display: flex; gap: 6px; }
+  nav a {
+    color: #9a9aa6;
+    text-decoration: none;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    transition: color 0.15s, background 0.15s;
+  }
+  nav a:hover { color: var(--gold); }
+  nav a.active { background: var(--gold); color: #111; font-weight: 600; }
+
+  /* ---------- HUD bar ---------- */
   .hud {
     display: flex;
-    gap: 24px;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 28px;
+    font-size: 0.9rem;
+    color: #aaa;
+    flex-shrink: 0;
+  }
+  .hud-stats { display: flex; gap: 22px; flex-wrap: wrap; }
+  .hud-stats b { color: var(--gold); font-weight: 700; }
+
+  /* ---------- Board area fills the rest of the screen ---------- */
+  main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    padding: 12px;
   }
-  .hud b { color: var(--gold); }
-  .wrap { position: relative; }
-  canvas {
-    display: block;
-    background: #0a0a0f;
+  .wrap {
+    position: relative;
     border: 2px solid var(--gold);
-    border-radius: 8px;
-    box-shadow: 0 0 24px rgba(212, 175, 55, 0.25);
-    max-width: 90vw;
-    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.25);
+    overflow: hidden;
   }
+  canvas { display: block; width: 100%; height: 100%; background: #0a0a0f; }
+
   .overlay {
     position: absolute;
     inset: 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.65);
-    border-radius: 8px;
-    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
     padding: 16px;
+    text-align: center;
     animation: fade 0.4s ease;
   }
   .overlay.hidden { display: none; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-  .count {
-    font-size: 6rem;
-    font-weight: bold;
-    color: var(--gold);
-    animation: pop 0.8s ease-out;
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--gold-soft);
+    border-radius: 12px;
+    padding: 26px 30px;
+    max-width: 520px;
+    width: 100%;
   }
+  .eyebrow {
+    color: var(--gold);
+    font-size: 0.72rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .title { font-size: 2.4rem; font-weight: 900; letter-spacing: 2px; margin: 0 0 4px; }
+  .title span { color: var(--gold); }
+  .subtitle { color: #8a8a96; font-size: 0.9rem; margin-bottom: 18px; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .mode-btn {
+    text-align: left;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #ddd;
+  }
+  .mode-btn small { display: block; color: #888; font-size: 0.78rem; margin-top: 4px; }
+  .mode-btn.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.12); color: var(--gold); }
+  .desc { color: #aaa; font-size: 0.9rem; min-height: 1.3em; margin-bottom: 16px; }
+
+  button {
+    background: transparent;
+    color: #eee;
+    border: 1px solid #555;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  button:hover { border-color: var(--gold); color: var(--gold); }
+  button.primary {
+    background: var(--gold);
+    color: #111;
+    border-color: var(--gold);
+    font-weight: 700;
+    padding: 11px 28px;
+  }
+  button.primary:hover { color: #111; filter: brightness(1.08); }
+
+  .count { font-size: 7rem; font-weight: 900; color: var(--gold); animation: pop 0.8s ease-out; }
   @keyframes pop {
     0%   { transform: scale(1.6); opacity: 0; }
     40%  { opacity: 1; }
     100% { transform: scale(0.8); opacity: 0; }
   }
-  .title { font-size: 2.2rem; color: var(--gold); font-weight: bold; margin-bottom: 8px; }
-  .final { color: var(--gold); font-size: 1.5rem; margin: 6px 0; }
-  .desc { color: #aaa; font-size: 0.95rem; margin: 10px 0; min-height: 1.2em; }
-  .modes { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
-  button {
-    background: transparent;
-    color: #eee;
-    border: 1px solid #555;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: border-color 0.15s, color 0.15s;
+  .final { color: var(--gold); font-size: 1.6rem; font-weight: 800; margin: 8px 0; }
+  .hint { color: #888; font-size: 0.82rem; margin-top: 12px; }
+
+  footer {
+    text-align: center;
+    color: #666;
+    font-size: 0.8rem;
+    padding: 8px;
+    flex-shrink: 0;
   }
-  button:hover { border-color: var(--gold); color: var(--gold); }
-  button.active {
-    border-color: var(--gold);
-    background: rgba(212, 175, 55, 0.15);
-    color: var(--gold);
-  }
-  button.primary {
-    border-color: var(--gold);
-    color: var(--gold);
-    padding: 10px 24px;
-    margin-top: 6px;
-  }
-  .hint { color: #888; font-size: 0.85rem; margin-top: 12px; text-align: center; }
 </style>
 </head>
 <body>
 
-<h1>SNAKE</h1>
+<header>
+  <div class="brand">
+    <div class="logo">G</div>
+    <span>G.O.T. GAMES</span>
+  </div>
+  <nav>
+    <a href="#">Schedule</a>
+    <a href="#">Players</a>
+    <a href="#">Profile</a>
+    <a href="#" class="active">Games</a>
+  </nav>
+</header>
 
 <div class="hud">
-  <span>Score: <b id="score">0</b></span>
-  <span>Best: <b id="best">0</b></span>
-  <span>Mode: <b id="modeLabel">Classic</b></span>
-  <span>Level: <b id="levelLabel">1</b></span>
-</div>
-
-<div class="wrap">
-  <canvas id="game"></canvas>
-  <div id="overlay" class="overlay">
-    <div id="overlayContent"></div>
+  <div class="hud-stats">
+    <span>Score: <b id="score">0</b></span>
+    <span>Best: <b id="best">0</b></span>
+    <span>Mode: <b id="modeLabel">Classic</b></span>
+    <span>Level: <b id="levelLabel">1</b></span>
   </div>
+  <button id="fsBtn">Full Screen (F)</button>
 </div>
 
-<div class="hint">Arrows / WASD to move &middot; Space to pause &middot; Enter to start &middot; M for menu &middot; Swipe on mobile</div>
+<main>
+  <div class="wrap" id="wrap">
+    <canvas id="game"></canvas>
+    <div id="overlay" class="overlay">
+      <div class="card" id="overlayContent"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Arrows / WASD to move &middot; Space to pause &middot; Enter to start &middot; M for menu &middot; F for full screen &middot; Swipe on mobile</footer>
 
 <script>
 // ---------- Setup ----------
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('wrap');
+const main = document.querySelector('main');
 const overlay = document.getElementById('overlay');
 const content = document.getElementById('overlayContent');
 const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('best');
 const modeEl = document.getElementById('modeLabel');
 const levelEl = document.getElementById('levelLabel');
+const fsBtn = document.getElementById('fsBtn');
 
+// Logical grid. The canvas scales to fit the screen, so drawing uses CELL units.
 const CELL = 24;
 const COLS = 24;
 const ROWS = 24;
-canvas.width = COLS * CELL;
-canvas.height = ROWS * CELL;
+
+// Fit the square board to the available space, sharp on high-DPI screens
+function resizeBoard() {
+  const padding = 24; // main has 12px padding on each side
+  const size = Math.max(200, Math.floor(Math.min(main.clientWidth, main.clientHeight) - padding - 4));
+  const dpr = window.devicePixelRatio || 1;
+  wrap.style.width = size + 'px';
+  wrap.style.height = size + 'px';
+  canvas.width = Math.floor(size * dpr);
+  canvas.height = Math.floor(size * dpr);
+  const scale = canvas.width / (COLS * CELL);
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+}
 
 // ---------- Modes ----------
 const MODES = {
   classic: {
     name: 'Classic',
     desc: 'Walls are deadly. Classic snake, no tricks.',
-    walls: true,
-    poison: false,
-    baseSpeed: 140,
-    step: 8,
-    minSpeed: 60
+    walls: true, poison: false,
+    baseSpeed: 140, step: 8, minSpeed: 60
   },
   nowalls: {
     name: 'No Walls',
     desc: 'The edges wrap around. Watch your position.',
-    walls: false,
-    poison: false,
-    baseSpeed: 140,
-    step: 8,
-    minSpeed: 60
+    walls: false, poison: false,
+    baseSpeed: 140, step: 8, minSpeed: 60
   },
   fast: {
     name: 'Fast Mode',
     desc: 'Starts quick and ramps up hard.',
-    walls: true,
-    poison: false,
-    baseSpeed: 85,
-    step: 6,
-    minSpeed: 45
+    walls: true, poison: false,
+    baseSpeed: 85, step: 6, minSpeed: 45
   },
   poison: {
     name: 'Poison Fruit',
     desc: 'Purple poison shrinks you by two. Avoid it.',
-    walls: true,
-    poison: true,
-    baseSpeed: 130,
-    step: 8,
-    minSpeed: 60
+    walls: true, poison: true,
+    baseSpeed: 130, step: 8, minSpeed: 60
   }
 };
 
 // ---------- State ----------
 let state = 'menu';          // menu | countdown | playing | paused | over
-let selectedKey = 'classic'; // mode highlighted in the menu
-let modeKey = 'classic';     // mode of the running game
+let selectedKey = 'classic';
+let modeKey = 'classic';
 
 let snake = [];
 let direction = { x: 1, y: 0 };
@@ -238,17 +323,12 @@ function level() {
 function getInterval() {
   const m = MODES[modeKey];
   let ms = Math.max(m.minSpeed, m.baseSpeed - (level() - 1) * m.step);
-  if (Date.now() < slowUntil) ms *= 1.8; // blue bonus slows the snake
+  if (Date.now() < slowUntil) ms *= 1.8;
   return ms;
 }
 
-function bestKey(key) {
-  return 'snakeBest_' + key;
-}
-
-function getBest(key) {
-  return Number(localStorage.getItem(bestKey(key)) || 0);
-}
+function bestKey(key) { return 'snakeBest_' + key; }
+function getBest(key) { return Number(localStorage.getItem(bestKey(key)) || 0); }
 
 function updateHud() {
   const k = state === 'menu' ? selectedKey : modeKey;
@@ -290,14 +370,19 @@ function resetGame() {
 
 function showMenu() {
   state = 'menu';
-  const buttons = Object.entries(MODES).map(([key, m], i) =>
-    `<button data-mode="${key}" class="${key === selectedKey ? 'active' : ''}">${i + 1}. ${m.name}</button>`
-  ).join('');
+  const buttons = Object.entries(MODES).map(([key, m], i) => `
+    <button class="mode-btn ${key === selectedKey ? 'active' : ''}" data-mode="${key}">
+      ${i + 1}. ${m.name}
+      <small>${m.desc}</small>
+    </button>`).join('');
   showOverlay(`
-    <div class="title">G.O.T. SNAKE</div>
+    <div class="eyebrow">G.O.T. Games Original</div>
+    <div class="title">G.O.T. <span>SNAKE</span></div>
+    <div class="subtitle">Eat. Grow. Don't bite yourself.</div>
     <div class="modes">${buttons}</div>
     <div class="desc">${MODES[selectedKey].desc}</div>
-    <button class="primary" id="startBtn">Start</button>
+    <button class="primary" id="startBtn">Start Game</button>
+    <div class="hint">Press 1-4 to pick a mode, Enter to start</div>
   `);
   content.querySelectorAll('[data-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -310,7 +395,7 @@ function showMenu() {
 }
 
 function startCountdown() {
-  if (state === 'countdown' || state === 'playing') return; // guard against double start
+  if (state === 'countdown' || state === 'playing') return;
   resetGame();
   state = 'countdown';
   const steps = ['3', '2', '1', 'GO!'];
@@ -332,8 +417,10 @@ function togglePause() {
   if (state === 'playing') {
     state = 'paused';
     showOverlay(`
-      <div class="title">PAUSED</div>
-      <div class="hint">Press Space to resume, M for menu</div>
+      <div>
+        <div class="title">PAUSED</div>
+        <div class="hint">Space to resume &middot; M for menu</div>
+      </div>
     `);
   } else if (state === 'paused') {
     state = 'playing';
@@ -347,11 +434,14 @@ function gameOver() {
   const best = Math.max(score, getBest(modeKey));
   localStorage.setItem(bestKey(modeKey), best);
   showOverlay(`
-    <div class="title">GAME OVER</div>
-    <div class="final">Final score: ${score}</div>
-    <div class="desc">Best in ${MODES[modeKey].name}: ${best}</div>
-    <button class="primary" id="againBtn">Play Again</button>
-    <div class="hint">Enter to play again &middot; M for menu</div>
+    <div>
+      <div class="eyebrow">Game Over</div>
+      <div class="title">THE SNAKE <span>FELL</span></div>
+      <div class="final">Final score: ${score}</div>
+      <div class="subtitle">Best in ${MODES[modeKey].name}: ${best}</div>
+      <button class="primary" id="againBtn">Play Again</button>
+      <div class="hint">Enter to play again &middot; M for menu</div>
+    </div>
   `);
   document.getElementById('againBtn').addEventListener('click', startCountdown);
   updateHud();
@@ -360,8 +450,8 @@ function gameOver() {
 // ---------- Movement ----------
 function setDirection(dx, dy) {
   if (state !== 'playing') return;
-  // Block reversing into the neck. Checked against the heading in use and the pending one,
-  // so pressing two keys within a single tick cannot reverse the snake.
+  // Blocks reversing into the neck, checked against the current heading and the pending one,
+  // so two quick key presses in one tick cannot reverse the snake.
   if (dx === -direction.x && dy === -direction.y) return;
   if (dx === -nextDirection.x && dy === -nextDirection.y) return;
   if (dx === nextDirection.x && dy === nextDirection.y) return;
@@ -390,8 +480,7 @@ function tick() {
   const poisonIdx = poison.findIndex(p => samePos(p, head));
   const grow = ateFood || bonusType === 'gold';
 
-  // The tail moves away this tick unless the snake grows,
-  // so moving into the tail's current cell is allowed.
+  // The tail moves away this tick unless the snake grows, so moving into the tail's cell is allowed
   const bodyToCheck = grow ? snake : snake.slice(0, -1);
   if (bodyToCheck.some(s => samePos(s, head))) return gameOver();
 
@@ -429,17 +518,17 @@ function center(p) {
 
 function drawGrid() {
   ctx.fillStyle = '#0a0a0f';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
   ctx.strokeStyle = 'rgba(212, 175, 55, 0.06)';
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (let i = 0; i <= COLS; i++) {
     ctx.moveTo(i * CELL, 0);
-    ctx.lineTo(i * CELL, canvas.height);
+    ctx.lineTo(i * CELL, ROWS * CELL);
   }
   for (let j = 0; j <= ROWS; j++) {
     ctx.moveTo(0, j * CELL);
-    ctx.lineTo(canvas.width, j * CELL);
+    ctx.lineTo(COLS * CELL, j * CELL);
   }
   ctx.stroke();
 }
@@ -488,7 +577,6 @@ function drawPoison(p, pulse) {
 }
 
 function drawBonus(b, pulse) {
-  // Blink in the last two seconds so it is clear the item is about to vanish
   if (b.expires - Date.now() < 2000 && Math.floor(Date.now() / 150) % 2) return;
   const c = center(b);
   const r = CELL * (0.38 + 0.04 * pulse);
@@ -536,8 +624,7 @@ function drawSnake(ts) {
   }
 
   // Head
-  const h = snake[0];
-  const c = center(h);
+  const c = center(snake[0]);
   const dx = direction.x;
   const dy = direction.y;
   const headColor = isSlow ? '#7fdcff' : '#ffd54a';
@@ -568,7 +655,7 @@ function drawSnake(ts) {
     ctx.fill();
   });
 
-  // Tongue flicks out for a short burst every 1.4 seconds
+  // Tongue flicks out in a short burst every 1.4 seconds
   if (ts % 1400 < 380) {
     const bx = c.x + dx * CELL * 0.5;
     const by = c.y + dy * CELL * 0.5;
@@ -611,6 +698,22 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
+// ---------- Full screen ----------
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+fsBtn.addEventListener('click', toggleFullscreen);
+document.addEventListener('fullscreenchange', () => {
+  fsBtn.textContent = document.fullscreenElement ? 'Exit Full Screen (F)' : 'Full Screen (F)';
+  resizeBoard();
+});
+window.addEventListener('resize', resizeBoard);
+
 // ---------- Input ----------
 const DIR_KEYS = {
   ArrowUp: [0, -1], w: [0, -1], W: [0, -1],
@@ -633,6 +736,8 @@ document.addEventListener('keydown', e => {
     if (state === 'menu' || state === 'over') startCountdown();
   } else if (e.key === 'm' || e.key === 'M' || e.key === 'Escape') {
     if (state === 'over' || state === 'paused') showMenu();
+  } else if (e.key === 'f' || e.key === 'F') {
+    toggleFullscreen();
   } else if (state === 'menu' && ['1', '2', '3', '4'].includes(e.key)) {
     selectedKey = Object.keys(MODES)[Number(e.key) - 1];
     showMenu();
@@ -657,6 +762,7 @@ canvas.addEventListener('touchend', e => {
 });
 
 // ---------- Start ----------
+resizeBoard();
 showMenu();
 requestAnimationFrame(loop);
 </script>
