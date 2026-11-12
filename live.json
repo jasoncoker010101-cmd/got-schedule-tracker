@@ -1,14 +1,15 @@
 {
-  "updated": "2026-11-12T19:35:49.553671Z",
+  "updated": "2026-11-12T20:29:07.543701Z",
   "platforms": {
-    "twitch": false,
+    "twitch": true,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": false,
+      "live": true,
+      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
