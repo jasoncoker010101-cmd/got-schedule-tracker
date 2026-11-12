@@ -48,12 +48,12 @@
     .logo { font:800 21px var(--display); letter-spacing:-.7px; white-space:nowrap; }
     .logo span { color:var(--accent); }
     .site-nav { display:flex; align-items:center; gap:7px; }
-    .site-nav a { padding:9px 15px; border:1px solid var(--border); border-radius:9px; background:var(--surface-raised); color:var(--text); font-size:14px; font-weight:700; transition:transform .2s,border-color .2s,color .2s; }
+    .site-nav a { padding:9px 15px; border:1px solid var(--border); border-radius:9px; background:var(--surface-raised); color:var(--text); font-size:14px; font-weight:700; transition:transform .2s, border-color .2s, background .2s; }
     .site-nav a:hover { border-color:rgba(239,189,50,.55); transform:translateY(-2px); }
     .site-nav a.active { border-color:var(--accent); background:var(--accent); color:#211a0b; }
     main { width:min(940px, calc(100% - 36px)); margin:42px auto 60px; }
-    .profile-card { overflow:hidden; border:1px solid var(--border); border-radius:22px; background:linear-gradient(145deg,rgba(30,29,25,.98),rgba(22,22,20,.98)); box-shadow:0 28px 90px rgba(0,0,0,.32); animation:riseIn .7s cubic-bezier(.2,.8,.2,1) both; }
-    .banner { position:relative; height:245px; overflow:hidden; background:radial-gradient(ellipse at 72% 12%,rgba(133,103,238,.67),transparent 40%),radial-gradient(ellipse at 14% 82%,rgba(160,105,43,.32),transparent 42%),linear-gradient(120deg,#29213d,#342d56 55%,#191a23); background-position:center; background-size:cover; }
+    .profile-card { overflow:hidden; border:1px solid var(--border); border-radius:22px; background:linear-gradient(145deg,rgba(30,29,25,.98),rgba(22,22,20,.98)); box-shadow:0 28px 90px rgba(0,0,0,.32); }
+    .banner { position:relative; height:245px; overflow:hidden; background:radial-gradient(ellipse at 72% 12%,rgba(133,103,238,.67),transparent 40%),radial-gradient(ellipse at 14% 82%,rgba(160,105,173,.22),transparent 32%),linear-gradient(135deg,#2a231d,#171513); }
     .banner::before,.banner::after { content:""; position:absolute; border:1px solid rgba(255,230,162,.15); border-radius:50%; pointer-events:none; }
     .banner::before { width:390px;height:390px;right:9%;top:-290px;box-shadow:0 0 0 32px rgba(255,230,162,.025),0 0 0 75px rgba(255,230,162,.02); animation:orbitGlow 16s ease-in-out infinite alternate; }
     .banner::after { width:220px;height:220px;right:24%;top:-130px; }
@@ -64,12 +64,12 @@
     .avatar { display:block;position:relative;z-index:1;width:124px;height:124px;border:5px solid var(--surface);border-radius:50%;background:var(--surface-soft);object-fit:cover; }
     .avatar-frame.owner { filter:drop-shadow(0 0 18px rgba(255,214,99,.38)); }
     .avatar-frame.owner .avatar { border:4px solid var(--owner-gold);box-shadow:0 0 0 4px rgba(255,220,114,.13),0 0 32px rgba(255,220,114,.22); }
-    .owner-crown { position:absolute;z-index:3;top:-35px;left:50%;transform:translateX(-50%);color:var(--owner-gold);font-size:38px;line-height:1;text-shadow:0 0 8px rgba(255,220,114,.95),0 0 22px rgba(255,220,114,.6),0 3px 4px #000;animation:crownFloat 3s ease-in-out infinite;pointer-events:none; }
+    .owner-crown { position:absolute;z-index:3;top:-35px;left:50%;transform:translateX(-50%);color:var(--owner-gold);font-size:38px;line-height:1;text-shadow:0 0 8px rgba(255,220,114,.95),0 0 22px rgba(255,220,114,.5); animation:crownFloat 4s ease-in-out infinite; }
     .profile-info { min-width:0;padding:0 0 7px;animation:fadeIn .75s .1s both; }
     .username { margin:0;font:800 clamp(28px,5vw,43px)/1 var(--display);letter-spacing:-.055em;overflow-wrap:anywhere; }
     .profile-label { margin-top:8px;color:#c0baad;font-size:13px; }
     .role-list { display:flex;flex-wrap:wrap;gap:7px;margin-top:11px; }
-    .role-badge { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:800;letter-spacing:.7px;line-height:1.2;text-transform:uppercase;transition:transform .2s,box-shadow .2s; }
+    .role-badge { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:800;letter-spacing:.7px;line-height:1.2; }
     .role-badge:hover { transform:translateY(-2px); }
     .role-owner { color:#ffe7a3;background:linear-gradient(135deg,#59441b,#30230d);border-color:#b78b2b;box-shadow:0 0 15px rgba(239,189,50,.12); }
     .role-administrator { color:#ffaaaa;background:rgba(190,55,55,.16);border-color:rgba(255,100,100,.4); }
@@ -78,13 +78,13 @@
     .role-vip { color:#ffb6dc;background:rgba(190,70,140,.16);border-color:rgba(255,120,190,.4); }
     .role-verified { color:#9af0bd;background:rgba(50,160,95,.16);border-color:rgba(90,220,140,.4); }
     .role-member { color:#d0d0d5;background:rgba(140,140,150,.13);border-color:rgba(160,160,170,.3); }
-    .founder-label { display:inline-flex;align-items:center;gap:7px;margin-top:10px;color:var(--owner-gold);font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;text-shadow:0 0 14px rgba(245,212,119,.3); }
+    .founder-label { display:inline-flex;align-items:center;gap:7px;margin-top:10px;color:var(--owner-gold);font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;text-shadow:0 0 12px rgba(255,220,114,.18); }
     .edit-button { flex-shrink:0;margin-bottom:8px; }
     .button { border:0;border-radius:10px;padding:12px 18px;background:var(--accent);color:#211a0b;font-weight:800;transition:transform .2s,box-shadow .2s,filter .2s; }
     .button:hover { transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 10px 24px rgba(239,189,50,.2); }
     .button.secondary { background:var(--surface-soft);border:1px solid var(--border);color:var(--text); }
     .profile-details { display:grid;grid-template-columns:1.35fr .85fr;gap:14px;margin-top:29px; }
-    .detail-section { min-width:0;padding:21px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(145deg,rgba(40,39,32,.8),rgba(31,30,26,.88));animation:riseIn .65s both;transition:border-color .25s,transform .25s,background .25s; }
+    .detail-section { min-width:0;padding:21px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(145deg,rgba(40,39,32,.8),rgba(31,30,26,.88));animation:riseIn .65s both; }
     .detail-section:hover { transform:translateY(-2px);border-color:rgba(239,189,50,.24);background:linear-gradient(145deg,rgba(46,43,33,.88),rgba(31,30,26,.92)); }
     .detail-section.about-section { grid-column:1/-1;min-height:120px; }
     .detail-section h2 { display:flex;align-items:center;gap:9px;margin:0 0 13px;font:700 15px var(--display); }
@@ -182,7 +182,7 @@
             <h1 id="username" class="username"></h1>
             <div id="profileLabel" class="profile-label">G.O.T. Games Player</div>
             <div id="roleList" class="role-list"></div>
-            <div id="founderLabel" class="founder-label hidden">♛ &nbsp;Founder of G.O.T. Games</div>
+            <div id="founderLabel" class="founder-label hidden">♛ &nbsp;Top Fan of G.O.T. Games</div>
           </div>
         </div>
         <button id="editButton" class="button edit-button hidden" type="button">Edit Profile</button>
@@ -224,7 +224,7 @@
       <div class="form-group">
         <label for="editPlatform">Favorite Platform</label>
         <select id="editPlatform">
-          <option value="">Not specified</option><option value="Twitch">Twitch</option><option value="YouTube">YouTube</option><option value="Rumble">Rumble</option><option value="TikTok">TikTok</option><option value="Other">Other</option>
+          <option value="">Not specified</option><option value="Twitch">Twitch</option><option value="YouTube">YouTube</option><option value="Rumble">Rumble</option><option value="TikTok">TikTok</option>
         </select>
       </div>
       <hr class="editor-divider">
@@ -236,8 +236,8 @@
       <span class="hint">Social links must use HTTPS and the matching platform's website.</span>
       <hr class="editor-divider">
       <h3 class="editor-subheading">Profile Pictures</h3>
-      <div class="form-group"><label for="editAvatar">Profile Picture</label><input id="editAvatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><span class="hint">Optional. Maximum file size: 5 MB.</span></div>
-      <div class="form-group"><label for="editBanner">Profile Banner</label><input id="editBanner" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><span class="hint">Optional. Maximum file size: 5 MB.</span></div>
+      <div class="form-group"><label for="editAvatar">Profile Picture</label><input id="editAvatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><span class="hint">Optional. Max 5MB.</span></div>
+      <div class="form-group"><label for="editBanner">Profile Banner</label><input id="editBanner" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><span class="hint">Optional. Max 5MB.</span></div>
       <div class="editor-actions">
         <button id="saveButton" class="button" type="submit">Save Changes</button>
         <button id="cancelButton" class="button secondary" type="button">Cancel</button>
@@ -389,7 +389,7 @@
         if(!data) { showNotFound(); return; }
         requestedUsername = data.username;
       }
-      const {data:profile,error} = await supabaseClient.from("profiles").select(`id,username,avatar_url,banner_url,bio,favorite_platform,created_at,youtube_url,twitch_url,tiktok_url,rumble_url`).ilike("username",requestedUsername).maybeSingle();
+      const {data:profile,error} = await supabaseClient.from("profiles").select(`id,username,avatar_url,banner_url,bio,favorite_platform,created_at,youtube_url,twitch_url,tiktok_url,rumble_url`).eq("username",requestedUsername).maybeSingle();
       if(error) throw error;
       if(!profile) { showNotFound(); return; }
       const roles = await loadProfileRoles(profile.id);
