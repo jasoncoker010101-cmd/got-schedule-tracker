@@ -1,74 +1,142 @@
-<!DOCTYPE html> 
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Javascript Snakes</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <link href="snakes.min.css" media="screen, print" rel="stylesheet" type="text/css" /> 
-</head> 
- 
-<body> 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 { margin: 0 0 10px 0; }
+    .score-board { font-size: 20px; margin-bottom: 10px; }
+    canvas {
+      border: 4px solid #4CAF50;
+      background-color: #000000;
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #45a049; }
+  </style>
+</head>
+<body>
 
-  <div id="snakes">
+  <h1>🐍 Snake</h1>
+  <div class="score-board">Score: <span id="score">0</span></div>
+  <canvas id="game" width="400" height="400"></canvas>
+  <button onclick="resetGame()">Restart Game</button>
 
-    <img src='s.gif' class='watermark top'>
-    <img src='s.gif' class='watermark left'>
-    <img src='s.gif' class='watermark right'>
-
-    <div id='sound' class='on' title='toggle music and fx' style='display:none;'></div>
-
-    <div id="score">
-      <span class="current"><span class='label'>Score: </span><span class="value">000000</span></span>
-      <span class="high"><span class='label'>High: </span><span class="value">000000</span></span>
-    </div>
-
-    <canvas id="canvas">
-      <div class='unsupported'>
-        Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
-      </div>
-    </canvas>
-
-    <div id="overlay">
-
-      <img id="logo" src="images/logo.png">
-
-      <div id="loading" class='menu' style='display:none;'>
-        <h1>Loading...</h1>
-      </div>
-
-      <div id="highscores" class='menu' style='display:none;'>
-        <h1>High Scores</h1>
-        <ul></ul>
-      </div>
-
-      <div id="credits" class='menu' style='display:none;'>
-        <ul>
-          <li class='author'>Created by <a target="_credits" href="https://jakesgordon.com/writing/starting-snakes/">Jake Gordon</a></li>
-          <li><span class='key'>            Logo </span> <a class='value' target="_credits" href="https://jakesgordon.com/writing/quest-for-indy-font/">Jake Gordon</a></li>
-          <li><span class='key'>           Fonts </span> <a class='value' target="_credits" href="http://www.dafont.com/sf-fedora.font">SF Fedora</a></li>
-          <li><span class='key'>       Watermark </span> <a class='value' target="_credits" href="http://www.istockphoto.com/file_closeup.php?id=4788598">VichanChairat</a></li>
-          <li><span class='key'>           Music </span> <a class='value' target="_credits" href="http://luckylionstudios.com/royalty-free-video-game-music-library/">Lucky Lion Studios</a></li>
-          <li><span class='key'>        Sound FX </span> <a class='value' target="_credits" href="http://www.premiumbeat.com/">Premium Beat</a></li>
-          <li><span class='key'>JS state machine </span> <a class='value' target="_credits" href="https://github.com/jakesgordon/javascript-state-machine">Jake Gordon</a></li>
-          <li><span class='key'>     JS selector </span> <a class='value' target="_credits" href="http://sizzlejs.com/">Sizzle</a></li>
-          <li><span class='key'>        JS audio </span> <a class='value' target="_credits" href="https://github.com/jakesgordon/javascript-audio-fx">Jake Gordon</a></li>
-          <li><span class='key'>    JS animation </span> <a class='value' target="_credits" href="http://berniesumption.com/software/animator/">Bernie Sumption</a></li>
-          <li><span class='key'>      JS counter </span> <a class='value' target="_credits" href="https://github.com/mrdoob/stats.js">Mr.Doob</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div id="help">
-      ( use the arrow and enter keys for control )
-    </div>
-
-  </div>
-
-  <script src="snakes.min.js"></script>
   <script>
-  Game.ready(function() {
-    game = Snakes();
-  });
-  </script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const box = 20;
 
-</body> 
+    // --- EASY SETTINGS TO EDIT ---
+    let gameSpeed = 120; // Lower = faster, Higher = slower
+    const fruits = ["🍎", "🍌", "🍒", "🍇", "🍓"]; // Edit or add fruit emojis here!
+    let snakeHeadColor = "#4CAF50";
+    let snakeBodyColor = "#8BC34A";
+    // -----------------------------
+
+    let snake, direction, food, score, gameLoop;
+
+    function init() {
+      snake = [{ x: 9 * box, y: 10 * box }];
+      direction = "RIGHT";
+      score = 0;
+      document.getElementById("score").innerText = score;
+      spawnFood();
+      clearInterval(gameLoop);
+      gameLoop = setInterval(draw, gameSpeed);
+    }
+
+    function spawnFood() {
+      food = {
+        x: Math.floor(Math.random() * 19 + 1) * box,
+        y: Math.floor(Math.random() * 19 + 1) * box,
+        emoji: fruits[Math.floor(Math.random() * fruits.length)]
+      };
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault(); // Stops page from scrolling when pressing arrow keys
+      }
+      if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    });
+
+    function draw() {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Snake
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? snakeHeadColor : snakeBodyColor;
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      // Draw Fruit Emoji
+      ctx.font = "18px Arial";
+      ctx.fillText(food.emoji, food.x + 1, food.y + 17);
+
+      // Move Snake
+      let headX = snake[0].x;
+      let headY = snake[0].y;
+      if (direction === "LEFT") headX -= box;
+      if (direction === "UP") headY -= box;
+      if (direction === "RIGHT") headX += box;
+      if (direction === "DOWN") headY += box;
+
+      // Eat Fruit
+      if (headX === food.x && headY === food.y) {
+        score += 10;
+        document.getElementById("score").innerText = score;
+        spawnFood();
+      } else {
+        snake.pop();
+      }
+
+      const newHead = { x: headX, y: headY };
+
+      // Check Wall or Self Collision
+      if (
+        headX < 0 || headY < 0 ||
+        headX >= canvas.width || headY >= canvas.height ||
+        snake.some(part => part.x === newHead.x && part.y === newHead.y)
+      ) {
+        clearInterval(gameLoop);
+        alert("Game Over! Final Score: " + score);
+        return;
+      }
+
+      snake.unshift(newHead);
+    }
+
+    function resetGame() {
+      init();
+    }
+
+    init();
+  </script>
+</body>
 </html>
