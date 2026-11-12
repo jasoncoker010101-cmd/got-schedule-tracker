@@ -19,7 +19,7 @@
       --surface-light: #22252c;
       --text: #f4f4f5;
       --muted: #a1a1aa;
-      --accent: #8b7cff;
+      --accent: #e5b82a;
       --border: #30323a;
       --danger: #ff7373;
     }
@@ -49,26 +49,51 @@
       align-items: center;
       justify-content: space-between;
       gap: 15px;
-      padding: 0 7%;
+      padding: 12px 7%;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
+      flex-wrap: wrap;
     }
 
     .logo {
       font-size: 21px;
       font-weight: 800;
       letter-spacing: -0.7px;
+      white-space: nowrap;
     }
 
     .logo span { color: var(--accent); }
 
-    .back-link {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 600;
+    /* Main navigation */
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
     }
 
-    .back-link:hover { color: var(--text); }
+    .site-nav a {
+      padding: 9px 15px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-light);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      transition: background .2s, border-color .2s, transform .2s;
+    }
+
+    .site-nav a:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .site-nav a.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #191b20;
+    }
 
     main {
       width: min(900px, 92%);
@@ -175,7 +200,7 @@
       border-radius: 9px;
       padding: 11px 17px;
       background: var(--accent);
-      color: white;
+      color: #191b20;
       font-weight: 700;
       transition: opacity .2s;
     }
@@ -295,7 +320,23 @@
     }
 
     @media (max-width: 600px) {
-      .topbar { padding: 0 5%; }
+      .topbar {
+        padding: 14px 5%;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .site-nav {
+        width: 100%;
+      }
+
+      .site-nav a {
+        flex: 1;
+        text-align: center;
+        padding: 9px 10px;
+        font-size: 13px;
+      }
+
       main { margin: 25px auto; }
       .banner { height: 155px; }
       .profile-content { padding: 0 18px 22px; }
@@ -306,6 +347,17 @@
       .edit-button { padding: 9px 12px; font-size: 13px; }
       .editor { padding: 18px; }
     }
+
+    @media (max-width: 380px) {
+      .profile-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .edit-button {
+        margin-left: 108px;
+      }
+    }
   </style>
 </head>
 
@@ -313,7 +365,12 @@
 
   <header class="topbar">
     <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
-    <a class="back-link" href="index.html">← Back to Schedule</a>
+
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html">Schedule</a>
+      <a href="profile.html" class="active" aria-current="page">Profile</a>
+      <a href="player-directory.html">Players</a>
+    </nav>
   </header>
 
   <main>
