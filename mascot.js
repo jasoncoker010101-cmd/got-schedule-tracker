@@ -5,8 +5,18 @@
   const week = document.getElementById("week");
   if (!week || document.getElementById("showFilters")) return;
 
+  // Put the anime catalog in the site's main navigation so visitors can find it.
+  const mainNav = document.querySelector(".main-nav");
+  if (mainNav && !mainNav.querySelector('a[href="anime.html"]')) {
+    const animeLink = document.createElement("a");
+    animeLink.href = "anime.html";
+    animeLink.textContent = "Anime Search";
+    mainNav.append(animeLink);
+  }
+
   const style = document.createElement("style");
   style.textContent = `
+    .main-nav { grid-template-columns:repeat(3,minmax(0,1fr)); }
     #showFilters {
       display:flex;
       align-items:center;
@@ -85,6 +95,8 @@
     @media(max-width:520px) {
       #showFilters { gap:8px; padding:10px; }
       #showFilters .show-count { flex-basis:100%; }
+      .main-nav { gap:6px; }
+      .main-nav a { font-size:.82rem; padding:10px 4px; }
     }
     @media(prefers-reduced-motion:reduce) {
       #week .show-favorite { transition:none; }
@@ -144,7 +156,7 @@
   const normalize = value => (value || "")
     .toLocaleLowerCase()
     .replace(/[’']/g, "")
-    .replace(/[^\\p{L}\\p{N}]+/gu, " ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
 
   function saveFavorites() {
