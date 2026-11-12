@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G.O.T. Rhythm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --gold:#e6b94f;
+  --pink:#ff5e9d;
+  --blue:#54c9ff;
+  --green:#58c982;
+  --dark:#11101b;
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 50% 0%,#34305c 0%,transparent 55%),
+    #100f19;
+  color:white;
+  font-family:'Bricolage Grotesque',sans-serif;
+}
+
+header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:15px 5%;
+  border-bottom:2px solid #ffffff18;
+  background:#11101bd9;
+}
+
+.brand {
+  font-weight:800;
+  letter-spacing:1px;
+  font-size:20px;
+}
+
+.brand span { color:var(--gold); }
+
+nav {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+nav a {
+  color:#ddd;
+  text-decoration:none;
+  padding:9px 13px;
+  border-radius:9px;
+  font-size:14px;
+  font-weight:700;
+}
+
+nav a:hover, nav a.active {
+  background:var(--gold);
+  color:#17131a;
+}
+
+main {
+  width:min(1100px,95%);
+  margin:25px auto 45px;
+}
+
+.heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:15px;
+  margin-bottom:15px;
+}
+
+h1 {
+  margin:0;
+  font-size:clamp(32px,6vw,54px);
+  font-weight:800;
+  letter-spacing:2px;
+  text-shadow:4px 4px 0 #000;
+}
+
+.heading p {
+  color:#bdb8d0;
+  margin:5px 0 0;
+}
+
+.difficulty {
+  color:var(--gold);
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:1px;
+}
+
+.game-shell {
+  border:3px solid #000;
+  border-radius:15px;
+  overflow:hidden;
+  background:#191627;
+  box-shadow:0 8px 0 #05040a,0 18px 45px #0008;
+}
+
+.hud {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  padding:12px;
+  background:#211d32;
+  border-bottom:3px solid #080710;
+}
+
+.stat {
+  text-align:center;
+  padding:8px 4px;
+  background:#100e19;
+  border:2px solid #45405a;
+  border-radius:8px;
+}
+
+.stat small {
+  display:block;
+  color:#a9a2bd;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+
+.stat strong {
+  display:block;
+  margin-top:3px;
+  font-size:19px;
+}
+
+.health-wrap {
+  padding:10px 15px;
+  background:#171424;
+}
+
+.health-label {
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  font-weight:800;
+  color:#c9c3d7;
+  margin-bottom:6px;
+}
+
+.health-track {
+  height:13px;
+  border:2px solid #080710;
+  border-radius:20px;
+  background:#38202d;
+  overflow:hidden;
+}
+
+#health {
+  width:100%;
+  height:100%;
+  background:linear-gradient(90deg,#ff477e,#ffbd59,#65e58d);
+  transition:width .15s;
+}
+
+#gameCanvas {
+  display:block;
+  width:100%;
+  aspect-ratio: 16 / 9;
+  background:#171426;
+  touch-action:none;
+}
+
+.game-bottom {
+  padding:14px;
+  background:#211d32;
+  border-top:3px solid #080710;
+  text-align:center;
+}
+
+#message {
+  min-height:22px;
+  color:var(--gold);
+  font-weight:800;
+  margin-bottom:10px;
+}
+
+button {
+  border:2px solid #080710;
+  border-radius:9px;
+  padding:11px 20px;
+  background:var(--gold);
+  color:#17131a;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 4px 0 #8e6720;
+}
+
+button:active {
+  transform:translateY(3px);
+  box-shadow:0 1px 0 #8e6720;
+}
+
+#startButton {
+  min-width:170px;
+}
+
+.controls-hint {
+  color:#a9a2bd;
+  font-size:12px;
+  margin-top:12px;
+}
+
+.mobile-controls {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:13px;
+}
+
+.mobile-controls button {
+  padding:13px 3px;
+  font-size:22px;
+  border-radius:10px;
+  color:white;
+  box-shadow:0 4px 0 #090710;
+}
+
+.mobile-controls button:nth-child(1) { background:#bd55ff; }
+.mobile-controls button:nth-child(2) { background:#42b9ef; }
+.mobile-controls button:nth-child(3) { background:#65c96f; }
+.mobile-controls button:nth-child(4) { background:#ed5d86; }
+
+@media (min-width:750px) {
+  .mobile-controls { max-width:430px; margin:13px auto 0; }
+}
+
+@media (max-width:550px) {
+  header { align-items:flex-start; flex-direction:column; }
+  nav { width:100%; }
+  nav a { flex:1; text-align:center; padding:9px 4px; }
+  .heading { align-items:flex-start; flex-direction:column; }
+  .hud { gap:4px; padding:7px; }
+  .stat strong { font-size:16px; }
+  .stat small { font-size:9px; }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">G.O.T. <span>GAMES</span></div>
+  <nav aria-label="Main navigation">
+    <a href="index.html">Schedule</a>
+    <a href="player-directory.html">Players</a>
+    <a href="profile.html">Profile</a>
+    <a href="arcade.html" class="active">Games</a>
+  </nav>
+</header>
+
+<main>
+  <div class="heading">
+    <div>
+      <h1>G.O.T. RHYTHM</h1>
+      <p>Find the beat. Hit the arrows. Own the stage.</p>
+    </div>
+    <div class="difficulty">★ NORMAL MODE</div>
+  </div>
+
+  <section class="game-shell">
+    <div class="hud">
+      <div class="stat"><small>SCORE</small><strong id="score">0</strong></div>
+      <div class="stat"><small>COMBO</small><strong id="combo">0</strong></div>
+      <div class="stat"><small>ACCURACY</small><strong id="accuracy">100%</strong></div>
+      <div class="stat"><small>MISSES</small><strong id="misses">0</strong></div>
+    </div>
+
+    <div class="health-wrap">
+      <div class="health-label">
+        <span>LUKE</span>
+        <span>STAGE ENERGY</span>
+        <span>RIVAL</span>
+      </div>
+      <div class="health-track"><div id="health"></div></div>
+    </div>
+
+    <canvas id="gameCanvas" width="960" height="540">
+      Your browser does not support the game canvas.
+    </canvas>
+
+    <div class="game-bottom">
+      <div id="message">Ready to take the stage?</div>
+      <button id="startButton">START GAME</button>
+      <div class="controls-hint">
+        Keyboard: ← ↓ ↑ → &nbsp; | &nbsp; Mobile: Tap the four buttons below
+        <br>Press P to pause
+      </div>
+    </div>
+  </section>
+
+  <div class="mobile-controls">
+    <button data-lane="0" aria-label="Left">←</button>
+    <button data-lane="1" aria-label="Down">↓</button>
+    <button data-lane="2" aria-label="Up">↑</button>
+    <button data-lane="3" aria-label="Right">→</button>
+  </div>
+</main>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const scoreEl = document.getElementById("score");
+const comboEl = document.getElementById("combo");
+const accuracyEl = document.getElementById("accuracy");
+const missesEl = document.getElementById("misses");
+const healthEl = document.getElementById("health");
+const messageEl = document.getElementById("message");
+const startButton = document.getElementById("startButton");
+
+const W = 960;
+const H = 540;
+const lanes = [0,1,2,3];
+const laneX = [510,610,710,810];
+const laneColors = ["#c56aff","#52c9ff","#65d978","#ff668d"];
+const arrows = ["←","↓","↑","→"];
+
+const targetY = 420;
+const travelSpeed = 310;
+const hitWindow = 0.16;
+
+let notes = [];
+let particles = [];
+let score = 0;
+let combo = 0;
+let misses = 0;
+let hits = 0;
+let health = 100;
+let songTime = 0;
+let lastFrame = 0;
+let gameRunning = false;
+let paused = false;
+let gameOver = false;
+let audioContext = null;
+let nextBeat = 0;
+let animationId = null;
+let lastJudgement = "";
+let judgementTimer = 0;
+let characterBounce = 0;
+
+const BPM = 110;
+const beatLength = 60 / BPM;
+
+function makeChart() {
+  notes = [];
+
+  // Original note pattern, arranged in musical phrases.
+  const patterns = [
+    [0,1,2,3],
+    [0,2,1,3],
+    [3,2,0,1],
+    [1,1,2,3],
+    [0,2,0,3],
+    [2,3,1,0],
+    [3,1,2,0],
+    [0,1,3,2]
+  ];
+
+  let beat = 2;
+
+  for (let bar = 0; bar < 16; bar++) {
+    const pattern = patterns[bar % patterns.length];
+
+    for (let i = 0; i < 4; i++) {
+      const lane = pattern[i];
+
+      notes.push({
+        lane,
+        time: beat * beatLength,
+        judged:false,
+        missed:false
+      });
+
+      // Add occasional offbeat notes.
+      if ((bar + i) % 3 === 0) {
+        notes.push({
+          lane:(lane + 2) % 4,
+          time:(beat + 0.5) * beatLength,
+          judged:false,
+          missed:false
+        });
+      }
+
+      beat++;
+    }
+  }
+
+  notes.sort((a,b) => a.time - b.time);
+}
+
+function updateHUD() {
+  scoreEl.textContent = score.toLocaleString();
+  comboEl.textContent = combo;
+  missesEl.textContent = misses;
+
+  const accuracy = hits + misses === 0
+    ? 100
+    : Math.round((hits / (hits + misses)) * 100);
+
+  accuracyEl.textContent = accuracy + "%";
+  healthEl.style.width = health + "%";
+}
+
+function startAudio() {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  if (!audioContext) audioContext = new AudioCtx();
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+}
+
+function playTone(frequency, duration, type, volume) {
+  if (!audioContext) return;
+
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+  gain.gain.setValueAtTime(volume, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    audioContext.currentTime + duration
+  );
+
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+
+  osc.start();
+  osc.stop(audioContext.currentTime + duration);
+}
+
+function playBeat() {
+  const beat = nextBeat % 4;
+
+  if (beat === 0 || beat === 2) {
+    playTone(75,0.18,"sine",0.28);
+  } else {
+    playTone(170,0.07,"triangle",0.10);
+  }
+
+  if (beat === 1 || beat === 3) {
+    playTone(420,0.045,"square",0.035);
+  }
+
+  nextBeat++;
+}
+
+function startGame() {
+  startAudio();
+
+  score = 0;
+  combo = 0;
+  misses = 0;
+  hits = 0;
+  health = 100;
+  songTime = 0;
+  nextBeat = 0;
+  lastFrame = performance.now();
+  gameRunning = true;
+  paused = false;
+  gameOver = false;
+  particles = [];
+
+  makeChart();
+  updateHUD();
+
+  messageEl.textContent = "LET'S GO!";
+  startButton.textContent = "RESTART";
+
+  if (animationId) cancelAnimationFrame(animationId);
+  animationId = requestAnimationFrame(gameLoop);
+}
+
+function pauseGame() {
+  if (!gameRunning || gameOver) return;
+
+  paused = !paused;
+  messageEl.textContent = paused ? "PAUSED" : "BACK TO THE MUSIC!";
+  lastFrame = performance.now();
+
+  if (!paused) {
+    animationId = requestAnimationFrame(gameLoop);
+  } else {
+    draw();
+  }
+}
+
+function endGame() {
+  gameRunning = false;
+  gameOver = true;
+
+  const total = hits + misses;
+  const accuracy = total ? Math.round(hits / total * 100) : 0;
+
+  let grade = "KEEP PRACTICING!";
+  if (accuracy >= 95) grade = "S RANK!";
+  else if (accuracy >= 85) grade = "A RANK!";
+  else if (accuracy >= 70) grade = "B RANK!";
+  else if (accuracy >= 50) grade = "C RANK!";
+
+  messageEl.textContent = "SONG COMPLETE — " + grade;
+  startButton.textContent = "PLAY AGAIN";
+  draw();
+}
+
+function hitLane(lane) {
+  if (!gameRunning || paused || gameOver) return;
+
+  let bestNote = null;
+  let bestDistance = Infinity;
+
+  for (const note of notes) {
+    if (note.judged || note.missed || note.lane !== lane) continue;
+
+    const distance = Math.abs(note.time - songTime);
+
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestNote = note;
+    }
+  }
+
+  if (bestNote && bestDistance <= hitWindow) {
+    bestNote.judged = true;
+    hits++;
+
+    if (bestDistance <= 0.065) {
+      score += 350;
+      lastJudgement = "PERFECT!";
+      health = Math.min(100,health + 2);
+      spawnParticles(laneX[lane],targetY,laneColors[lane],14);
+    } else if (bestDistance <= 0.11) {
+      score += 200;
+      lastJudgement = "GOOD!";
+      health = Math.min(100,health + 1);
+      spawnParticles(laneX[lane],targetY,laneColors[lane],8);
+    } else {
+      score += 100;
+      lastJudgement = "OK!";
+    }
+
+    combo++;
+    judgementTimer = 0.5;
+    playTone(500 + lane * 100,0.08,"sine",0.12);
+    characterBounce = 1;
+    updateHUD();
+  } else {
+    // Pressing an arrow without a nearby note does not cost health.
+    lastJudgement = " ";
+  }
+}
+
+function missNote(note) {
+  note.missed = true;
+  misses++;
+  combo = 0;
+  health = Math.max(0,health - 8);
+  lastJudgement = "MISS!";
+  judgementTimer = 0.5;
+  playTone(100,0.15,"sawtooth",0.10);
+  updateHUD();
+
+  if (health <= 0) {
+    gameRunning = false;
+    gameOver = true;
+    messageEl.textContent = "OUT OF ENERGY! TRY AGAIN!";
+    startButton.textContent = "TRY AGAIN";
+  }
+}
+
+function spawnParticles(x,y,color,count) {
+  for (let i=0; i<count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 50 + Math.random() * 180;
+
+    particles.push({
+      x,y,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      life:0.5 + Math.random()*0.4,
+      maxLife:0.9,
+      color,
+      size:3 + Math.random()*5
+    });
+  }
+}
+
+function roundedRect(x,y,w,h,r,color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  ctx.fill();
+}
+
+function drawBackground() {
+  const pulse = Math.sin(songTime * Math.PI * 2 * BPM / 60) * 0.5 + 0.5;
+
+  const gradient = ctx.createLinearGradient(0,0,0,H);
+  gradient.addColorStop(0,"#343052");
+  gradient.addColorStop(0.55,"#252039");
+  gradient.addColorStop(1,"#11101b");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0,0,W,H);
+
+  // Distant city shapes.
+  for (let i=0; i<13; i++) {
+    const x = i*78 - 10;
+    const height = 100 + (i*37 % 90);
+
+    ctx.fillStyle = i%2 ? "#211e35" : "#29233f";
+    ctx.fillRect(x,235-height,65,height+120);
+
+    for (let j=0; j<4; j++) {
+      ctx.fillStyle = (i+j)%3 === 0 ? "#e6b94f66" : "#63b9e944";
+      ctx.fillRect(x+12+j%2*23,250-height+j*28,8,12);
+    }
+  }
+
+  // Neon sign.
+  ctx.save();
+  ctx.translate(480,95);
+  ctx.rotate(-0.025);
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = "#ff5e9d";
+  ctx.strokeStyle = "#ff5e9d";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(-125,-35,250,70);
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 28px Bricolage Grotesque";
+  ctx.textAlign = "center";
+  ctx.fillText("G.O.T. MUSIC BATTLE",0,9);
+  ctx.restore();
+
+  // Stage lights.
+  for (let i=0; i<5; i++) {
+    const x = 80 + i*200;
+    ctx.save();
+    ctx.globalAlpha = 0.07 + pulse*0.06;
+    ctx.fillStyle = i%2 ? "#ff5e9d" : "#54c9ff";
+    ctx.beginPath();
+    ctx.moveTo(x,0);
+    ctx.lineTo(x-100,390);
+    ctx.lineTo(x+100,390);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Floor.
+  ctx.fillStyle = "#171322";
+  ctx.fillRect(0,385,W,155);
+  ctx.strokeStyle = "#554766";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0,385);
+  ctx.lineTo(W,385);
+  ctx.stroke();
+
+  for (let i=0; i<12; i++) {
+    ctx.strokeStyle = "#ffffff0b";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(i*100,385);
+    ctx.lineTo(480+(i-5)*180,540);
+    ctx.stroke();
+  }
+}
+
+function drawSpeaker(x,y,scale) {
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(scale,scale);
+
+  roundedRect(-38,-65,76,130,9,"#090912");
+  roundedRect(-32,-59,64,118,6,"#383248");
+
+  for (const cy of [-28,30]) {
+    ctx.fillStyle = "#11101b";
+    ctx.beginPath();
+    ctx.arc(0,cy,23,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#a39ab3";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0,cy,17,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle = "#686077";
+    ctx.beginPath();
+    ctx.arc(0,cy,7,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawLuke() {
+  const bob = Math.sin(songTime*8)*4*characterBounce;
+  characterBounce *= 0.88;
+
+  ctx.save();
+  ctx.translate(185,305+bob);
+
+  // Shadow.
+  ctx.fillStyle = "#0007";
+  ctx.beginPath();
+  ctx.ellipse(0,115,95,15,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Legs.
+  roundedRect(-55,55,43,65,12,"#171a2b");
+  roundedRect(12,55,43,65,12,"#171a2b");
+  roundedRect(-63,108,57,18,7,"#090a12");
+  roundedRect(7,108,57,18,7,"#090a12");
+
+  // Hoodie body.
+  roundedRect(-70,-28,140,105,22,"#101016");
+
+  // Hood.
+  ctx.fillStyle = "#292832";
+  ctx.beginPath();
+  ctx.arc(0,-24,58,Math.PI,Math.PI*2);
+  ctx.fill();
+
+  // Arms.
+  ctx.save();
+  ctx.rotate(-0.08);
+  roundedRect(-105,-17,42,95,17,"#15151d");
+  roundedRect(63,-17,42,95,17,"#15151d");
+  roundedRect(-105,61,42,19,8,"#e9b99b");
+  roundedRect(63,61,42,19,8,"#e9b99b");
+  ctx.restore();
+
+  // Shirt and zipper.
+  roundedRect(-21,-20,42,85,8,"#f3f0e9");
+  ctx.strokeStyle = "#777";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0,-25);
+  ctx.lineTo(0,68);
+  ctx.stroke();
+
+  // Neck.
+  roundedRect(-17,-63,34,34,8,"#e8b69a");
+
+  // Head.
+  ctx.fillStyle = "#e8b69a";
+  ctx.strokeStyle = "#090810";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.ellipse(0,-89,57,66,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Ears.
+  ctx.fillStyle = "#d99e82";
+  ctx.beginPath();
+  ctx.arc(-55,-87,12,0,Math.PI*2);
+  ctx.arc(55,-87,12,0,Math.PI*2);
+  ctx.fill();
+
+  // Hair.
+  ctx.fillStyle = "#8b4a2b";
+  ctx.beginPath();
+  ctx.moveTo(-53,-113);
+  ctx.quadraticCurveTo(-63,-169,-16,-157);
+  ctx.quadraticCurveTo(15,-172,37,-145);
+  ctx.quadraticCurveTo(65,-133,50,-102);
+  ctx.lineTo(35,-111);
+  ctx.lineTo(20,-125);
+  ctx.lineTo(0,-112);
+  ctx.lineTo(-18,-125);
+  ctx.lineTo(-37,-106);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Beard.
+  ctx.fillStyle = "#9a5530";
+  ctx.beginPath();
+  ctx.moveTo(-47,-77);
+  ctx.quadraticCurveTo(-52,-35,-22,-24);
+  ctx.quadraticCurveTo(0,-12,22,-24);
+  ctx.quadraticCurveTo(52,-42,47,-78);
+  ctx.lineTo(29,-64);
+  ctx.quadraticCurveTo(0,-48,-29,-64);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Eyes.
+  ctx.strokeStyle = "#33201a";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(-28,-93);
+  ctx.quadraticCurveTo(-17,-102,-6,-94);
+  ctx.moveTo(8,-94);
+  ctx.quadraticCurveTo(20,-102,30,-93);
+  ctx.stroke();
+
+  // Nose.
+  ctx.strokeStyle = "#b77960";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0,-87);
+  ctx.lineTo(5,-72);
+  ctx.stroke();
+
+  // Smile and moustache.
+  ctx.strokeStyle = "#42251d";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(-18,-59);
+  ctx.quadraticCurveTo(0,-49,19,-59);
+  ctx.stroke();
+
+  ctx.fillStyle = "#9a5530";
+  ctx.beginPath();
+  ctx.ellipse(0,-65,25,9,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Hoodie chest graphic.
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 14px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("G.O.T.",0,14);
+
+  // Plaques.
+  drawPlaque(-112,15,-0.13);
+  drawPlaque(112,15,0.13);
+
+  ctx.restore();
+}
+
+function drawPlaque(x,y,angle) {
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(angle);
+
+  roundedRect(-22,-30,44,60,5,"#b9c0ca");
+  roundedRect(-17,-25,34,50,3,"#e4e6e9");
+
+  ctx.fillStyle = "#9ba4b0";
+  ctx.beginPath();
+  ctx.moveTo(-8,-10);
+  ctx.lineTo(12,0);
+  ctx.lineTo(-8,10);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawRival() {
+  const bob = Math.sin(songTime*8+1)*4;
+
+  ctx.save();
+  ctx.translate(405,310+bob);
+
+  // Shadow.
+  ctx.fillStyle = "#0007";
+  ctx.beginPath();
+  ctx.ellipse(0,110,70,13,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Legs and body.
+  roundedRect(-43,47,34,65,9,"#202b4c");
+  roundedRect(12,47,34,65,9,"#202b4c");
+  roundedRect(-54,-26,108,91,18,"#3b74b9");
+
+  // Head.
+  ctx.fillStyle = "#dca985";
+  ctx.strokeStyle = "#080710";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.ellipse(0,-72,46,53,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Hair.
+  ctx.fillStyle = "#4a9ed2";
+  ctx.beginPath();
+  ctx.moveTo(-44,-85);
+  ctx.lineTo(-55,-139);
+  ctx.lineTo(-17,-120);
+  ctx.lineTo(0,-150);
+  ctx.lineTo(20,-120);
+  ctx.lineTo(48,-137);
+  ctx.lineTo(41,-76);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Eyes.
+  ctx.fillStyle = "#171321";
+  ctx.beginPath();
+  ctx.ellipse(-16,-73,5,8,0,0,Math.PI*2);
+  ctx.ellipse(16,-73,5,8,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Smile.
+  ctx.strokeStyle = "#542c2c";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(0,-58,14,0.15,Math.PI-0.15);
+  ctx.stroke();
+
+  // Microphone.
+  ctx.strokeStyle = "#d9dce6";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.moveTo(53,-12);
+  ctx.lineTo(82,-55);
+  ctx.stroke();
+
+  ctx.fillStyle = "#333";
+  ctx.beginPath();
+  ctx.arc(84,-60,11,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawLanes() {
+  // Dark arrow area.
+  roundedRect(465,155,410,340,12,"#100e1b");
+  ctx.strokeStyle = "#514662";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(465,155,410,340);
+
+  for (let i=0; i<4; i++) {
+    const x = laneX[i];
+
+    ctx.fillStyle = "#ffffff09";
+    ctx.fillRect(x-43,165,86,320);
+
+    // Target arrow.
+    ctx.save();
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = laneColors[i];
+    ctx.fillStyle = laneColors[i];
+    ctx.font = "bold 58px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(arrows[i],x,targetY);
+    ctx.restore();
+
+    ctx.strokeStyle = "#ffffff24";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x-42,165);
+    ctx.lineTo(x-42,485);
+    ctx.stroke();
+  }
+}
+
+function drawNotes() {
+  for (const note of notes) {
+    if (note.judged || note.missed) continue;
+
+    const y = targetY + (note.time-songTime)*travelSpeed;
+
+    if (y < 140 || y > 500) continue;
+
+    const x = laneX[note.lane];
+    const color = laneColors[note.lane];
+
+    ctx.save();
+    ctx.shadowBlur = 13;
+    ctx.shadowColor = color;
+
+    roundedRect(x-29,y-29,58,58,10,color);
+
+    ctx.strokeStyle = "#080710";
+    ctx.lineWidth = 5;
+    ctx.strokeRect(x-29,y-29,58,58);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 43px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(arrows[note.lane],x,y+1);
+
+    ctx.restore();
+  }
+}
+
+function drawParticles(dt) {
+  for (const p of particles) {
+    p.x += p.vx*dt;
+    p.y += p.vy*dt;
+    p.vy += 160*dt;
+    p.life -= dt;
+
+    ctx.globalAlpha = Math.max(0,p.life/p.maxLife);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x,p.y,p.size,p.size);
+  }
+
+  ctx.globalAlpha = 1;
+  particles = particles.filter(p => p.life > 0);
+}
+
+function draw() {
+  ctx.clearRect(0,0,W,H);
+
+  drawBackground();
+  drawSpeaker(55,320,1);
+  drawSpeaker(900,320,1);
+  drawLuke();
+  drawRival();
+  drawLanes();
+  drawNotes();
+  drawParticles(0);
+
+  if (lastJudgement && judgementTimer > 0) {
+    ctx.save();
+    ctx.font = "bold 32px Bricolage Grotesque";
+    ctx.textAlign = "center";
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#090710";
+    ctx.strokeText(lastJudgement,675,135);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(lastJudgement,675,135);
+    ctx.restore();
+  }
+
+  if (!gameRunning) {
+    ctx.fillStyle = "#09071099";
+    ctx.fillRect(0,0,W,H);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 40px Bricolage Grotesque";
+    ctx.fillText(gameOver ? "SONG FINISHED!" : "G.O.T. RHYTHM",480,245);
+
+    ctx.fillStyle = "#e6b94f";
+    ctx.font = "bold 19px Bricolage Grotesque";
+    ctx.fillText(gameOver ? "HIT PLAY AGAIN TO RETRY" : "PRESS START TO BEGIN",480,285);
+  }
+
+  if (paused) {
+    ctx.fillStyle = "#090710aa";
+    ctx.fillRect(0,0,W,H);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 48px Bricolage Grotesque";
+    ctx.fillText("PAUSED",480,280);
+  }
+}
+
+function gameLoop(now) {
+  if (!gameRunning || paused) return;
+
+  const dt = Math.min((now-lastFrame)/1000,0.05);
+  lastFrame = now;
+  songTime += dt;
+
+  // Beat sounds.
+  const expectedBeat = Math.floor(songTime/beatLength);
+  while (nextBeat < expectedBeat) {
+    playBeat();
+  }
+
+  // Missed notes.
+  for (const note of notes) {
+    if (!note.judged && !note.missed &&
+        songTime > note.time + hitWindow) {
+      missNote(note);
+    }
+  }
+
+  judgementTimer = Math.max(0,judgementTimer-dt);
+
+  for (const p of particles) {
+    p.x += p.vx*dt;
+    p.y += p.vy*dt;
+    p.vy += 160*dt;
+    p.life -= dt;
+  }
+  particles = particles.filter(p => p.life > 0);
+
+  draw();
+
+  const finalTime = notes[notes.length-1]?.time || 0;
+
+  if (songTime > finalTime + 1.5 && gameRunning) {
+    endGame();
+    return;
+  }
+
+  if (gameRunning) {
+    animationId = requestAnimationFrame(gameLoop);
+  }
+}
+
+const keyMap = {
+  ArrowLeft:0,
+  ArrowDown:1,
+  ArrowUp:2,
+  ArrowRight:3,
+  a:0,
+  s:1,
+  w:2,
+  d:3
+};
+
+document.addEventListener("keydown",event => {
+  if (keyMap[event.key] !== undefined) {
+    event.preventDefault();
+    hitLane(keyMap[event.key]);
+  }
+
+  if (event.key.toLowerCase() === "p") {
+    pauseGame();
+  }
+});
+
+document.querySelectorAll(".mobile-controls button").forEach(button => {
+  button.addEventListener("pointerdown",event => {
+    event.preventDefault();
+    hitLane(Number(button.dataset.lane));
+  });
+});
+
+startButton.addEventListener("click",startGame);
+
+// Initial screen.
+makeChart();
+draw();
+updateHUD();
+</script>
+</body>
+</html>
