@@ -1,122 +1,123 @@
 (() => {
-  const style = document.createElement("style");
+  const style = document.createElement('style');
   style.textContent = `
     .runner-mascot {
       position: fixed;
       left: 0;
       bottom: max(10px, env(safe-area-inset-bottom));
-      width: 150px;
-      height: 120px;
+      width: 180px;
+      height: 136px;
       z-index: 900;
       pointer-events: none;
-      animation: mascot-run-across 18s linear infinite;
-      filter: drop-shadow(0 6px 8px rgba(0,0,0,0.10));
+      animation: mascot-cross-screen 18s linear infinite;
       will-change: transform;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.12));
     }
     .runner-mascot svg {
+      display: block;
       width: 100%;
       height: 100%;
       overflow: visible;
-      display: block;
     }
     .runner-mascot .bob { animation: mascot-bob .28s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center bottom; }
-    .runner-mascot .arm-wave { animation: mascot-wave .42s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 110px 58px; }
-    .runner-mascot .leg-left { animation: mascot-leg-left .26s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 65px 98px; }
-    .runner-mascot .leg-right { animation: mascot-leg-right .26s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 94px 98px; }
-    @keyframes mascot-run-across { from { transform: translateX(-180px); } to { transform: translateX(calc(100vw + 180px)); } }
+    .runner-mascot .wave-arm { animation: mascot-wave .4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 132px 86px; }
+    .runner-mascot .leg-left { animation: mascot-run-left .24s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 82px 120px; }
+    .runner-mascot .leg-right { animation: mascot-run-right .24s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 109px 120px; }
+    @keyframes mascot-cross-screen { from { transform: translateX(-220px); } to { transform: translateX(calc(100vw + 220px)); } }
     @keyframes mascot-bob { to { translate: 0 -4px; } }
     @keyframes mascot-wave { from { rotate: -18deg; } to { rotate: 18deg; } }
-    @keyframes mascot-leg-left { from { rotate: 16deg; } to { rotate: -16deg; } }
-    @keyframes mascot-leg-right { from { rotate: -16deg; } to { rotate: 16deg; } }
+    @keyframes mascot-run-left { from { rotate: 14deg; } to { rotate: -18deg; } }
+    @keyframes mascot-run-right { from { rotate: -16deg; } to { rotate: 18deg; } }
     @media (prefers-reduced-motion: reduce) {
       .runner-mascot { animation: none; left: auto; right: 14px; }
-      .runner-mascot .bob, .runner-mascot .arm-wave, .runner-mascot .leg-left, .runner-mascot .leg-right { animation: none; }
+      .runner-mascot .bob, .runner-mascot .wave-arm, .runner-mascot .leg-left, .runner-mascot .leg-right { animation: none; }
     }
   `;
-  document.head.append(style);
+  document.head.appendChild(style);
 
-  const mascot = document.createElement("div");
-  mascot.className = "runner-mascot";
-  mascot.setAttribute("aria-hidden", "true");
+  const mascot = document.createElement('div');
+  mascot.className = 'runner-mascot';
+  mascot.setAttribute('aria-hidden', 'true');
   mascot.innerHTML = `
-    <svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg" role="presentation">
+    <svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg" role="presentation">
       <defs>
-        <linearGradient id="shirtGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#f6d559"/>
-          <stop offset="1" stop-color="#d9a31d"/>
+        <linearGradient id="shirtG" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#f9db62"/>
+          <stop offset="1" stop-color="#d39a1a"/>
         </linearGradient>
-        <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="skinG" x1="0" x2="1" y1="0" y2="1">
           <stop offset="0" stop-color="#f7d5a1"/>
           <stop offset="1" stop-color="#d99a65"/>
         </linearGradient>
-        <linearGradient id="silverGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#f5f7fa"/>
-          <stop offset="0.5" stop-color="#dfe5eb"/>
-          <stop offset="1" stop-color="#a2adb8"/>
+        <linearGradient id="silverG" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#f8fbff"/>
+          <stop offset="0.45" stop-color="#dde5ec"/>
+          <stop offset="1" stop-color="#93a1ad"/>
         </linearGradient>
       </defs>
 
-      <g class="bob" stroke="#2a1d16" stroke-linecap="round" stroke-linejoin="round">
-        <ellipse cx="93" cy="111" rx="42" ry="5" fill="#111820" opacity="0.12"/>
+      <g class="bob" stroke="#311f18" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="106" cy="145" rx="46" ry="6" fill="#1a212a" opacity="0.12"/>
 
-        <!-- left leg -->
+        <!-- Legs -->
         <g class="leg-left">
-          <path d="M70 88 L63 101 L44 102 L44 109 L64 110 L76 92 Z" fill="#3a485a"/>
-          <path d="M57 109 L67 110" stroke="#a9b7c3" stroke-width="2"/>
+          <path d="M85 106 L76 124 L56 127 L57 135 L80 136 L94 111 Z" fill="#3b4d5d"/>
+          <path d="M64 136 L80 136" stroke="#bac6d1" stroke-width="2"/>
         </g>
-
-        <!-- right leg -->
         <g class="leg-right">
-          <path d="M92 88 L101 101 L120 101 L121 109 L98 109 L84 93 Z" fill="#3a485a"/>
-          <path d="M98 109 L110 110" stroke="#a9b7c3" stroke-width="2"/>
+          <path d="M113 106 L124 124 L146 126 L146 134 L120 136 L105 111 Z" fill="#3b4d5d"/>
+          <path d="M123 136 L141 136" stroke="#bac6d1" stroke-width="2"/>
         </g>
 
-        <!-- torso -->
-        <path d="M65 59 L82 48 L99 60 L107 87 L81 100 L58 88 Z" fill="url(#shirtGrad)"/>
-        <path d="M84 50 L84 88" stroke="#bf8d14" stroke-width="2"/>
-        <path d="M71 64 L78 72 M94 66 L102 72" stroke="#bf8d14" stroke-width="2"/>
+        <!-- Body -->
+        <path d="M81 72 L106 58 L131 73 L138 109 L108 124 L79 108 Z" fill="url(#shirtG)"/>
+        <path d="M95 74 L106 64 L118 75" fill="none" stroke="#c98d14" stroke-width="2"/>
+        <path d="M106 64 L106 113" stroke="#cb941b" stroke-width="2"/>
+        <path d="M87 83 L97 92 M117 82 L125 89" fill="none" stroke="#cb941b" stroke-width="2"/>
 
-        <!-- left arm and play button -->
-        <path d="M59 66 L41 71 L30 86 L36 90 L51 82 L60 70 Z" fill="#f3c89d"/>
-        <g transform="translate(16 74) rotate(-7)">
-          <rect x="0" y="0" width="24" height="24" rx="5" fill="url(#silverGrad)" stroke="#788893" stroke-width="2"/>
-          <path d="M9 7 L17 12 L9 17 Z" fill="#5f6973"/>
+        <!-- Left arm holding button -->
+        <path d="M74 81 L51 86 L40 101 L46 106 L62 99 L80 89 Z" fill="#f2c99c"/>
+        <g transform="translate(25 99) rotate(-7)">
+          <rect x="0" y="0" width="26" height="26" rx="5" fill="url(#silverG)" stroke="#7c8692" stroke-width="2"/>
+          <path d="M10 8 L19 13 L10 18 Z" fill="#58646e"/>
         </g>
 
-        <!-- right arm and play button -->
-        <g class="arm-wave">
-          <path d="M109 66 L126 57 L136 40 L131 35 L115 44 L104 58 Z" fill="#f3c89d"/>
-          <g transform="translate(130 32) rotate(8)">
-            <rect x="0" y="0" width="24" height="24" rx="5" fill="url(#silverGrad)" stroke="#788893" stroke-width="2"/>
-            <path d="M9 7 L17 12 L9 17 Z" fill="#5f6973"/>
-          </g>
+        <!-- Right arm waving -->
+        <g class="wave-arm">
+          <path d="M132 79 L153 70 L167 52 L163 46 L146 56 L131 72 Z" fill="#f2c99c"/>
+          <path d="M160 47 L170 25 L177 27 L171 49 Z" fill="#f2c99c"/>
+          <path d="M171 27 L178 28 L177 32" fill="none" stroke="#b86638" stroke-width="2"/>
         </g>
 
-        <!-- head -->
-        <path d="M61 32 L80 22 L96 25 L108 38 L108 60 L81 68 L59 57 Z" fill="url(#skinGrad)"/>
+        <!-- Head -->
+        <path d="M79 38 L99 26 L122 30 L139 46 L138 77 L107 90 L80 79 Z" fill="url(#skinG)"/>
 
-        <!-- mohawk -->
-        <path d="M63 26 L71 12 L79 21 L86 9 L93 21 L101 13 L108 27 L96 29 L86 25 L79 32 L70 29 Z" fill="#d97a2e"/>
-        <path d="M68 20 L75 27 L82 18 L90 28 L99 19" fill="none" stroke="#f0a353" stroke-width="2"/>
+        <!-- Mohawk -->
+        <path d="M82 31 L90 12 L99 21 L106 8 L114 22 L122 12 L131 31 L118 34 L109 29 L99 37 L90 33 Z" fill="#d57a2e"/>
+        <path d="M89 16 L97 25 L106 18 L114 27 L121 18" fill="none" stroke="#f3a75d" stroke-width="2"/>
 
-        <!-- face -->
-        <path d="M69 39 L76 37 M95 38 L101 39" fill="none" stroke="#6d3d2e" stroke-width="2"/>
-        <ellipse cx="75" cy="43" rx="2.8" ry="3.1" fill="#fff"/>
-        <ellipse cx="96" cy="43" rx="2.8" ry="3.1" fill="#fff"/>
-        <circle cx="75.5" cy="43.5" r="1.1" fill="#2a201d"/>
-        <circle cx="96.5" cy="43.5" r="1.1" fill="#2a201d"/>
-        <path d="M85 44 Q88 49 92 45" fill="none" stroke="#ad6d4a" stroke-width="2"/>
-        <path d="M74 54 Q84 60 96 54" fill="none" stroke="#7a4132" stroke-width="2"/>
+        <!-- Face -->
+        <path d="M89 49 L96 47 M117 48 L123 50" fill="none" stroke="#643e2b" stroke-width="2.2"/>
+        <ellipse cx="96" cy="54" rx="3.2" ry="3.5" fill="#fff"/>
+        <ellipse cx="119" cy="54" rx="3.2" ry="3.5" fill="#fff"/>
+        <circle cx="96.7" cy="54.7" r="1.2" fill="#2d1f1a"/>
+        <circle cx="119.7" cy="54.7" r="1.2" fill="#2d1f1a"/>
+        <path d="M104 57 Q107 62 111 58" fill="none" stroke="#ab6d52" stroke-width="2"/>
+        <path d="M95 68 Q107 76 119 68" fill="none" stroke="#7c4232" stroke-width="2.4"/>
 
-        <!-- beard -->
-        <path d="M67 49 Q76 62 86 60 Q95 63 105 49 L102 70 Q92 76 86 75 Q78 77 68 68 Z" fill="#b15d1d"/>
-        <path d="M70 51 Q78 58 85 57 Q93 58 101 51" fill="none" stroke="#d58a41" stroke-width="2"/>
+        <!-- Beard -->
+        <path d="M82 60 Q95 78 106 74 Q119 79 132 60 L130 86 Q118 96 106 94 Q93 97 82 88 Z" fill="#b96422"/>
+        <path d="M88 64 Q99 73 106 71 Q115 73 124 64" fill="none" stroke="#d8893d" stroke-width="2"/>
+        <path d="M88 72 Q98 76 106 75 Q115 76 123 71" fill="none" stroke="#7d3c18" stroke-width="2"/>
 
-        <!-- neck -->
-        <path d="M77 62 L92 62 L90 72 L79 72 Z" fill="#f1c89e"/>
+        <!-- Right silver button -->
+        <g transform="translate(148 99) rotate(8)">
+          <rect x="0" y="0" width="26" height="26" rx="5" fill="url(#silverG)" stroke="#7c8692" stroke-width="2"/>
+          <path d="M10 8 L19 13 L10 18 Z" fill="#58646e"/>
+        </g>
 
-        <!-- collar / shirt detail -->
-        <path d="M66 84 L100 84 L87 94 L79 94 Z" fill="#c68d14"/>
+        <!-- Collar -->
+        <path d="M95 88 L117 88 L111 97 L101 97 Z" fill="#d09c19"/>
       </g>
     </svg>
   `;
