@@ -22,6 +22,7 @@
       --accent: #e5b82a;
       --border: #30323a;
       --danger: #ff7373;
+      --owner-gold: #f5d477;
     }
 
     * { box-sizing: border-box; }
@@ -63,8 +64,6 @@
     }
 
     .logo span { color: var(--accent); }
-
-    /* Main navigation */
 
     .site-nav {
       display: flex;
@@ -133,17 +132,69 @@
       min-width: 0;
     }
 
-    .avatar {
+    /* Avatar and owner crown */
+
+    .avatar-frame {
+      position: relative;
       width: 116px;
       height: 116px;
       flex-shrink: 0;
+      z-index: 2;
+    }
+
+    .avatar {
+      display: block;
+      width: 116px;
+      height: 116px;
       border: 5px solid var(--surface);
       border-radius: 50%;
       background: var(--surface-light);
       object-fit: cover;
+      position: relative;
+      z-index: 1;
     }
 
-    .profile-info { padding-top: 18px; min-width: 0; }
+    .avatar-frame.owner {
+      filter: drop-shadow(0 0 12px rgba(245, 212, 119, .35));
+    }
+
+    .avatar-frame.owner .avatar {
+      border: 4px solid var(--owner-gold);
+      box-shadow:
+        0 0 0 3px rgba(245, 212, 119, .18),
+        0 0 22px rgba(245, 212, 119, .25);
+    }
+
+    .owner-crown {
+      position: absolute;
+      z-index: 3;
+      top: -34px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--owner-gold);
+      font-size: 39px;
+      line-height: 1;
+      text-shadow:
+        0 0 7px rgba(245, 212, 119, .9),
+        0 0 18px rgba(245, 212, 119, .55),
+        0 3px 4px #000;
+      animation: crownFloat 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes crownFloat {
+      0%, 100% {
+        transform: translate(-50%, 0);
+      }
+      50% {
+        transform: translate(-50%, -5px);
+      }
+    }
+
+    .profile-info {
+      padding-top: 18px;
+      min-width: 0;
+    }
 
     .username {
       margin: 0;
@@ -157,6 +208,87 @@
       color: var(--muted);
       font-size: 13px;
     }
+
+    /* Role badges */
+
+    .role-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .7px;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .role-owner {
+      color: #ffe7a3;
+      background: linear-gradient(135deg, #554017, #33250d);
+      border-color: #c79b38;
+      box-shadow: 0 0 12px rgba(229, 184, 42, .18);
+    }
+
+    .role-administrator {
+      color: #ffaaaa;
+      background: rgba(190, 55, 55, .16);
+      border-color: rgba(255, 100, 100, .4);
+    }
+
+    .role-moderator {
+      color: #9dccff;
+      background: rgba(55, 120, 190, .16);
+      border-color: rgba(90, 160, 255, .4);
+    }
+
+    .role-developer {
+      color: #d7b3ff;
+      background: rgba(130, 70, 190, .17);
+      border-color: rgba(180, 120, 255, .4);
+    }
+
+    .role-vip {
+      color: #ffb6dc;
+      background: rgba(190, 70, 140, .16);
+      border-color: rgba(255, 120, 190, .4);
+    }
+
+    .role-verified {
+      color: #9af0bd;
+      background: rgba(50, 160, 95, .16);
+      border-color: rgba(90, 220, 140, .4);
+    }
+
+    .role-member {
+      color: #d0d0d5;
+      background: rgba(140, 140, 150, .13);
+      border-color: rgba(160, 160, 170, .3);
+    }
+
+    .founder-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 9px;
+      color: var(--owner-gold);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(245, 212, 119, .3);
+    }
+
+    .founder-label.hidden { display: none; }
 
     .profile-details {
       margin-top: 30px;
@@ -326,9 +458,7 @@
         flex-direction: column;
       }
 
-      .site-nav {
-        width: 100%;
-      }
+      .site-nav { width: 100%; }
 
       .site-nav a {
         flex: 1;
@@ -342,7 +472,18 @@
       .profile-content { padding: 0 18px 22px; }
       .profile-top { margin-top: -48px; align-items: flex-end; }
       .profile-identity { gap: 12px; }
-      .avatar { width: 96px; height: 96px; }
+
+      .avatar-frame,
+      .avatar {
+        width: 96px;
+        height: 96px;
+      }
+
+      .owner-crown {
+        top: -29px;
+        font-size: 33px;
+      }
+
       .detail-section { padding: 16px; }
       .edit-button { padding: 9px 12px; font-size: 13px; }
       .editor { padding: 18px; }
@@ -354,9 +495,11 @@
         flex-direction: column;
       }
 
-      .edit-button {
-        margin-left: 108px;
-      }
+      .edit-button { margin-left: 108px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .owner-crown { animation: none; }
     }
   </style>
 </head>
@@ -390,11 +533,21 @@
       <div class="profile-content">
         <div class="profile-top">
           <div class="profile-identity">
-            <img id="avatar" class="avatar" src="" alt="Profile picture">
+
+            <div id="avatarFrame" class="avatar-frame">
+              <span id="ownerCrown" class="owner-crown hidden" aria-label="Owner crown">♛</span>
+              <img id="avatar" class="avatar" src="" alt="Profile picture">
+            </div>
 
             <div class="profile-info">
               <h1 id="username" class="username"></h1>
-              <div class="profile-label">G.O.T. Games Player</div>
+              <div id="profileLabel" class="profile-label">G.O.T. Games Player</div>
+
+              <div id="roleList" class="role-list"></div>
+
+              <div id="founderLabel" class="founder-label hidden">
+                ♛ Founder of G.O.T. Games
+              </div>
             </div>
           </div>
 
@@ -511,6 +664,48 @@
 
     let currentUser = null;
     let currentProfile = null;
+    let currentRoles = [];
+
+    const roleSettings = {
+      owner: {
+        label: "♛ Owner",
+        className: "role-owner"
+      },
+      administrator: {
+        label: "Administrator",
+        className: "role-administrator"
+      },
+      moderator: {
+        label: "Moderator",
+        className: "role-moderator"
+      },
+      developer: {
+        label: "Developer",
+        className: "role-developer"
+      },
+      vip: {
+        label: "VIP",
+        className: "role-vip"
+      },
+      verified: {
+        label: "Verified",
+        className: "role-verified"
+      },
+      member: {
+        label: "Member",
+        className: "role-member"
+      }
+    };
+
+    const roleOrder = [
+      "owner",
+      "administrator",
+      "moderator",
+      "developer",
+      "vip",
+      "verified",
+      "member"
+    ];
 
     function showNotFound() {
       loading.classList.add("hidden");
@@ -519,8 +714,59 @@
       notFound.classList.remove("hidden");
     }
 
-    function showProfile(profile) {
+    function renderRoles(roles) {
+      const roleList = document.getElementById("roleList");
+      const avatarFrame = document.getElementById("avatarFrame");
+      const ownerCrown = document.getElementById("ownerCrown");
+      const founderLabel = document.getElementById("founderLabel");
+      const profileLabel = document.getElementById("profileLabel");
+
+      roleList.replaceChildren();
+
+      const sortedRoles = [...roles].sort((a, b) => {
+        return roleOrder.indexOf(a) - roleOrder.indexOf(b);
+      });
+
+      sortedRoles.forEach(role => {
+        const settings = roleSettings[role];
+
+        if (!settings) return;
+
+        const badge = document.createElement("span");
+        badge.className = `role-badge ${settings.className}`;
+        badge.textContent = settings.label;
+
+        roleList.appendChild(badge);
+      });
+
+      const isOwner = roles.includes("owner");
+
+      avatarFrame.classList.toggle("owner", isOwner);
+      ownerCrown.classList.toggle("hidden", !isOwner);
+      founderLabel.classList.toggle("hidden", !isOwner);
+
+      profileLabel.textContent = isOwner
+        ? "G.O.T. Games Founder"
+        : "G.O.T. Games Player";
+    }
+
+    async function loadProfileRoles(userId) {
+      const { data, error } = await supabaseClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("Could not load profile roles:", error);
+        return [];
+      }
+
+      return (data || []).map(row => row.role);
+    }
+
+    function showProfile(profile, roles = []) {
       currentProfile = profile;
+      currentRoles = roles;
 
       document.getElementById("username").textContent = profile.username;
 
@@ -540,6 +786,8 @@
       banner.style.backgroundImage = profile.banner_url
         ? `url("${profile.banner_url}")`
         : "";
+
+      renderRoles(roles);
 
       document.title = profile.username + " | G.O.T. Games";
 
@@ -602,7 +850,9 @@
           return;
         }
 
-        showProfile(profile);
+        const roles = await loadProfileRoles(profile.id);
+
+        showProfile(profile, roles);
 
       } catch (error) {
         console.error("Profile loading error:", error);
@@ -761,7 +1011,7 @@
 
         if (error) throw error;
 
-        showProfile(data);
+        showProfile(data, currentRoles);
 
         // Keep the profile URL updated if the username changed.
         const newUrl = new URL(window.location.href);
