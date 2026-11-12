@@ -48,6 +48,7 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 /* Main navigation */
 .main-nav{
   display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
   grid-template-columns:repeat(4,minmax(0,1fr));
   gap:9px;
   margin-top:18px;
@@ -257,12 +258,14 @@ footer.site-foot p{margin:0 0 14px}
         </button>
       </div>
     </div>
-<nav>
-  <a href="https://www.got-games-schedule.aclclouds.online/index.html" class="active">Schedule</a>
-  <a href="https://www.got-games-schedule.aclclouds.online/player-directory.html">Players</a>
-  <a href="https://www.got-games-schedule.aclclouds.online/profile.html">Profile</a>
-  <a href="https://aclclouds.online">Games</a>
-</nav>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="index.html" class="active" aria-current="page">Schedule</a>
+      <a href="player-directory.html">Players</a>
+      <a href="profile.html">Profile</a>
+      <a href="arcade.html">Games</a>
+    </nav>
+
     <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
     <div class="controls">
       <label for="tz">Timezone</label>
