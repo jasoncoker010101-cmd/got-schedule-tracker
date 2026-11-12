@@ -218,6 +218,53 @@ main {
   border-radius: 8px;
 }
 
+/* G.O.T. RHYTHM PREVIEW */
+
+.rhythm-preview {
+  min-height: 175px;
+  background:
+    radial-gradient(circle at 50% 40%, #59417e, #211b3a 65%, #11101b);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.rhythm-arrows {
+  display: flex;
+  gap: 10px;
+}
+
+.rhythm-arrows span {
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  background: #e6b94f;
+  color: #17131a;
+  border: 3px solid #080710;
+  border-radius: 8px;
+  font-size: 25px;
+  font-weight: 900;
+  text-shadow: 1px 1px #fff8;
+  transform: rotate(-5deg);
+}
+
+.rhythm-arrows span:nth-child(even) {
+  transform: rotate(5deg);
+  background: #ff5e9d;
+}
+
+.rhythm-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 2px;
+  text-shadow: 3px 3px #000;
+}
+
 .space-art {
   background: linear-gradient(145deg, #14152c, #292047);
 }
@@ -234,6 +281,8 @@ main {
   font-size: 65px;
   filter: drop-shadow(0 5px 12px #0008);
 }
+
+/* GAME INFO */
 
 .game-info {
   padding: 17px;
@@ -425,6 +474,31 @@ footer {
         <div class="game-bottom">
           <span class="status available">● Available</span>
           <a class="play-button" href="snake.html">Play</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- G.O.T. RHYTHM -->
+
+    <article class="game-card available">
+      <div class="game-art rhythm-preview">
+        <div class="rhythm-arrows">
+          <span>←</span>
+          <span>↓</span>
+          <span>↑</span>
+          <span>→</span>
+        </div>
+
+        <div class="rhythm-title">G.O.T. RHYTHM</div>
+      </div>
+
+      <div class="game-info">
+        <h3>G.O.T. Rhythm</h3>
+        <p>Hit the arrows, follow the beat, and own the stage!</p>
+
+        <div class="game-bottom">
+          <span class="status available">● Available</span>
+          <a class="play-button" href="rhythm.html">Play</a>
         </div>
       </div>
     </article>
