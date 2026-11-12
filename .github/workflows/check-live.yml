@@ -23,6 +23,7 @@ jobs:
         env:
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+          APISH_KEY: ${{ secrets.APISH_KEY }}
         run: python check_live.py
 
       - name: Commit live.json if changed
