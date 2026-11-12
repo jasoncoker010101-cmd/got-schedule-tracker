@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Player Profile | G.O.T. Games</title>
-<link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -36,12 +37,7 @@
     }
 
     button, input, textarea, select { font: inherit; }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
+    a { color: inherit; text-decoration: none; }
     button { cursor: pointer; }
 
     .topbar {
@@ -59,7 +55,7 @@
     .logo {
       font-size: 21px;
       font-weight: 800;
-      letter-spacing: -0.7px;
+      letter-spacing: -.7px;
       white-space: nowrap;
     }
 
@@ -80,7 +76,7 @@
       color: var(--text);
       font-size: 14px;
       font-weight: 700;
-      transition: background .2s, border-color .2s, transform .2s;
+      transition: .2s;
     }
 
     .site-nav a:hover {
@@ -132,8 +128,6 @@
       min-width: 0;
     }
 
-    /* Avatar and owner crown */
-
     .avatar-frame {
       position: relative;
       width: 116px;
@@ -160,9 +154,8 @@
 
     .avatar-frame.owner .avatar {
       border: 4px solid var(--owner-gold);
-      box-shadow:
-        0 0 0 3px rgba(245, 212, 119, .18),
-        0 0 22px rgba(245, 212, 119, .25);
+      box-shadow: 0 0 0 3px rgba(245, 212, 119, .18),
+                  0 0 22px rgba(245, 212, 119, .25);
     }
 
     .owner-crown {
@@ -174,21 +167,16 @@
       color: var(--owner-gold);
       font-size: 39px;
       line-height: 1;
-      text-shadow:
-        0 0 7px rgba(245, 212, 119, .9),
-        0 0 18px rgba(245, 212, 119, .55),
-        0 3px 4px #000;
+      text-shadow: 0 0 7px rgba(245, 212, 119, .9),
+                   0 0 18px rgba(245, 212, 119, .55),
+                   0 3px 4px #000;
       animation: crownFloat 3s ease-in-out infinite;
       pointer-events: none;
     }
 
     @keyframes crownFloat {
-      0%, 100% {
-        transform: translate(-50%, 0);
-      }
-      50% {
-        transform: translate(-50%, -5px);
-      }
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, -5px); }
     }
 
     .profile-info {
@@ -208,8 +196,6 @@
       color: var(--muted);
       font-size: 13px;
     }
-
-    /* Role badges */
 
     .role-list {
       display: flex;
@@ -304,7 +290,7 @@
     }
 
     .detail-section h2 {
-      margin: 0 0 10px;
+      margin: 0 0 15px;
       font-size: 15px;
       font-weight: 700;
     }
@@ -325,6 +311,83 @@
       background: var(--surface);
       font-size: 14px;
       font-weight: 600;
+    }
+
+    .joined-date {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .joined-date strong {
+      color: var(--owner-gold);
+      font-weight: 700;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 18px 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .stat-number {
+      display: block;
+      color: var(--accent);
+      font-size: clamp(24px, 4vw, 32px);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .stat-label {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .social-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .social-link:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .social-link.youtube { color: #ff9292; }
+    .social-link.twitch { color: #c9a8ff; }
+    .social-link.tiktok { color: #f4f4f5; }
+    .social-link.rumble { color: #9ee5b0; }
+
+    .empty-social {
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .button {
@@ -411,6 +474,17 @@
       font-size: 12px;
     }
 
+    .editor-divider {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 25px 0;
+    }
+
+    .editor-subheading {
+      margin: 0 0 16px;
+      font-size: 16px;
+    }
+
     .editor-actions {
       display: flex;
       flex-wrap: wrap;
@@ -441,7 +515,6 @@
     }
 
     .message p { margin: 0; line-height: 1.6; }
-
     .hidden { display: none !important; }
 
     footer {
@@ -473,8 +546,7 @@
       .profile-top { margin-top: -48px; align-items: flex-end; }
       .profile-identity { gap: 12px; }
 
-      .avatar-frame,
-      .avatar {
+      .avatar-frame, .avatar {
         width: 96px;
         height: 96px;
       }
@@ -487,6 +559,9 @@
       .detail-section { padding: 16px; }
       .edit-button { padding: 9px 12px; font-size: 13px; }
       .editor { padding: 18px; }
+      .stats-grid { gap: 7px; }
+      .stat-card { padding: 14px 6px; }
+      .stat-label { font-size: 10px; }
     }
 
     @media (max-width: 380px) {
@@ -496,6 +571,7 @@
       }
 
       .edit-button { margin-left: 108px; }
+      .stats-grid { grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -506,547 +582,797 @@
 
 <body>
 
-  <header class="topbar">
-    <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
+<header class="topbar">
+  <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
 
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="index.html">Schedule</a>
-      <a href="profile.html" class="active" aria-current="page">Profile</a>
-      <a href="player-directory.html">Players</a>
-    </nav>
-  </header>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="index.html">Schedule</a>
+    <a href="profile.html" class="active" aria-current="page">Profile</a>
+    <a href="player-directory.html">Players</a>
+  </nav>
+</header>
 
-  <main>
-    <div id="loading" class="profile-card message">
-      <h1>Loading profile...</h1>
-      <p>Please wait.</p>
-    </div>
+<main>
+  <div id="loading" class="profile-card message">
+    <h1>Loading profile...</h1>
+    <p>Please wait.</p>
+  </div>
 
-    <div id="notFound" class="profile-card message hidden">
-      <h1>Profile not found</h1>
-      <p>We couldn't find a player with that username.</p>
-    </div>
+  <div id="notFound" class="profile-card message hidden">
+    <h1>Profile not found</h1>
+    <p>We couldn't find a player with that username.</p>
+  </div>
 
-    <div id="profileCard" class="profile-card hidden">
-      <div id="banner" class="banner"></div>
+  <div id="profileCard" class="profile-card hidden">
+    <div id="banner" class="banner"></div>
 
-      <div class="profile-content">
-        <div class="profile-top">
-          <div class="profile-identity">
-
-            <div id="avatarFrame" class="avatar-frame">
-              <span id="ownerCrown" class="owner-crown hidden" aria-label="Owner crown">♛</span>
-              <img id="avatar" class="avatar" src="" alt="Profile picture">
-            </div>
-
-            <div class="profile-info">
-              <h1 id="username" class="username"></h1>
-              <div id="profileLabel" class="profile-label">G.O.T. Games Player</div>
-
-              <div id="roleList" class="role-list"></div>
-
-              <div id="founderLabel" class="founder-label hidden">
-                ♛ Founder of G.O.T. Games
-              </div>
-            </div>
+    <div class="profile-content">
+      <div class="profile-top">
+        <div class="profile-identity">
+          <div id="avatarFrame" class="avatar-frame">
+            <span id="ownerCrown" class="owner-crown hidden" aria-label="Owner crown">♛</span>
+            <img id="avatar" class="avatar" src="" alt="Profile picture">
           </div>
 
-          <button id="editButton" class="button edit-button hidden" type="button">
-            Edit Profile
-          </button>
+          <div class="profile-info">
+            <h1 id="username" class="username"></h1>
+            <div id="profileLabel" class="profile-label">G.O.T. Games Player</div>
+            <div id="roleList" class="role-list"></div>
+
+            <div id="founderLabel" class="founder-label hidden">
+              ♛ Founder of G.O.T. Games
+            </div>
+          </div>
         </div>
 
-        <div class="profile-details">
-          <section class="detail-section">
-            <h2>About Me</h2>
-            <p id="bio">This player hasn't added a bio yet.</p>
-          </section>
+        <button id="editButton" class="button edit-button hidden" type="button">
+          Edit Profile
+        </button>
+      </div>
 
-          <section class="detail-section">
-            <h2>Favorite Platform</h2>
-            <span id="platform" class="platform">Not specified</span>
-          </section>
-        </div>
+      <div class="profile-details">
+
+        <section class="detail-section">
+          <h2>About Me</h2>
+          <p id="bio">This player hasn't added a bio yet.</p>
+        </section>
+
+        <section class="detail-section">
+          <h2>Member Since</h2>
+          <div class="joined-date">
+            <span>✦</span>
+            <strong id="joinedDate">Loading...</strong>
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <h2>Gaming Statistics</h2>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span id="gamesPlayed" class="stat-number">0</span>
+              <span class="stat-label">Games Played</span>
+            </div>
+
+            <div class="stat-card">
+              <span id="eventsAttended" class="stat-number">0</span>
+              <span class="stat-label">Events Attended</span>
+            </div>
+
+            <div class="stat-card">
+              <span id="wins" class="stat-number">0</span>
+              <span class="stat-label">Wins</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <h2>Favorite Platform</h2>
+          <span id="platform" class="platform">Not specified</span>
+        </section>
+
+        <section class="detail-section">
+          <h2>Social Links</h2>
+          <div id="socialLinks" class="social-list">
+            <span class="empty-social">No social links added yet.</span>
+          </div>
+        </section>
+
       </div>
     </div>
+  </div>
 
-    <section id="editor" class="editor hidden">
-      <h2>Edit Profile</h2>
-      <p class="editor-description">
-        Customize how other players see you on G.O.T. Games.
-      </p>
+  <section id="editor" class="editor hidden">
+    <h2>Edit Profile</h2>
+    <p class="editor-description">
+      Customize how other players see you on G.O.T. Games.
+    </p>
 
-      <form id="profileForm">
-        <div class="form-group">
-          <label for="editUsername">Username</label>
-          <input
-            id="editUsername"
-            type="text"
-            minlength="3"
-            maxlength="20"
-            pattern="[A-Za-z0-9_]{3,20}"
-            required
-          >
-          <span class="hint">3–20 characters. Letters, numbers and underscores only.</span>
-        </div>
+    <form id="profileForm">
 
-        <div class="form-group">
-          <label for="editBio">About Me</label>
-          <textarea
-            id="editBio"
-            maxlength="300"
-            placeholder="Tell other players a little about yourself..."
-          ></textarea>
-          <span class="hint">Maximum 300 characters.</span>
-        </div>
+      <div class="form-group">
+        <label for="editUsername">Username</label>
+        <input
+          id="editUsername"
+          type="text"
+          minlength="3"
+          maxlength="20"
+          pattern="[A-Za-z0-9_]{3,20}"
+          required
+        >
+        <span class="hint">3–20 characters. Letters, numbers and underscores only.</span>
+      </div>
 
-        <div class="form-group">
-          <label for="editPlatform">Favorite Platform</label>
-          <select id="editPlatform">
-            <option value="">Not specified</option>
-            <option value="Twitch">Twitch</option>
-            <option value="YouTube">YouTube</option>
-            <option value="Rumble">Rumble</option>
-            <option value="TikTok">TikTok</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label for="editBio">About Me</label>
+        <textarea
+          id="editBio"
+          maxlength="300"
+          placeholder="Tell other players a little about yourself..."
+        ></textarea>
+        <span class="hint">Maximum 300 characters.</span>
+      </div>
 
-        <div class="form-group">
-          <label for="editAvatar">Profile Picture</label>
-          <input id="editAvatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-          <span class="hint">Optional. Maximum file size: 5 MB.</span>
-        </div>
+      <div class="form-group">
+        <label for="editPlatform">Favorite Platform</label>
+        <select id="editPlatform">
+          <option value="">Not specified</option>
+          <option value="Twitch">Twitch</option>
+          <option value="YouTube">YouTube</option>
+          <option value="Rumble">Rumble</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
 
-        <div class="form-group">
-          <label for="editBanner">Profile Banner</label>
-          <input id="editBanner" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-          <span class="hint">Optional. Maximum file size: 5 MB.</span>
-        </div>
+      <hr class="editor-divider">
 
-        <div class="editor-actions">
-          <button id="saveButton" class="button" type="submit">
-            Save Changes
-          </button>
+      <h3 class="editor-subheading">Social Media</h3>
 
-          <button id="cancelButton" class="button secondary" type="button">
-            Cancel
-          </button>
-        </div>
+      <div class="form-group">
+        <label for="editYouTube">YouTube Link</label>
+        <input id="editYouTube" type="url" placeholder="https://www.youtube.com/@username">
+      </div>
 
-        <div id="saveStatus" class="status-message" role="status"></div>
-      </form>
-    </section>
-  </main>
+      <div class="form-group">
+        <label for="editTwitch">Twitch Link</label>
+        <input id="editTwitch" type="url" placeholder="https://www.twitch.tv/username">
+      </div>
 
-  <footer>
-    G.O.T. Games is an unofficial fan site.
-  </footer>
+      <div class="form-group">
+        <label for="editTikTok">TikTok Link</label>
+        <input id="editTikTok" type="url" placeholder="https://www.tiktok.com/@username">
+      </div>
 
-  <script>
-    const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
+      <div class="form-group">
+        <label for="editRumble">Rumble Link</label>
+        <input id="editRumble" type="url" placeholder="https://rumble.com/user/username">
+      </div>
 
-    const supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+      <span class="hint">Social links must use HTTPS and the matching platform's website.</span>
 
-    const loading = document.getElementById("loading");
-    const notFound = document.getElementById("notFound");
-    const profileCard = document.getElementById("profileCard");
-    const editor = document.getElementById("editor");
-    const editButton = document.getElementById("editButton");
-    const profileForm = document.getElementById("profileForm");
-    const saveButton = document.getElementById("saveButton");
-    const cancelButton = document.getElementById("cancelButton");
-    const saveStatus = document.getElementById("saveStatus");
+      <hr class="editor-divider">
 
-    let currentUser = null;
-    let currentProfile = null;
-    let currentRoles = [];
+      <h3 class="editor-subheading">Profile Pictures</h3>
 
-    const roleSettings = {
-      owner: {
-        label: "♛ Owner",
-        className: "role-owner"
-      },
-      administrator: {
-        label: "Administrator",
-        className: "role-administrator"
-      },
-      moderator: {
-        label: "Moderator",
-        className: "role-moderator"
-      },
-      developer: {
-        label: "Developer",
-        className: "role-developer"
-      },
-      vip: {
-        label: "VIP",
-        className: "role-vip"
-      },
-      verified: {
-        label: "Verified",
-        className: "role-verified"
-      },
-      member: {
-        label: "Member",
-        className: "role-member"
-      }
-    };
+      <div class="form-group">
+        <label for="editAvatar">Profile Picture</label>
+        <input id="editAvatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <span class="hint">Optional. Maximum file size: 5 MB.</span>
+      </div>
 
-    const roleOrder = [
-      "owner",
-      "administrator",
-      "moderator",
-      "developer",
-      "vip",
-      "verified",
-      "member"
-    ];
+      <div class="form-group">
+        <label for="editBanner">Profile Banner</label>
+        <input id="editBanner" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <span class="hint">Optional. Maximum file size: 5 MB.</span>
+      </div>
 
-    function showNotFound() {
-      loading.classList.add("hidden");
-      profileCard.classList.add("hidden");
-      editor.classList.add("hidden");
-      notFound.classList.remove("hidden");
+      <div class="editor-actions">
+        <button id="saveButton" class="button" type="submit">
+          Save Changes
+        </button>
+
+        <button id="cancelButton" class="button secondary" type="button">
+          Cancel
+        </button>
+      </div>
+
+      <div id="saveStatus" class="status-message" role="status"></div>
+    </form>
+  </section>
+</main>
+
+<footer>
+  G.O.T. Games is an unofficial fan site.
+</footer>
+
+<script>
+  const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+  const loading = document.getElementById("loading");
+  const notFound = document.getElementById("notFound");
+  const profileCard = document.getElementById("profileCard");
+  const editor = document.getElementById("editor");
+  const editButton = document.getElementById("editButton");
+  const profileForm = document.getElementById("profileForm");
+  const saveButton = document.getElementById("saveButton");
+  const cancelButton = document.getElementById("cancelButton");
+  const saveStatus = document.getElementById("saveStatus");
+
+  let currentUser = null;
+  let currentProfile = null;
+  let currentRoles = [];
+
+  const roleSettings = {
+    owner: { label: "♛ Owner", className: "role-owner" },
+    administrator: { label: "Administrator", className: "role-administrator" },
+    moderator: { label: "Moderator", className: "role-moderator" },
+    developer: { label: "Developer", className: "role-developer" },
+    vip: { label: "VIP", className: "role-vip" },
+    verified: { label: "Verified", className: "role-verified" },
+    member: { label: "Member", className: "role-member" }
+  };
+
+  const roleOrder = [
+    "owner",
+    "administrator",
+    "moderator",
+    "developer",
+    "vip",
+    "verified",
+    "member"
+  ];
+
+  const socialPlatforms = {
+    youtube: {
+      label: "YouTube",
+      className: "youtube",
+      icon: "▶",
+      hosts: ["youtube.com", "www.youtube.com", "m.youtube.com"]
+    },
+    twitch: {
+      label: "Twitch",
+      className: "twitch",
+      icon: "▣",
+      hosts: ["twitch.tv", "www.twitch.tv"]
+    },
+    tiktok: {
+      label: "TikTok",
+      className: "tiktok",
+      icon: "♪",
+      hosts: ["tiktok.com", "www.tiktok.com", "m.tiktok.com"]
+    },
+    rumble: {
+      label: "Rumble",
+      className: "rumble",
+      icon: "▶",
+      hosts: ["rumble.com", "www.rumble.com"]
+    }
+  };
+
+  function showNotFound() {
+    loading.classList.add("hidden");
+    profileCard.classList.add("hidden");
+    editor.classList.add("hidden");
+    notFound.classList.remove("hidden");
+  }
+
+  function renderRoles(roles) {
+    const roleList = document.getElementById("roleList");
+    const avatarFrame = document.getElementById("avatarFrame");
+    const ownerCrown = document.getElementById("ownerCrown");
+    const founderLabel = document.getElementById("founderLabel");
+    const profileLabel = document.getElementById("profileLabel");
+
+    roleList.replaceChildren();
+
+    const sortedRoles = [...roles].sort((a, b) => {
+      return roleOrder.indexOf(a) - roleOrder.indexOf(b);
+    });
+
+    sortedRoles.forEach(role => {
+      const settings = roleSettings[role];
+      if (!settings) return;
+
+      const badge = document.createElement("span");
+      badge.className = `role-badge ${settings.className}`;
+      badge.textContent = settings.label;
+      roleList.appendChild(badge);
+    });
+
+    const isOwner = roles.includes("owner");
+
+    avatarFrame.classList.toggle("owner", isOwner);
+    ownerCrown.classList.toggle("hidden", !isOwner);
+    founderLabel.classList.toggle("hidden", !isOwner);
+
+    profileLabel.textContent = isOwner
+      ? "G.O.T. Games Founder"
+      : "G.O.T. Games Player";
+  }
+
+  async function loadProfileRoles(userId) {
+    const { data, error } = await supabaseClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Could not load profile roles:", error);
+      return [];
     }
 
-    function renderRoles(roles) {
-      const roleList = document.getElementById("roleList");
-      const avatarFrame = document.getElementById("avatarFrame");
-      const ownerCrown = document.getElementById("ownerCrown");
-      const founderLabel = document.getElementById("founderLabel");
-      const profileLabel = document.getElementById("profileLabel");
+    return (data || []).map(row => row.role);
+  }
 
-      roleList.replaceChildren();
+  function formatJoinDate(dateValue) {
+    if (!dateValue) return "Date unavailable";
 
-      const sortedRoles = [...roles].sort((a, b) => {
-        return roleOrder.indexOf(a) - roleOrder.indexOf(b);
-      });
+    const date = new Date(dateValue);
 
-      sortedRoles.forEach(role => {
-        const settings = roleSettings[role];
-
-        if (!settings) return;
-
-        const badge = document.createElement("span");
-        badge.className = `role-badge ${settings.className}`;
-        badge.textContent = settings.label;
-
-        roleList.appendChild(badge);
-      });
-
-      const isOwner = roles.includes("owner");
-
-      avatarFrame.classList.toggle("owner", isOwner);
-      ownerCrown.classList.toggle("hidden", !isOwner);
-      founderLabel.classList.toggle("hidden", !isOwner);
-
-      profileLabel.textContent = isOwner
-        ? "G.O.T. Games Founder"
-        : "G.O.T. Games Player";
+    if (Number.isNaN(date.getTime())) {
+      return "Date unavailable";
     }
 
-    async function loadProfileRoles(userId) {
-      const { data, error } = await supabaseClient
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+  }
 
-      if (error) {
-        console.error("Could not load profile roles:", error);
-        return [];
-      }
+  async function loadPlayerStats(userId) {
+    const { data, error } = await supabaseClient
+      .from("player_stats")
+      .select("games_played, events_attended, wins")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-      return (data || []).map(row => row.role);
+    if (error) {
+      console.error("Could not load player statistics:", error);
+      return null;
     }
 
-    function showProfile(profile, roles = []) {
-      currentProfile = profile;
-      currentRoles = roles;
+    return data;
+  }
 
-      document.getElementById("username").textContent = profile.username;
+  function displayStats(stats) {
+    document.getElementById("gamesPlayed").textContent =
+      stats?.games_played ?? 0;
 
-      document.getElementById("bio").textContent =
-        profile.bio || "This player hasn't added a bio yet.";
+    document.getElementById("eventsAttended").textContent =
+      stats?.events_attended ?? 0;
 
-      document.getElementById("platform").textContent =
-        profile.favorite_platform || "Not specified";
+    document.getElementById("wins").textContent =
+      stats?.wins ?? 0;
+  }
 
-      const avatar = document.getElementById("avatar");
+  function renderSocialLinks(profile) {
+    const container = document.getElementById("socialLinks");
+    container.replaceChildren();
 
-      avatar.src = profile.avatar_url ||
-        "https://placehold.co/300x300/22252c/ffffff?text=Player";
+    let linksFound = 0;
 
-      const banner = document.getElementById("banner");
+    Object.entries(socialPlatforms).forEach(([key, settings]) => {
+      const rawValue = profile[`${key}_url`];
 
-      banner.style.backgroundImage = profile.banner_url
-        ? `url("${profile.banner_url}")`
-        : "";
+      if (!rawValue || !rawValue.trim()) return;
 
-      renderRoles(roles);
-
-      document.title = profile.username + " | G.O.T. Games";
-
-      // Only the owner of this profile can see the edit button.
-      if (currentUser && currentUser.id === profile.id) {
-        editButton.classList.remove("hidden");
-      } else {
-        editButton.classList.add("hidden");
-      }
-
-      loading.classList.add("hidden");
-      notFound.classList.add("hidden");
-      profileCard.classList.remove("hidden");
-    }
-
-    async function loadProfile() {
       try {
-        const { data: sessionData, error: sessionError } =
-          await supabaseClient.auth.getSession();
+        const url = new URL(rawValue);
 
-        if (sessionError) throw sessionError;
-
-        currentUser = sessionData.session?.user || null;
-
-        const params = new URLSearchParams(window.location.search);
-        let requestedUsername = params.get("username");
-
-        if (!requestedUsername) {
-          if (!currentUser) {
-            showNotFound();
-            return;
-          }
-
-          const { data, error } = await supabaseClient
-            .from("profiles")
-            .select("username")
-            .eq("id", currentUser.id)
-            .maybeSingle();
-
-          if (error) throw error;
-
-          if (!data) {
-            showNotFound();
-            return;
-          }
-
-          requestedUsername = data.username;
+        if (
+          url.protocol !== "https:" ||
+          !settings.hosts.includes(url.hostname.toLowerCase())
+        ) {
+          return;
         }
 
-        const { data: profile, error } = await supabaseClient
-          .from("profiles")
-          .select("id, username, avatar_url, banner_url, bio, favorite_platform")
-          .ilike("username", requestedUsername)
-          .maybeSingle();
+        const link = document.createElement("a");
+        link.className = `social-link ${settings.className}`;
+        link.href = url.href;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
 
-        if (error) throw error;
+        const icon = document.createElement("span");
+        icon.textContent = settings.icon;
 
-        if (!profile) {
+        const label = document.createElement("span");
+        label.textContent = settings.label;
+
+        link.append(icon, label);
+        container.appendChild(link);
+
+        linksFound++;
+      } catch (error) {
+        console.warn("Invalid social link:", key);
+      }
+    });
+
+    if (linksFound === 0) {
+      const empty = document.createElement("span");
+      empty.className = "empty-social";
+      empty.textContent = "No social links added yet.";
+      container.appendChild(empty);
+    }
+  }
+
+  function showProfile(profile, roles = [], stats = null) {
+    currentProfile = profile;
+    currentRoles = roles;
+
+    document.getElementById("username").textContent = profile.username;
+
+    document.getElementById("bio").textContent =
+      profile.bio || "This player hasn't added a bio yet.";
+
+    document.getElementById("platform").textContent =
+      profile.favorite_platform || "Not specified";
+
+    document.getElementById("joinedDate").textContent =
+      formatJoinDate(profile.created_at);
+
+    const avatar = document.getElementById("avatar");
+
+    avatar.src = profile.avatar_url ||
+      "https://placehold.co/300x300/22252c/ffffff?text=Player";
+
+    const banner = document.getElementById("banner");
+
+    banner.style.backgroundImage = profile.banner_url
+      ? `url("${profile.banner_url}")`
+      : "";
+
+    renderRoles(roles);
+    renderSocialLinks(profile);
+    displayStats(stats);
+
+    document.title = profile.username + " | G.O.T. Games";
+
+    if (currentUser && currentUser.id === profile.id) {
+      editButton.classList.remove("hidden");
+    } else {
+      editButton.classList.add("hidden");
+    }
+
+    loading.classList.add("hidden");
+    notFound.classList.add("hidden");
+    profileCard.classList.remove("hidden");
+  }
+
+  async function loadProfile() {
+    try {
+      const { data: sessionData, error: sessionError } =
+        await supabaseClient.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      currentUser = sessionData.session?.user || null;
+
+      const params = new URLSearchParams(window.location.search);
+      let requestedUsername = params.get("username");
+
+      if (!requestedUsername) {
+        if (!currentUser) {
           showNotFound();
           return;
         }
 
-        const roles = await loadProfileRoles(profile.id);
-
-        showProfile(profile, roles);
-
-      } catch (error) {
-        console.error("Profile loading error:", error);
-        showNotFound();
-      }
-    }
-
-    function openEditor() {
-      if (!currentProfile || !currentUser ||
-          currentProfile.id !== currentUser.id) {
-        return;
-      }
-
-      document.getElementById("editUsername").value =
-        currentProfile.username || "";
-
-      document.getElementById("editBio").value =
-        currentProfile.bio || "";
-
-      document.getElementById("editPlatform").value =
-        currentProfile.favorite_platform || "";
-
-      document.getElementById("editAvatar").value = "";
-      document.getElementById("editBanner").value = "";
-
-      saveStatus.textContent = "";
-      saveStatus.className = "status-message";
-
-      editor.classList.remove("hidden");
-      editor.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function closeEditor() {
-      editor.classList.add("hidden");
-      profileForm.reset();
-      saveStatus.textContent = "";
-    }
-
-    async function uploadImage(bucket, file, userId) {
-      if (!file) return null;
-
-      const allowedTypes = [
-        "image/png",
-        "image/jpeg",
-        "image/webp",
-        "image/gif"
-      ];
-
-      if (!allowedTypes.includes(file.type)) {
-        throw new Error("Please choose a PNG, JPG, WEBP or GIF image.");
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error("Images must be 5 MB or smaller.");
-      }
-
-      const extension = file.name.split(".").pop().toLowerCase();
-      const fileName =
-        `${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-
-      const { error: uploadError } = await supabaseClient.storage
-        .from(bucket)
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabaseClient.storage
-        .from(bucket)
-        .getPublicUrl(fileName);
-
-      return data.publicUrl;
-    }
-
-    async function saveProfile(event) {
-      event.preventDefault();
-
-      if (!currentUser || !currentProfile ||
-          currentUser.id !== currentProfile.id) {
-        saveStatus.textContent = "You cannot edit this profile.";
-        saveStatus.className = "status-message error";
-        return;
-      }
-
-      const username =
-        document.getElementById("editUsername").value.trim();
-
-      const bio =
-        document.getElementById("editBio").value.trim();
-
-      const favoritePlatform =
-        document.getElementById("editPlatform").value;
-
-      const avatarFile =
-        document.getElementById("editAvatar").files[0];
-
-      const bannerFile =
-        document.getElementById("editBanner").files[0];
-
-      if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
-        saveStatus.textContent =
-          "Username must be 3–20 characters and use only letters, numbers or underscores.";
-        saveStatus.className = "status-message error";
-        return;
-      }
-
-      if (bio.length > 300) {
-        saveStatus.textContent = "Your bio is too long.";
-        saveStatus.className = "status-message error";
-        return;
-      }
-
-      saveButton.disabled = true;
-      saveButton.textContent = "Saving...";
-      saveStatus.textContent = "Saving your profile...";
-      saveStatus.className = "status-message";
-
-      try {
-        const updates = {
-          username,
-          bio,
-          favorite_platform: favoritePlatform
-        };
-
-        if (avatarFile) {
-          saveStatus.textContent = "Uploading profile picture...";
-
-          updates.avatar_url = await uploadImage(
-            "avatars",
-            avatarFile,
-            currentUser.id
-          );
-        }
-
-        if (bannerFile) {
-          saveStatus.textContent = "Uploading banner...";
-
-          updates.banner_url = await uploadImage(
-            "banners",
-            bannerFile,
-            currentUser.id
-          );
-        }
-
-        saveStatus.textContent = "Updating profile...";
-
         const { data, error } = await supabaseClient
           .from("profiles")
-          .update(updates)
+          .select("username")
           .eq("id", currentUser.id)
-          .select("id, username, avatar_url, banner_url, bio, favorite_platform")
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
-        showProfile(data, currentRoles);
-
-        // Keep the profile URL updated if the username changed.
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set("username", data.username);
-        window.history.replaceState({}, "", newUrl);
-
-        closeEditor();
-
-        saveStatus.textContent = "Profile saved!";
-        saveStatus.className = "status-message success";
-
-      } catch (error) {
-        console.error("Profile save error:", error);
-
-        let message = error.message || "Something went wrong.";
-
-        if (error.code === "23505") {
-          message = "That username is already taken. Try another one.";
+        if (!data) {
+          showNotFound();
+          return;
         }
 
-        saveStatus.textContent = message;
-        saveStatus.className = "status-message error";
-
-      } finally {
-        saveButton.disabled = false;
-        saveButton.textContent = "Save Changes";
+        requestedUsername = data.username;
       }
+
+      const { data: profile, error } = await supabaseClient
+        .from("profiles")
+        .select(`
+          id,
+          username,
+          avatar_url,
+          banner_url,
+          bio,
+          favorite_platform,
+          created_at,
+          youtube_url,
+          twitch_url,
+          tiktok_url,
+          rumble_url
+        `)
+        .ilike("username", requestedUsername)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!profile) {
+        showNotFound();
+        return;
+      }
+
+      const [roles, stats] = await Promise.all([
+        loadProfileRoles(profile.id),
+        loadPlayerStats(profile.id)
+      ]);
+
+      showProfile(profile, roles, stats);
+
+    } catch (error) {
+      console.error("Profile loading error:", error);
+      showNotFound();
+    }
+  }
+
+  function openEditor() {
+    if (!currentProfile || !currentUser ||
+        currentProfile.id !== currentUser.id) {
+      return;
     }
 
-    editButton.addEventListener("click", openEditor);
-    cancelButton.addEventListener("click", closeEditor);
-    profileForm.addEventListener("submit", saveProfile);
+    document.getElementById("editUsername").value =
+      currentProfile.username || "";
 
-    loadProfile();
-  </script>
+    document.getElementById("editBio").value =
+      currentProfile.bio || "";
+
+    document.getElementById("editPlatform").value =
+      currentProfile.favorite_platform || "";
+
+    document.getElementById("editYouTube").value =
+      currentProfile.youtube_url || "";
+
+    document.getElementById("editTwitch").value =
+      currentProfile.twitch_url || "";
+
+    document.getElementById("editTikTok").value =
+      currentProfile.tiktok_url || "";
+
+    document.getElementById("editRumble").value =
+      currentProfile.rumble_url || "";
+
+    document.getElementById("editAvatar").value = "";
+    document.getElementById("editBanner").value = "";
+
+    saveStatus.textContent = "";
+    saveStatus.className = "status-message";
+
+    editor.classList.remove("hidden");
+    editor.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function closeEditor() {
+    editor.classList.add("hidden");
+    profileForm.reset();
+    saveStatus.textContent = "";
+  }
+
+  function validateSocialUrl(value, platform) {
+    if (!value.trim()) return "";
+
+    let url;
+
+    try {
+      url = new URL(value.trim());
+    } catch {
+      throw new Error(`Please enter a valid ${platform} URL.`);
+    }
+
+    const settings = socialPlatforms[platform];
+
+    if (
+      url.protocol !== "https:" ||
+      !settings.hosts.includes(url.hostname.toLowerCase())
+    ) {
+      throw new Error(
+        `Please use a valid HTTPS ${settings.label} link.`
+      );
+    }
+
+    return url.href;
+  }
+
+  async function uploadImage(bucket, file, userId) {
+    if (!file) return null;
+
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/gif"
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error("Please choose a PNG, JPG, WEBP or GIF image.");
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error("Images must be 5 MB or smaller.");
+    }
+
+    const extension = file.name.split(".").pop().toLowerCase();
+    const fileName =
+      `${userId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from(bucket)
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabaseClient.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  }
+
+  async function saveProfile(event) {
+    event.preventDefault();
+
+    if (!currentUser || !currentProfile ||
+        currentUser.id !== currentProfile.id) {
+      saveStatus.textContent = "You cannot edit this profile.";
+      saveStatus.className = "status-message error";
+      return;
+    }
+
+    const username =
+      document.getElementById("editUsername").value.trim();
+
+    const bio =
+      document.getElementById("editBio").value.trim();
+
+    const favoritePlatform =
+      document.getElementById("editPlatform").value;
+
+    const avatarFile =
+      document.getElementById("editAvatar").files[0];
+
+    const bannerFile =
+      document.getElementById("editBanner").files[0];
+
+    if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) {
+      saveStatus.textContent =
+        "Username must be 3–20 characters and use only letters, numbers or underscores.";
+      saveStatus.className = "status-message error";
+      return;
+    }
+
+    if (bio.length > 300) {
+      saveStatus.textContent = "Your bio is too long.";
+      saveStatus.className = "status-message error";
+      return;
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+    saveStatus.textContent = "Saving your profile...";
+    saveStatus.className = "status-message";
+
+    try {
+      const updates = {
+        username,
+        bio,
+        favorite_platform: favoritePlatform,
+
+        youtube_url: validateSocialUrl(
+          document.getElementById("editYouTube").value,
+          "youtube"
+        ),
+
+        twitch_url: validateSocialUrl(
+          document.getElementById("editTwitch").value,
+          "twitch"
+        ),
+
+        tiktok_url: validateSocialUrl(
+          document.getElementById("editTikTok").value,
+          "tiktok"
+        ),
+
+        rumble_url: validateSocialUrl(
+          document.getElementById("editRumble").value,
+          "rumble"
+        )
+      };
+
+      if (avatarFile) {
+        saveStatus.textContent = "Uploading profile picture...";
+
+        updates.avatar_url = await uploadImage(
+          "avatars",
+          avatarFile,
+          currentUser.id
+        );
+      }
+
+      if (bannerFile) {
+        saveStatus.textContent = "Uploading banner...";
+
+        updates.banner_url = await uploadImage(
+          "banners",
+          bannerFile,
+          currentUser.id
+        );
+      }
+
+      saveStatus.textContent = "Updating profile...";
+
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .update(updates)
+        .eq("id", currentUser.id)
+        .select(`
+          id,
+          username,
+          avatar_url,
+          banner_url,
+          bio,
+          favorite_platform,
+          created_at,
+          youtube_url,
+          twitch_url,
+          tiktok_url,
+          rumble_url
+        `)
+        .single();
+
+      if (error) throw error;
+
+      showProfile(data, currentRoles, await loadPlayerStats(currentUser.id));
+
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set("username", data.username);
+      window.history.replaceState({}, "", newUrl);
+
+      closeEditor();
+
+      saveStatus.textContent = "Profile saved!";
+      saveStatus.className = "status-message success";
+
+    } catch (error) {
+      console.error("Profile save error:", error);
+
+      let message = error.message || "Something went wrong.";
+
+      if (error.code === "23505") {
+        message = "That username is already taken. Try another one.";
+      }
+
+      saveStatus.textContent = message;
+      saveStatus.className = "status-message error";
+
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = "Save Changes";
+    }
+  }
+
+  editButton.addEventListener("click", openEditor);
+  cancelButton.addEventListener("click", closeEditor);
+  profileForm.addEventListener("submit", saveProfile);
+
+  loadProfile();
+</script>
 
 </body>
 </html>
