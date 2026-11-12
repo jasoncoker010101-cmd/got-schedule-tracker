@@ -2,34 +2,44 @@
   const style = document.createElement("style");
   style.textContent = `
     .runner-mascot {
-      --mascot-ginger: #c65e24;
+      --ginger-1: #d8752f;
+      --ginger-2: #a64818;
+      --skin: #f1caa0;
+      --shirt: #f0c847;
+      --shirt-deep: #c08900;
+      --beard: #b55c1a;
+      --silver-1: #dfe4ea;
+      --silver-2: #a8b3be;
+      --silver-3: #6a7581;
       position: fixed;
-      z-index: 900;
       left: 0;
       bottom: max(10px, env(safe-area-inset-bottom));
-      width: 188px;
-      height: 174px;
+      width: 160px;
+      height: 120px;
+      z-index: 900;
       pointer-events: none;
-      animation: mascot-cross-screen 18s linear infinite;
+      animation: mascot-run-across 18s linear infinite;
       will-change: transform;
+      filter: drop-shadow(0 8px 6px rgba(0,0,0,0.12));
     }
     .runner-mascot svg { width: 100%; height: 100%; overflow: visible; }
-    .runner-mascot .mascot-bob { transform-box: fill-box; transform-origin: center bottom; animation: mascot-bob .34s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-wave { transform-box: view-box; transform-origin: 119px 66px; animation: mascot-wave .48s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-leg-back { transform-box: view-box; transform-origin: 91px 119px; animation: mascot-run-back .34s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-leg-front { transform-box: view-box; transform-origin: 109px 119px; animation: mascot-run-front .34s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-award-arm { transform-box: view-box; transform-origin: 83px 72px; animation: mascot-carry .34s ease-in-out infinite alternate; }
-    @keyframes mascot-cross-screen { from { transform: translateX(-205px); } to { transform: translateX(calc(100vw + 205px)); } }
-    @keyframes mascot-bob { to { translate: 0 -4px; } }
-    @keyframes mascot-wave { from { rotate: -13deg; } to { rotate: 20deg; } }
-    @keyframes mascot-run-back { from { rotate: 22deg; } to { rotate: -24deg; } }
-    @keyframes mascot-run-front { from { rotate: -24deg; } to { rotate: 22deg; } }
-    @keyframes mascot-carry { from { rotate: -3deg; } to { rotate: 4deg; } }
+    .runner-mascot .mascot-bob { transform-box: fill-box; transform-origin: center bottom; animation: mascot-bob .32s ease-in-out infinite alternate; }
+    .runner-mascot .mascot-wave { transform-box: fill-box; transform-origin: 111px 58px; animation: mascot-wave .42s ease-in-out infinite alternate; }
+    .runner-mascot .mascot-leg-a { transform-box: fill-box; transform-origin: 63px 95px; animation: mascot-leg-a .26s ease-in-out infinite alternate; }
+    .runner-mascot .mascot-leg-b { transform-box: fill-box; transform-origin: 93px 95px; animation: mascot-leg-b .26s ease-in-out infinite alternate; }
+    .runner-mascot .mascot-arm-left { transform-box: fill-box; transform-origin: 62px 63px; animation: mascot-arm-left .28s ease-in-out infinite alternate; }
+    .runner-mascot .mascot-award-sheen { opacity: .28; }
+    @keyframes mascot-run-across { from { transform: translateX(-180px); } to { transform: translateX(calc(100vw + 180px)); } }
+    @keyframes mascot-bob { to { translate: 0 -3px; } }
+    @keyframes mascot-wave { from { rotate: -20deg; } to { rotate: 20deg; } }
+    @keyframes mascot-leg-a { from { rotate: 16deg; } to { rotate: -16deg; } }
+    @keyframes mascot-leg-b { from { rotate: -18deg; } to { rotate: 18deg; } }
+    @keyframes mascot-arm-left { from { rotate: -8deg; } to { rotate: 10deg; } }
     @media (prefers-reduced-motion: reduce) {
-      .runner-mascot { animation: none; left: auto; right: 12px; }
+      .runner-mascot { animation: none; left: auto; right: 14px; }
       .runner-mascot .mascot-bob, .runner-mascot .mascot-wave,
-      .runner-mascot .mascot-leg-back, .runner-mascot .mascot-leg-front,
-      .runner-mascot .mascot-award-arm { animation: none; }
+      .runner-mascot .mascot-leg-a, .runner-mascot .mascot-leg-b,
+      .runner-mascot .mascot-arm-left { animation: none; }
     }
   `;
   document.head.append(style);
@@ -38,133 +48,96 @@
   mascot.className = "runner-mascot";
   mascot.setAttribute("aria-hidden", "true");
   mascot.innerHTML = `
-    <svg viewBox="0 0 200 180" role="presentation" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg" role="presentation">
       <defs>
-        <linearGradient id="mascot-shirt" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#f5cf48"/><stop offset="1" stop-color="#d99e13"/>
+        <linearGradient id="shirtGrad" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#ffd85b"/>
+          <stop offset="1" stop-color="#d79f15"/>
         </linearGradient>
-        <linearGradient id="mascot-hair" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#e88a39"/><stop offset=".55" stop-color="#bd4e1f"/><stop offset="1" stop-color="#873516"/>
+        <linearGradient id="skinGrad" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#f7d3a6"/>
+          <stop offset="1" stop-color="#dfad7b"/>
         </linearGradient>
-        <linearGradient id="mascot-skin" x1="0" y1="0" x2=".8" y2="1">
-          <stop offset="0" stop-color="#ffd9b5"/><stop offset="1" stop-color="#dfa77c"/>
+        <linearGradient id="silverGrad" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#f5f7f9"/>
+          <stop offset="0.42" stop-color="#dfe6ec"/>
+          <stop offset="1" stop-color="#8f9ba6"/>
         </linearGradient>
-        <linearGradient id="mascot-silver" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#d9e0e7"/><stop offset="1" stop-color="#929da8"/>
-        </linearGradient>
-        <linearGradient id="mascot-trousers" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#40536a"/><stop offset="1" stop-color="#202c3b"/>
-        </linearGradient>
-        <filter id="mascot-shadow" x="-30%" y="-30%" width="160%" height="170%">
-          <feDropShadow dx="0" dy="2" stdDeviation="1.7" flood-color="#101820" flood-opacity=".25"/>
-        </filter>
       </defs>
 
-      <!-- Ground shadow -->
-      <ellipse cx="99" cy="165" rx="48" ry="6" fill="#101820" opacity=".15"/>
-      <g class="mascot-bob" stroke="#382920" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <!-- Far leg, trousers and sneaker -->
-        <g class="mascot-leg-back">
-          <path d="m94 113-12 20-15 10 5 7 22-8 15-21" fill="url(#mascot-trousers)"/>
-          <path d="m67 141-7 7q-2 3 2 5l23 1q5 0 4-4l-3-7-8 5-6-5" fill="#f2f3f4"/>
-          <path d="m62 149 22 1m-15-5 5 4m5-7 5 4" fill="none" stroke="#aeb8c2" stroke-width="1.5"/>
-          <path d="m91 126-8 12m13-17-8 12" fill="none" stroke="#718096" stroke-width="1.5"/>
-        </g>
-        <!-- Back arm and sleeve, holding the awards close -->
-        <path d="m76 75-14 8-8 21 7 4 14-16 12-6" fill="url(#mascot-shirt)"/>
-        <path d="m62 104-4 9q-1 4 3 5l7-1 5-9-5-5z" fill="url(#mascot-skin)"/>
+      <ellipse cx="81" cy="112" rx="42" ry="5" fill="#14181d" opacity="0.12"/>
 
-        <!-- Torso -->
-        <path d="M77 67q13-9 29 0l11 9-5 40q-20 12-43 0l2-31-9 7-7-8 12-14z" fill="url(#mascot-shirt)"/>
-        <path d="m83 67 10 13 9-13m-10 13-2 34m-15-28 6 3m31-2-8 4" fill="none" stroke="#b77b13" stroke-width="1.6"/>
-        <path d="M84 67q9 7 18 0" fill="none" stroke="#fff0ad" stroke-width="2"/>
-        <!-- Shirt details -->
-        <path d="m108 79 5 2-1 5-5-2z" fill="#f7e6a3" stroke="#b77b13" stroke-width="1"/>
-        <circle cx="109" cy="89" r="1.2" fill="#8b6517" stroke="none"/>
-        <circle cx="108" cy="96" r="1.2" fill="#8b6517" stroke="none"/>
-
-        <!-- Neck -->
-        <path d="m86 60-1 11q8 8 16 0l-2-13" fill="url(#mascot-skin)"/>
-        <!-- Ear and face, turned slightly toward the direction he's running -->
-        <path d="M75 39q0-24 22-24 20 0 21 23l-2 14q-3 17-21 19-17-2-20-19z" fill="url(#mascot-skin)"/>
-        <path d="M76 45q-9-2-8 6 1 7 9 6m39-13q8-1 8 6 0 6-8 7" fill="url(#mascot-skin)"/>
-        <path d="M72 50q5-2 8 3m35-2q4-4 8-2" fill="none" stroke="#b77855" stroke-width="1.5"/>
-
-        <!-- Ginger undercut and textured swept-up mohawk -->
-        <path d="M76 39q-2-14 7-21 6-5 15-4 13 1 19 13 3 6 1 15-5-4-10-5l-3-12-5 10-5-16-7 16-6-8-1 13q-2-2-5-1z" fill="url(#mascot-hair)"/>
-        <path d="m80 30 3-12 6 9m2-1 4-12 4 14m4-3 5-7 2 12" fill="none" stroke="#f3a45a" stroke-width="2"/>
-        <path d="M77 42q5-4 9-2m24-1q4-1 7 2" fill="none" stroke="#853916" stroke-width="2"/>
-        <path d="m78 43 2 4m32-5-1 5" fill="none" stroke="#a9491c" stroke-width="2"/>
-
-        <!-- Brows, lively eyes, nose, and smile -->
-        <path d="m84 40 8-2m13 1 6 2" fill="none" stroke="#71391f" stroke-width="2.2"/>
-        <ellipse cx="89" cy="45" rx="2.7" ry="3.4" fill="#fff" stroke="none"/>
-        <ellipse cx="107" cy="44" rx="2.7" ry="3.4" fill="#fff" stroke="none"/>
-        <ellipse cx="90" cy="46" rx="1.25" ry="2" fill="#3d302a" stroke="none"/>
-        <ellipse cx="108" cy="45" rx="1.25" ry="2" fill="#3d302a" stroke="none"/>
-        <circle cx="90.4" cy="45.3" r=".55" fill="#fff" stroke="none"/>
-        <circle cx="108.4" cy="44.3" r=".55" fill="#fff" stroke="none"/>
-        <path d="m98 46-2 8q2 2 5 0" fill="none" stroke="#b77855" stroke-width="1.5"/>
-        <path d="M92 57q7 6 14-1" fill="none" stroke="#713c31" stroke-width="1.8"/>
-        <path d="M94 58q5 2 9-1" fill="none" stroke="#fff3e7" stroke-width="1.2"/>
-        <path d="M82 53q3 2 5 1m25-3q3-1 5-3" fill="none" stroke="#e99c82" stroke-width="1.5" opacity=".8"/>
-
-        <!-- Full ginger beard and moustache, shaped around the smile -->
-        <path d="M79 51q4 3 9 1 4 3 9 1 5 2 10-1 5 2 9-2l-2 13q-3 10-14 13l-4 8-5-8q-10-3-13-13z" fill="url(#mascot-hair)"/>
-        <path d="M79 53q5 4 10 0 4 4 9 1 5 3 10-1 4 3 8-1l-2 7q-5 4-9 0-5 4-10 0-5 4-10 0-4 3-7 0z" fill="#d87531"/>
-        <path d="M82 62q4 3 7 1m19 0q3 1 6-2m-26 7q4 2 7 1m9 2q4-1 7-4m-20 8q4 1 7 3" fill="none" stroke="#f09a53" stroke-width="1.5" opacity=".9"/>
-        <path d="M96 62q2 2 4 0" fill="none" stroke="#63331e" stroke-width="1.4"/>
-        <!-- Beard sideburns -->
-        <path d="M77 44q-3 7 1 13l3-7m34-7q3 7-1 13l-3-7" fill="#ad4b20" stroke="none"/>
-
-        <!-- Award-carrying arm in foreground -->
-        <g class="mascot-award-arm">
-          <path d="m80 74-10 9 8 15 13-4" fill="none" stroke="url(#mascot-shirt)" stroke-width="10"/>
-          <path d="m80 94 8-2 6 4-3 7-10 1-5-4z" fill="url(#mascot-skin)"/>
+      <g class="mascot-bob" stroke="#2d1f15" stroke-linecap="round" stroke-linejoin="round">
+        <!-- left leg -->
+        <g class="mascot-leg-a">
+          <path d="M68 86 L60 101 L41 103 L42 109 L62 110 L75 93 Z" fill="#3c4d5b"/>
+          <path d="M54 109 L66 110" stroke="#a7b6c0" stroke-width="2"/>
         </g>
 
-        <!-- Two silver creator awards, side-by-side, with metallic bevels -->
-        <g filter="url(#mascot-shadow)" transform="rotate(-5 73 111)">
-          <path d="M48 91q0-3 3-3h22l4 4v33H48z" fill="#7f8a95"/>
-          <path d="M46 89q0-3 3-3h22l4 4v32H46z" fill="url(#mascot-silver)"/>
-          <path d="M49 92h21v25H49z" fill="#f8fafb" stroke="#a6b0ba" stroke-width="1.3"/>
-          <path d="m57 98 9 6-9 6z" fill="#9aa5af" stroke="none"/>
-          <path d="M49 92h21m-21 3h7" fill="none" stroke="#fff" stroke-width="1.3" opacity=".9"/>
-          <text x="59.5" y="114" fill="#5b6670" stroke="none" font-size="4.2" font-weight="700" text-anchor="middle" font-family="sans-serif">SILVER</text>
-          <path d="m51 120 3 5 4-4 4 4 4-5" fill="#b7c0c8" stroke="#7f8a95" stroke-width="1"/>
-        </g>
-        <g filter="url(#mascot-shadow)" transform="rotate(5 101 111)">
-          <path d="M78 92q0-3 3-3h22l4 4v32H78z" fill="#7f8a95"/>
-          <path d="M76 90q0-3 3-3h22l4 4v32H76z" fill="url(#mascot-silver)"/>
-          <path d="M79 93h21v25H79z" fill="#f8fafb" stroke="#a6b0ba" stroke-width="1.3"/>
-          <path d="m87 99 9 6-9 6z" fill="#9aa5af" stroke="none"/>
-          <path d="M79 93h21m-21 3h7" fill="none" stroke="#fff" stroke-width="1.3" opacity=".9"/>
-          <text x="89.5" y="115" fill="#5b6670" stroke="none" font-size="4.2" font-weight="700" text-anchor="middle" font-family="sans-serif">SILVER</text>
-          <path d="m81 121 3 5 4-4 4 4 4-5" fill="#b7c0c8" stroke="#7f8a95" stroke-width="1"/>
-        </g>
-        <!-- Fingers curled around the two awards -->
-        <path d="M73 105q7-4 12 1m-12 4q6-3 11 2m-9 3q5-2 9 2" fill="none" stroke="#d9966f" stroke-width="2.2"/>
-
-        <!-- Near leg, trousers and detailed sneaker -->
-        <g class="mascot-leg-front">
-          <path d="m105 114 12 13 10 15-6 7-18-11-8-18" fill="url(#mascot-trousers)"/>
-          <path d="m119 141 8 2 8 7q2 4-3 5l-24-1q-4-1-2-5l5-7 7 6z" fill="#fff"/>
-          <path d="m108 151 27 1m-13-8-5 6m12-3-4 4" fill="none" stroke="#aab5bf" stroke-width="1.5"/>
-          <path d="m101 123 9 12m-5-16 9 12" fill="none" stroke="#718096" stroke-width="1.5"/>
+        <!-- right leg -->
+        <g class="mascot-leg-b">
+          <path d="M86 87 L95 101 L112 101 L112 109 L91 109 L80 94 Z" fill="#3c4d5b"/>
+          <path d="M93 109 L106 110" stroke="#a7b6c0" stroke-width="2"/>
         </g>
 
-        <!-- Raised waving arm, with sleeve, forearm, palm and individual fingers -->
-        <path d="m108 75 13-8 5-13-7-4-10 11-11 4" fill="url(#mascot-shirt)"/>
+        <!-- torso -->
+        <path d="M66 60 L86 46 L104 60 L111 87 L82 103 L53 88 Z" fill="url(#shirtGrad)"/>
+        <path d="M70 63 L86 52 L101 63" fill="none" stroke="#d6a11d" stroke-width="2"/>
+        <path d="M81 62 L84 86" stroke="#cf9a18" stroke-width="2"/>
+        <path d="M91 65 L100 72" stroke="#cf9a18" stroke-width="2"/>
+        <path d="M67 70 L75 78" stroke="#cf9a18" stroke-width="2"/>
+
+        <!-- left arm holding a play button -->
+        <g class="mascot-arm-left">
+          <path d="M53 66 L39 72 L30 86 L36 91 L51 82 L60 68 Z" fill="#f2c89f"/>
+          <g transform="translate(18 76) rotate(-6)">
+            <rect x="0" y="0" width="22" height="22" rx="4" fill="url(#silverGrad)" stroke="#7c8a95" stroke-width="2"/>
+            <path d="M7 6 L17 11 L7 16 Z" fill="#6a7581"/>
+          </g>
+        </g>
+
+        <!-- right arm waving -->
         <g class="mascot-wave">
-          <path d="m124 58 6-18" fill="none" stroke="url(#mascot-skin)" stroke-width="8"/>
-          <path d="M128 43q-3-4-1-10 1-3 3-2l2 9m-2 4q0-8 5-11 3-2 4 1l-4 11m-3 1q4-7 9-7 4 1 2 4l-7 8m-8-2q-4-3-6-1-2 2 1 5l7 5q5 2 9-2l7-8" fill="url(#mascot-skin)"/>
-          <path d="m129 37 2 6m7-7-3 7m8-3-5 7m-14 5 5 2" fill="none" stroke="#bd805c" stroke-width="1.2"/>
+          <path d="M106 62 L119 52 L132 36 L127 31 L112 43 L104 57 Z" fill="#f2c89f"/>
+          <path d="M126 33 L133 17 L139 18 L136 31 Z" fill="#f2c89f"/>
+          <path d="M131 11 L139 18 L134 22" fill="none" stroke="#b7724b" stroke-width="2"/>
         </g>
 
-        <!-- Trouser waistband and pocket stitching -->
-        <path d="m73 111q18 9 43 1l-1 9q-21 9-43-1z" fill="#263646"/>
-        <path d="m79 116q5 3 9 3m20-5-1 6m-20 2 1 3" fill="none" stroke="#66788a" stroke-width="1.4"/>
+        <!-- head -->
+        <path d="M63 32 L79 22 L97 25 L107 39 L106 55 L81 66 L60 56 Z" fill="url(#skinGrad)"/>
+        <path d="M63 35 L58 23 L67 20 L75 28 Z" fill="#d8752f"/>
+        <path d="M108 36 L115 29 L122 33 L117 45 Z" fill="#d8752f"/>
+
+        <!-- mohawk -->
+        <path d="M63 27 L68 15 L75 22 L82 10 L89 23 L96 15 L103 27 L91 28 L81 24 L74 31 Z" fill="#d8752f"/>
+        <path d="M69 20 L73 30 L80 22 L86 32 L96 20" fill="none" stroke="#f2a75c" stroke-width="2"/>
+
+        <!-- face features -->
+        <path d="M69 39 L76 37 M93 38 L100 39" fill="none" stroke="#6c3f2b" stroke-width="2"/>
+        <ellipse cx="74" cy="43" rx="2.8" ry="3.2" fill="#fefefe"/>
+        <ellipse cx="96" cy="43" rx="2.8" ry="3.2" fill="#fefefe"/>
+        <circle cx="74.5" cy="43.5" r="1.1" fill="#2d201b"/>
+        <circle cx="96.5" cy="43.5" r="1.1" fill="#2d201b"/>
+        <path d="M84 43 L88 49 L84 51" fill="none" stroke="#af6d4d" stroke-width="2"/>
+        <path d="M76 51 Q86 58 96 51" fill="none" stroke="#7b4533" stroke-width="2"/>
+
+        <!-- beard -->
+        <path d="M66 49 Q76 59 86 55 Q96 59 106 49 L103 67 Q92 74 86 72 Q79 75 68 67 Z" fill="#b55c1a"/>
+        <path d="M70 52 Q82 61 86 60 Q92 61 100 52" fill="none" stroke="#d08239" stroke-width="2"/>
+        <path d="M69 57 Q76 60 80 58 M92 60 Q98 59 102 56" fill="none" stroke="#8f4217" stroke-width="2"/>
+
+        <!-- second silver play button on right side -->
+        <g transform="translate(107 77) rotate(6)">
+          <rect x="0" y="0" width="22" height="22" rx="4" fill="url(#silverGrad)" stroke="#7c8a95" stroke-width="2"/>
+          <path d="M7 6 L17 11 L7 16 Z" fill="#6a7581"/>
+        </g>
+
+        <!-- neck and collar -->
+        <path d="M79 60 L90 60 L89 67 L80 68 Z" fill="#f2c89f"/>
+        <path d="M69 84 L91 84 L86 90 L74 90 Z" fill="#c68f0d"/>
       </g>
-    </svg>`;
+    </svg>
+  `;
+
   document.body.append(mascot);
 })();
