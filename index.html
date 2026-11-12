@@ -19,11 +19,12 @@
   --today:#16212c; --today-ink:#ffffff;
   --yt:#ff0000; --ytl:#c2255c; --tw:#9146ff; --x:#16212c; --th:#7a8794; --ot:#2f9e8f;
   --rb:#85c742;
+  --shadow:0 12px 28px rgba(16, 22, 28, 0.08);
   --font:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme:dark){
   :root{--bg:#10161c; --card:#19222b; --ink:#e9eef3; --mute:#98a6b3; --line:#2b3743;
-    --today:#e9eef3; --today-ink:#10161c; --x:#e9eef3; --th:#98a6b3;}
+    --today:#e9eef3; --today-ink:#10161c; --x:#e9eef3; --th:#98a6b3; --shadow:0 14px 32px rgba(0,0,0,0.22);}
 }
 *{box-sizing:border-box}
 [hidden]{display:none !important}
@@ -34,7 +35,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line
 .hero{
   padding:18px 18px 16px;margin:0 0 18px;border-radius:16px;
   background:radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--card);
-  border:1px solid var(--line);border-top:4px solid var(--accent);
+  border:1px solid var(--line);border-top:4px solid var(--accent);box-shadow:var(--shadow);
 }
 .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
 .hero-heading{min-width:0;flex:1}
@@ -43,7 +44,8 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;color:var(--mute);font-size:.9rem}
 .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 0}
 .controls label{font-weight:600;font-size:.9rem}
-.controls select{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
+.controls select{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
+.controls select:focus{outline:none;border-color:var(--accent)}
 
 /* Main navigation */
 .main-nav{
@@ -167,10 +169,10 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .next{
   display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;
   margin:0 0 22px;padding:16px 18px;background:var(--today);color:var(--today-ink);
-  border-radius:14px;border-left:6px solid var(--accent);
+  border-radius:14px;border-left:6px solid var(--accent);box-shadow:0 10px 22px rgba(22,33,44,.08);
   transition:transform .18s ease, box-shadow .18s ease;
 }
-.next:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 16px rgba(22,33,44,.12)}
+.next:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 12px 24px rgba(22,33,44,.14)}
 .next b{display:block;font-size:1.35rem;font-weight:800;line-height:1.15}
 .next span{opacity:.8;font-size:.95rem;display:block}
 .next .poster{width:96px;aspect-ratio:2/3;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.25)}
@@ -189,10 +191,10 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 }
 .day{
   background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:7rem;
-  transition:transform .18s ease, box-shadow .18s ease;
+  box-shadow:0 8px 18px rgba(22,33,44,.02);transition:transform .18s ease, box-shadow .18s ease;
   animation:fadeUp .45s ease both;animation-delay:calc(var(--i,0) * 60ms);
 }
-.day:hover{transform:translateY(-2px) scale(1.015);box-shadow:0 8px 20px -10px rgba(0,0,0,.35)}
+.day:hover{transform:translateY(-2px) scale(1.015);box-shadow:0 12px 22px -12px rgba(0,0,0,.2)}
 .day.today{border:2px solid var(--accent)}
 .day h2{margin:0 0 10px;font-size:1.05rem;font-weight:800;display:flex;justify-content:space-between;align-items:baseline}
 .day h2 small{font-weight:400;color:var(--mute);font-size:.85rem}
@@ -243,7 +245,7 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 }
 
 /* Notes and footer */
-.notes{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.notes{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 8px 18px rgba(22,33,44,.02)}
 .notes h2{margin:0 0 8px;font-size:1.1rem}
 .notes p{margin:0 0 8px;white-space:pre-line}
 .notes p:last-child{margin-bottom:0}
