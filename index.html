@@ -57,7 +57,7 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 /* Main navigation */
 .main-nav{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:10px;
   margin-top:18px;
   padding:5px;
@@ -354,6 +354,7 @@ footer.site-foot p{margin:0 0 14px}
     <nav class="main-nav" aria-label="Main navigation">
       <a href="index.html" class="active" aria-current="page">Schedule</a>
       <a href="player-directory.html">Fanbase</a>
+      <a href="anime.html">Anime</a>
     </nav>
 
     <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
@@ -409,7 +410,6 @@ footer.site-foot p{margin:0 0 14px}
     <span><i class="sw"></i>Confirmed</span>
     <span><i class="sw p"></i>Predicted</span>
     <span><i class="dot live sm"></i>Live now</span>
-    <span><i class="dot delayed sm"></i>Delayed</span>
     <span><i class="dot ended sm"></i>Ended</span>
     <span><i class="dot posted sm"></i>Posted (Patreon)</span>
   </p>
@@ -808,36 +808,55 @@ function posterFor(title){
   return show && show.poster ? show.poster : null;
 }
 
+/* Only Twitch is checked for live status */
+const LIVE_PLATFORMS=["twitch"];
+const LIVE_WINDOW_MS=12*60*60*1000;
+
 function currentLiveKeys(events,now){
   const keys=new Set();
-  if(!liveFeed || !liveFeed.platforms)return keys;
 
-  for(const platform of Object.keys(liveFeed.platforms)){
+  if(!liveFeed||!liveFeed.platforms)return keys;
+
+  for(const platform of LIVE_PLATFORMS){
     if(!liveFeed.platforms[platform])continue;
 
     const started=events
-      .filter(ev=>ev.platform===platform && !isPatreon(ev) && eventDate(ev) && eventDate(ev)<=now)
+      .filter(ev=>
+        ev.platform===platform &&
+        !isPatreon(ev) &&
+        eventDate(ev) &&
+        eventDate(ev)<=now &&
+        now-eventDate(ev)<=LIVE_WINDOW_MS
+      )
       .sort((a,b)=>eventDate(b)-eventDate(a));
 
     if(started.length)keys.add(eventKey(started[0]));
   }
+
   return keys;
 }
 
 function liveStatus(ev,now,liveKeys){
   const d=eventDate(ev);
-  if(!d || isPatreon(ev) || !liveFeed || !liveFeed.platforms)return "none";
-  if(!(ev.platform in liveFeed.platforms))return "none";
+
+  if(!d || isPatreon(ev) || !liveFeed ||
+     !liveFeed.platforms ||
+     !LIVE_PLATFORMS.includes(ev.platform))return "none";
+
   if(now<d)return "upcoming";
 
   const key=eventKey(ev);
+
   if(liveKeys.has(key)){
-    if(!seenLive.has(key)){seenLive.add(key);saveSeen();}
+    if(!seenLive.has(key)){
+      seenLive.add(key);
+      saveSeen();
+    }
     return "live";
   }
 
-  if(seenLive.has(key) || now-d>ENDED_AFTER_MS)return "ended";
-  return "delayed";
+  return seenLive.has(key)||now-d>ENDED_AFTER_MS
+    ?"ended":"none";
 }
 
 function noteList(n){
@@ -887,7 +906,7 @@ function render(){
   const liveKeys=currentLiveKeys(events,now);
 
   document.getElementById("range").textContent=
-    "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+ 
+    "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+
     " – "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(addDays(weekStart,6)))+
     " ("+zoneName(now)+")";
 
@@ -928,7 +947,7 @@ function render(){
 
       const row=el("div","ev"+
         (predicted ? " predicted" : "")+
-        (d && d<now && !live && status!="delayed" ? " past" : "")+
+        (d && d<now && !live && status!=="delayed" ? " past" : "")+
         (live ? " live" : ""));
 
       row.style.setProperty("--c",p.color);
@@ -944,12 +963,14 @@ function render(){
 
       const body=el("div");
       const t=el("div","t",d ? fmtTime.format(d) : "All day");
-      const dotClass=live ? " live" : status==="delayed" ? " delayed" :
+
+      const dotClass=live ? " live" :
         status==="ended" ? " ended" : posted ? " posted" : "";
 
       const dot=el("span","dot"+dotClass);
-      const dotLabel=live ? "Live now" : status==="delayed" ? "Delayed" :
-        status==="ended" ? "Ended" : posted ? "Posted" : "Not live";
+      const dotLabel=live ? "Live now" :
+        status==="ended" ? "Ended" :
+        posted ? "Posted" : "Not live";
 
       dot.setAttribute("aria-label",dotLabel);
       t.prepend(dot);
@@ -968,8 +989,9 @@ function render(){
 
       t.append(name);
 
-      const statusText=predicted ? "Predicted" : posted ? "Posted" :
-        live ? "Live now" : status==="delayed" ? "Delayed" :
+      const statusText=predicted ? "Predicted" :
+        posted ? "Posted" :
+        live ? "Live now" :
         status==="ended" ? "Ended" : "Confirmed";
 
       body.append(t,el("div","k",
