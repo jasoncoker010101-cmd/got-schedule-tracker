@@ -538,9 +538,15 @@ authForm.addEventListener("submit", async event=>{
   }
 });
 
-supabaseClient.auth.onAuthStateChange(async (_event, session)=>{
+/* Authentication listener */
+supabaseClient.auth.onAuthStateChange((_event, session)=>{
   currentUser = session?.user || null;
-  await loadMyProfile();
+
+  setTimeout(()=>{
+    loadMyProfile().catch(error=>{
+      console.error("Profile loading failed:", error);
+    });
+  }, 0);
 });
 
 refreshAuthState();
