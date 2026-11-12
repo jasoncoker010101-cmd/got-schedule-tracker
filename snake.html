@@ -353,21 +353,32 @@ function draw() {
     Math.PI * 2
   );
   ctx.fill();
+// Snake body
+snake.forEach((part, index) => {
+  const x = part.x * TILE;
+  const y = part.y * TILE;
 
-  // Snake
-  snake.forEach((part, index) => {
-    ctx.fillStyle = index === 0 ? "#a4f0b8" : "#58c982";
+  if (index === 0) {
+    // Gold G.O.T. head
+    ctx.fillStyle = "#e6b94f";
     ctx.beginPath();
-    ctx.roundRect(
-      part.x * TILE + 2,
-      part.y * TILE + 2,
-      TILE - 4,
-      TILE - 4,
-      6
-    );
+    ctx.roundRect(x + 1, y + 1, TILE - 2, TILE - 2, 6);
+    ctx.fill();
+
+    // G logo
+    ctx.fillStyle = "#17130a";
+    ctx.font = "bold 19px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("G", x + TILE / 2, y + TILE / 2 + 1);
+  } else {
+    // Green body
+    ctx.fillStyle = "#58c982";
+    ctx.beginPath();
+    ctx.roundRect(x + 2, y + 2, TILE - 4, TILE - 4, 6);
     ctx.fill();
   }
-
+});
   // Eyes
   const head = snake[0];
   ctx.fillStyle = "#102016";
