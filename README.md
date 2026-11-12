@@ -6,11 +6,16 @@ Automatic G.O.T. Games weekly schedule tracker
 - Parses the posted schedule image into structured event data for the agenda view.
 - Shows live stream status for Twitch/Rumble and publishes it to the site.
 - Hosts a fanbase directory and player profiles for the community.
+- Provides anime search and browser-local favorites using the public AniList GraphQL API.
 
 ## Main pages
 - `index.html` — weekly schedule, live status, account login, and general navigation
 - `player-directory.html` — searchable community directory and staff/member lists
 - `profile.html` — public profile card with editable bio, links, and avatar/banner upload
+- `anime.html` — anime catalog search, pagination, and locally saved favorites
+
+## Anime feature
+Open `anime.html` to search the AniList anime catalog and save favorites. No API key is required; favorites are stored in the browser's local storage and do not sync between devices.
 
 ## Local preview
 ```bash
@@ -26,4 +31,4 @@ The repository includes scheduled GitHub Actions workflows that:
 - check Twitch/Rumble live status and write `live.json`
 
 ## Notes
-This is an unofficial fan-made site and is intentionally focused on schedule tracking, community profiles, and live stream awareness.
+This is an unofficial fan-made site and is intentionally focused on schedule tracking, community profiles, live stream awareness, and anime discovery.

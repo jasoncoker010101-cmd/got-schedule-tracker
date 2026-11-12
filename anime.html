@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11110f">
+  <title>Anime Search & Favorites | G.O.T. Games</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--bg:#11110f;--surface:#191916;--raised:#22211c;--text:#f7f4ec;--muted:#aaa69a;--accent:#efbd32;--line:rgba(245,235,206,.13);--display:"Bricolage Grotesque",sans-serif;--body:"DM Sans",sans-serif}
+    *{box-sizing:border-box} [hidden]{display:none!important} body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,rgba(143,102,39,.16),transparent 40rem),var(--bg);color:var(--text);font-family:var(--body)}
+    a{color:inherit;text-decoration:none} button,input{font:inherit} button{cursor:pointer} :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+    .topbar{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px max(5%,calc((100% - 1180px)/2));border-bottom:1px solid var(--line);background:rgba(25,25,22,.86);backdrop-filter:blur(16px)}
+    .logo{font:800 21px var(--display);letter-spacing:-.7px;white-space:nowrap}.logo span{color:var(--accent)}.site-nav{display:flex;align-items:center;gap:7px}.site-nav a{padding:9px 15px;border:1px solid var(--line);border-radius:9px;background:var(--raised);font-size:14px;font-weight:700}.site-nav a:hover{border-color:var(--accent)}.site-nav a.active{border-color:var(--accent);background:var(--accent);color:#211a0b}
+    main{width:min(1180px,calc(100% - 36px));margin:42px auto 60px}.intro{margin-bottom:26px}.eyebrow{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.intro h1{margin:6px 0;font:800 clamp(32px,6vw,52px)/1.02 var(--display);letter-spacing:-.04em}.intro p{max-width:660px;margin:10px 0;color:var(--muted);line-height:1.65}
+    .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:24px 0 18px}.search-wrap{position:relative;flex:1 1 280px}.search-wrap input{width:100%;min-height:48px;padding:12px 14px 12px 42px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text)}.search-wrap input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(239,189,50,.12)}.search-icon{position:absolute;left:15px;top:11px;color:var(--muted);font-size:19px}.tabs{display:flex;gap:8px}.tab,.page-button{min-height:44px;padding:9px 15px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font-weight:700}.tab.active,.page-button:hover:not(:disabled){border-color:var(--accent);background:var(--accent);color:#211a0b}.count{color:var(--muted);font-size:13px}
+    .status{min-height:26px;margin:10px 0 16px;color:var(--muted);font-size:14px}.status.error{color:#ff8585}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}.card{overflow:hidden;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,rgba(30,29,25,.98),rgba(22,22,20,.98));transition:transform .18s,border-color .18s,box-shadow .18s}.card:hover{transform:translateY(-3px);border-color:rgba(239,189,50,.5);box-shadow:0 14px 28px rgba(0,0,0,.2)}.cover-wrap{position:relative;aspect-ratio:3/4;background:var(--raised)}.cover{width:100%;height:100%;object-fit:cover;display:block}.favorite{position:absolute;right:10px;top:10px;width:42px;height:42px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(17,17,15,.86);color:white;font-size:23px;line-height:1}.favorite[aria-pressed="true"]{color:#ff7189;border-color:#ff7189}.card-body{padding:13px}.card h2{margin:0 0 8px;font:700 17px/1.25 var(--display)}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.chip{padding:4px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:11px;font-weight:700}.description{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:3;min-height:58px;margin:0;color:var(--muted);font-size:13px;line-height:1.5}.empty{grid-column:1/-1;padding:54px 20px;border:1px dashed var(--line);border-radius:15px;color:var(--muted);text-align:center}.pagination{display:flex;justify-content:center;align-items:center;gap:14px;margin:26px 0}.page-button:disabled{opacity:.42;cursor:not-allowed}footer{padding:25px;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:12px}footer a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+    @media(max-width:540px){.topbar{align-items:flex-start;flex-direction:column}.site-nav{width:100%}.site-nav a{flex:1;padding:9px 7px;text-align:center;font-size:12px}main{margin-top:28px}.toolbar{align-items:stretch}.tabs{width:100%}.tab{flex:1}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card h2{font-size:15px}.card-body{padding:10px}.description{font-size:12px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html">Schedule</a><a href="player-directory.html">Fanbase</a><a href="anime.html" class="active" aria-current="page">Anime</a>
+    </nav>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="pageTitle">
+      <span class="eyebrow">Discover your next watch</span>
+      <h1 id="pageTitle">Anime corner</h1>
+      <p>Search the AniList anime catalog and save shows to your favorites. Favorites are saved in this browser on this device.</p>
+    </section>
+    <section aria-label="Anime search and favorites">
+      <div class="toolbar">
+        <label class="search-wrap" for="searchInput"><span class="search-icon" aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search anime titles…" autocomplete="off" aria-label="Search anime titles"></label>
+        <div class="tabs" role="group" aria-label="Choose anime view"><button class="tab active" id="browseTab" type="button" aria-pressed="true">Discover</button><button class="tab" id="favoritesTab" type="button" aria-pressed="false">♥ Favorites <span id="favoriteCount">0</span></button></div>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite">Loading popular anime…</p>
+      <div class="grid" id="results" aria-live="polite"></div>
+      <div class="pagination" id="pagination" hidden><button class="page-button" id="previousButton" type="button">Previous</button><span id="pageLabel" class="count"></span><button class="page-button" id="nextButton" type="button">Next</button></div>
+    </section>
+  </main>
+  <footer>Anime information provided by <a href="https://anilist.co/" target="_blank" rel="noopener noreferrer">AniList</a>. Favorites are stored locally in your browser.</footer>
+<script>
+  const API_URL = "https://graphql.anilist.co";
+  const STORAGE_KEY = "gotAnimeFavoritesV1";
+  const PAGE_SIZE = 24;
+  const QUERY = `query ($page: Int, $search: String) {
+    Page(page: $page, perPage: ${PAGE_SIZE}) {
+      pageInfo { currentPage hasNextPage }
+      media(type: ANIME, search: $search, sort: POPULARITY_DESC) {
+        id title { romaji english native } coverImage { large } description(asHtml: false)
+        episodes seasonYear format averageScore genres
+      }
+    }
+  }`;
+  const searchInput = document.getElementById("searchInput");
+  const results = document.getElementById("results");
+  const status = document.getElementById("status");
+  const pagination = document.getElementById("pagination");
+  const favoriteCount = document.getElementById("favoriteCount");
+  let favorites = loadFavorites();
+  let mode = "discover";
+  let page = 1;
+  let hasNextPage = false;
+  let requestController = null;
+  let debounceTimer = null;
+
+  function loadFavorites() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    } catch { return {}; }
+  }
+  function saveFavorites() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites)); }
+    catch { setStatus("Your browser couldn't save favorites. Check available storage space or privacy settings.", true); }
+    updateFavoriteCount();
+  }
+  function updateFavoriteCount() { favoriteCount.textContent = Object.keys(favorites).length; }
+  function setStatus(message, isError=false) { status.textContent = message; status.classList.toggle("error", isError); }
+  function titleFor(anime) { return anime.title?.english || anime.title?.romaji || anime.title?.native || "Untitled anime"; }
+  function safeText(value) { return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() : ""; }
+  function makeCard(anime) {
+    const card = document.createElement("article"); card.className = "card";
+    const coverWrap = document.createElement("div"); coverWrap.className = "cover-wrap";
+    if (anime.coverImage?.large) {
+      const image = document.createElement("img"); image.className = "cover"; image.src = anime.coverImage.large; image.alt = `Cover art for ${titleFor(anime)}`; image.loading = "lazy"; image.referrerPolicy = "no-referrer";
+      image.onerror = () => { image.remove(); coverWrap.setAttribute("aria-label", "Cover image unavailable"); };
+      coverWrap.append(image);
+    }
+    const button = document.createElement("button"); button.className = "favorite"; button.type = "button";
+    const isFavorite = Boolean(favorites[anime.id]); button.textContent = isFavorite ? "♥" : "♡"; button.setAttribute("aria-pressed", String(isFavorite));
+    button.setAttribute("aria-label", `${isFavorite ? "Remove" : "Add"} ${titleFor(anime)} ${isFavorite ? "from" : "to"} favorites`);
+    button.addEventListener("click", () => toggleFavorite(anime)); coverWrap.append(button);
+    const body = document.createElement("div"); body.className = "card-body";
+    const heading = document.createElement("h2"); heading.textContent = titleFor(anime); body.append(heading);
+    const meta = document.createElement("div"); meta.className = "meta";
+    [anime.seasonYear, anime.format, anime.episodes ? `${anime.episodes} eps` : "", anime.averageScore ? `★ ${anime.averageScore}%` : ""]
+      .filter(Boolean).forEach(value => { const chip = document.createElement("span"); chip.className = "chip"; chip.textContent = value; meta.append(chip); });
+    body.append(meta);
+    const description = document.createElement("p"); description.className = "description"; description.textContent = safeText(anime.description) || "No description available."; body.append(description);
+    card.append(coverWrap, body);
+    return card;
+  }
+  function render(items) {
+    results.replaceChildren();
+    if (!items.length) {
+      const empty = document.createElement("div"); empty.className = "empty";
+      empty.textContent = mode === "favorites" ? "No favorites yet. Browse anime and tap ♡ to save one here." : "No anime found. Try a different title.";
+      results.append(empty); return;
+    }
+    items.forEach(item => results.append(makeCard(item)));
+  }
+  function toggleFavorite(anime) {
+    if (favorites[anime.id]) delete favorites[anime.id];
+    else favorites[anime.id] = anime;
+    saveFavorites();
+    if (mode === "favorites") render(getFilteredFavorites()); else renderLastResults();
+  }
+  let displayedItems = [];
+  function renderLastResults() { render(displayedItems); }
+  function getFilteredFavorites() {
+    const term = searchInput.value.trim().toLocaleLowerCase();
+    return Object.values(favorites).filter(anime => !term || [anime.title?.english, anime.title?.romaji, anime.title?.native].some(title => title?.toLocaleLowerCase().includes(term)));
+  }
+  async function searchAnime() {
+    if (mode === "favorites") { pagination.hidden = true; displayedItems = getFilteredFavorites(); render(displayedItems); setStatus(`${displayedItems.length} favorite${displayedItems.length === 1 ? "" : "s"}`); return; }
+    if (requestController) requestController.abort();
+    requestController = new AbortController();
+    setStatus("Searching AniList…"); pagination.hidden = true;
+    try {
+      const response = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json", "Accept":"application/json"}, body:JSON.stringify({query:QUERY, variables:{page, search:searchInput.value.trim() || null}}), signal:requestController.signal});
+      if (!response.ok) throw new Error(response.status === 429 ? "AniList is receiving too many requests. Please wait a moment and try again." : `AniList request failed (${response.status}).`);
+      const payload = await response.json();
+      if (payload.errors?.length) throw new Error(payload.errors[0].message || "AniList couldn't complete the search.");
+      const pageData = payload.data?.Page;
+      displayedItems = pageData?.media || [];
+      hasNextPage = Boolean(pageData?.pageInfo?.hasNextPage);
+      render(displayedItems);
+      pagination.hidden = false;
+      document.getElementById("previousButton").disabled = page <= 1;
+      document.getElementById("nextButton").disabled = !hasNextPage;
+      document.getElementById("pageLabel").textContent = `Page ${page}`;
+      setStatus(`${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}.`);
+    } catch (error) {
+      if (error.name === "AbortError") return;
+      displayedItems = []; render([]); pagination.hidden = true;
+      setStatus(`${error.message || "Couldn't connect to AniList."} Check your connection and try again.`, true);
+    }
+  }
+  function setMode(nextMode) {
+    mode = nextMode; page = 1;
+    const isDiscover = mode === "discover";
+    document.getElementById("browseTab").classList.toggle("active", isDiscover);
+    document.getElementById("browseTab").setAttribute("aria-pressed", String(isDiscover));
+    document.getElementById("favoritesTab").classList.toggle("active", !isDiscover);
+    document.getElementById("favoritesTab").setAttribute("aria-pressed", String(!isDiscover));
+    searchAnime();
+  }
+  searchInput.addEventListener("input", () => { page = 1; clearTimeout(debounceTimer); debounceTimer = setTimeout(searchAnime, 350); });
+  document.getElementById("browseTab").addEventListener("click", () => setMode("discover"));
+  document.getElementById("favoritesTab").addEventListener("click", () => setMode("favorites"));
+  document.getElementById("previousButton").addEventListener("click", () => { if (page > 1) { page--; searchAnime(); } });
+  document.getElementById("nextButton").addEventListener("click", () => { if (hasNextPage) { page++; searchAnime(); } });
+  updateFavoriteCount();
+  searchAnime();
+</script>
+</body>
+</html>
