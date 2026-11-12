@@ -1,156 +1,235 @@
 (() => {
-  const id = "got-mascot-style";
-  if (document.getElementById(id) || document.querySelector(".runner-mascot")) return;
+  if (document.querySelector('.runner-mascot')) return;
 
-  const style = document.createElement("style");
-  style.id = id;
+  const style = document.createElement('style');
   style.textContent = `
     .runner-mascot {
+      --mascot-gold: #e7b727;
+      --mascot-gold-deep: #b97920;
+      --mascot-ginger: #d7792d;
+      --mascot-ginger-deep: #8b3d1a;
+      --mascot-skin: #f5d3a8;
+      --mascot-skin-deep: #d99563;
+      --mascot-shirt: #f7d45d;
+      --mascot-shirt-deep: #d39d1d;
+      --mascot-jacket: #2d3743;
       position: fixed;
       left: 0;
-      bottom: max(10px, env(safe-area-inset-bottom));
-      width: 184px;
-      height: 142px;
-      z-index: 900;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      width: 200px;
+      height: 150px;
+      z-index: 1000;
       pointer-events: none;
-      animation: got-mascot-cross 20s linear infinite;
+      animation: mascot-cross 18s linear infinite;
+      filter: drop-shadow(0 7px 12px rgba(15,21,25,0.18));
       will-change: transform;
-      filter: drop-shadow(0 5px 5px rgba(0,0,0,.15));
     }
-    .runner-mascot svg { display:block; width:100%; height:100%; overflow:visible; }
-    .runner-mascot .mascot-bob { transform-box:fill-box; transform-origin:center bottom; animation:got-mascot-bob .28s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-head { transform-box:fill-box; transform-origin:50% 88%; animation:got-mascot-head .9s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-wave { transform-box:view-box; transform-origin:139px 61px; animation:got-mascot-wave .42s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-left-leg { transform-box:view-box; transform-origin:91px 116px; animation:got-mascot-leg-a .27s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-right-leg { transform-box:view-box; transform-origin:111px 116px; animation:got-mascot-leg-b .27s ease-in-out infinite alternate; }
-    .runner-mascot .mascot-award { transform-box:view-box; transform-origin:81px 84px; animation:got-mascot-award .32s ease-in-out infinite alternate; }
-    .runner-mascot .mouth-open { transform-box:fill-box; transform-origin:center top; animation:got-mascot-talk .42s ease-in-out infinite alternate; }
-    .runner-mascot .pupil { transform-box:fill-box; transform-origin:center; animation:got-mascot-look 2.8s ease-in-out infinite; }
-    @keyframes got-mascot-cross { from { transform:translateX(-210px); } to { transform:translateX(calc(100vw + 210px)); } }
-    @keyframes got-mascot-bob { to { translate:0 -3px; } }
-    @keyframes got-mascot-head { from { rotate:-2deg; } to { rotate:2deg; } }
-    @keyframes got-mascot-wave { from { rotate:-19deg; } to { rotate:18deg; } }
-    @keyframes got-mascot-leg-a { from { rotate:17deg; } to { rotate:-17deg; } }
-    @keyframes got-mascot-leg-b { from { rotate:-17deg; } to { rotate:17deg; } }
-    @keyframes got-mascot-award { from { rotate:-3deg; } to { rotate:3deg; } }
-    @keyframes got-mascot-talk { from { scale:1 .35; } to { scale:1 1; } }
-    @keyframes got-mascot-look { 0%,42%,48%,100% { translate:0 0; } 45% { translate:1px 0; } }
-    @media (prefers-reduced-motion:reduce) {
-      .runner-mascot { animation:none; left:auto; right:12px; }
-      .runner-mascot * { animation:none !important; }
+    .runner-mascot svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+    .runner-mascot .mascot-body {
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      animation: mascot-bob 0.38s ease-in-out infinite alternate;
+    }
+    .runner-mascot .mascot-head {
+      transform-box: fill-box;
+      transform-origin: 50% 70%;
+      animation: mascot-head 1.2s ease-in-out infinite alternate;
+    }
+    .runner-mascot .mascot-wave {
+      transform-box: fill-box;
+      transform-origin: 74% 42%;
+      animation: mascot-wave 0.42s ease-in-out infinite alternate;
+    }
+    .runner-mascot .mascot-left-leg {
+      transform-box: fill-box;
+      transform-origin: 50% 8%;
+      animation: mascot-left-leg 0.24s ease-in-out infinite alternate;
+    }
+    .runner-mascot .mascot-right-leg {
+      transform-box: fill-box;
+      transform-origin: 50% 8%;
+      animation: mascot-right-leg 0.24s ease-in-out infinite alternate;
+    }
+    .runner-mascot .mascot-award {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: mascot-award 0.35s ease-in-out infinite alternate;
+    }
+    .runner-mascot .eye {
+      animation: mascot-blink 5s ease-in-out infinite;
+      transform-origin: center center;
+    }
+    .runner-mascot .mouth {
+      animation: mascot-mouth 0.45s ease-in-out infinite alternate;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    @keyframes mascot-cross {
+      from { transform: translateX(-230px); }
+      to { transform: translateX(calc(100vw + 250px)); }
+    }
+    @keyframes mascot-bob {
+      from { transform: translateY(0); }
+      to { transform: translateY(-4px); }
+    }
+    @keyframes mascot-head {
+      from { transform: rotate(-2deg); }
+      to { transform: rotate(2deg); }
+    }
+    @keyframes mascot-wave {
+      from { transform: rotate(-18deg); }
+      to { transform: rotate(18deg); }
+    }
+    @keyframes mascot-left-leg {
+      from { transform: rotate(18deg); }
+      to { transform: rotate(-18deg); }
+    }
+    @keyframes mascot-right-leg {
+      from { transform: rotate(-18deg); }
+      to { transform: rotate(18deg); }
+    }
+    @keyframes mascot-award {
+      from { transform: rotate(-4deg); }
+      to { transform: rotate(4deg); }
+    }
+    @keyframes mascot-blink {
+      0%, 44%, 48%, 100% { transform: scaleY(1); }
+      46% { transform: scaleY(0.1); }
+    }
+    @keyframes mascot-mouth {
+      from { transform: scaleY(0.6); }
+      to { transform: scaleY(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .runner-mascot { animation: none; left: auto; right: 18px; }
+      .runner-mascot .mascot-body,
+      .runner-mascot .mascot-head,
+      .runner-mascot .mascot-wave,
+      .runner-mascot .mascot-left-leg,
+      .runner-mascot .mascot-right-leg,
+      .runner-mascot .mascot-award,
+      .runner-mascot .eye,
+      .runner-mascot .mouth { animation: none !important; }
     }
   `;
-  document.head.append(style);
+  document.head.appendChild(style);
 
-  const mascot = document.createElement("div");
-  mascot.className = "runner-mascot";
-  mascot.setAttribute("aria-hidden", "true");
+  const mascot = document.createElement('div');
+  mascot.className = 'runner-mascot';
+  mascot.setAttribute('aria-hidden', 'true');
   mascot.innerHTML = `
-    <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" role="presentation">
+    <svg viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg" role="presentation">
       <defs>
-        <linearGradient id="got-shirt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe16a"/><stop offset="1" stop-color="#d9a51c"/></linearGradient>
-        <linearGradient id="got-skin" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#ffdbb0"/><stop offset="1" stop-color="#d99a68"/></linearGradient>
-        <linearGradient id="got-ginger" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ed9a4c"/><stop offset=".55" stop-color="#c75b20"/><stop offset="1" stop-color="#8d3919"/></linearGradient>
-        <linearGradient id="got-silver" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".45" stop-color="#dce3e9"/><stop offset="1" stop-color="#8995a0"/></linearGradient>
+        <linearGradient id="m-shirt" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#ffe47a"/>
+          <stop offset="1" stop-color="#d59c18"/>
+        </linearGradient>
+        <linearGradient id="m-skin" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#f6d7ad"/>
+          <stop offset="1" stop-color="#d98f5d"/>
+        </linearGradient>
+        <linearGradient id="m-ginger" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#efb165"/>
+          <stop offset="0.45" stop-color="#d7772f"/>
+          <stop offset="1" stop-color="#8a3c19"/>
+        </linearGradient>
+        <linearGradient id="m-silver" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset="0.52" stop-color="#dfe7ee"/>
+          <stop offset="1" stop-color="#8e9aa5"/>
+        </linearGradient>
       </defs>
 
-      <g class="mascot-bob" stroke="#34251e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <ellipse cx="101" cy="139" rx="41" ry="5" fill="#17202a" opacity=".14" stroke="none"/>
+      <g class="mascot-body" stroke="#2f241f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="110" cy="141" rx="42" ry="5" fill="#1a2129" opacity="0.14"/>
 
-        <!-- Legs attach underneath the shorts; thighs remain visibly connected during the stride. -->
-        <path d="M82 103 Q92 109 101 104 L100 117 L86 121 Z" fill="#354759"/>
-        <path d="M102 104 Q111 108 121 102 L123 117 L108 121 Z" fill="#354759"/>
+        <!-- left leg -->
         <g class="mascot-left-leg">
-          <path d="M91 115 Q91 123 83 130 L68 132 L68 137 L90 138 Q96 135 100 122 L101 115 Z" fill="#3d5265"/>
-          <path d="M69 132 Q65 135 67 140 L91 141 Q95 140 92 137 L86 133 Z" fill="#f5f6f7"/>
-          <path d="M69 138 L91 139 M77 134 L81 138" fill="none" stroke="#9aa8b4" stroke-width="1.5"/>
+          <path d="M84 107 L90 116 L82 130 L66 133 L64 141 L86 142 L100 121 L100 107 Z" fill="#355264"/>
+          <path d="M68 138 L90 140" stroke="#dfeaf0" stroke-width="1.8"/>
         </g>
+
+        <!-- right leg -->
         <g class="mascot-right-leg">
-          <path d="M111 115 Q113 123 121 129 L137 130 L140 135 L118 139 Q111 135 105 122 L104 115 Z" fill="#3d5265"/>
-          <path d="M136 130 Q143 130 147 135 Q148 139 143 140 L118 140 Q115 138 119 135 L126 131 Z" fill="#f5f6f7"/>
-          <path d="M121 138 L145 138 M132 133 L135 137" fill="none" stroke="#9aa8b4" stroke-width="1.5"/>
+          <path d="M111 107 L119 116 L131 128 L146 130 L149 138 L124 141 L106 122 L106 107 Z" fill="#355264"/>
+          <path d="M128 139 L146 139" stroke="#dfeaf0" stroke-width="1.8"/>
         </g>
 
-        <!-- Compact shirt and shoulders -->
-        <path d="M76 69 Q83 62 91 61 L111 61 Q121 63 128 70 L139 102 Q123 113 102 113 Q82 112 66 103 Z" fill="url(#got-shirt)"/>
-        <path d="M91 63 Q101 75 112 63" fill="none" stroke="#fff0ad" stroke-width="2"/>
-        <path d="M102 74 L102 105 M79 79 L72 94 M123 78 L132 94" fill="none" stroke="#c58f16" stroke-width="1.5" opacity=".85"/>
-        <path d="M94 82 L100 87 L94 91 M109 82 L103 87 L109 91" fill="none" stroke="#fff0ad" stroke-width="1.5"/>
-        <path d="M91 109 Q102 114 114 109" fill="none" stroke="#896218" stroke-width="2"/>
+        <!-- body -->
+        <path d="M73 67 Q85 59 99 60 L119 60 Q134 61 145 70 L153 100 Q141 115 109 118 Q84 117 69 105 Z" fill="url(#m-shirt)"/>
+        <path d="M86 69 Q98 77 111 69" fill="none" stroke="#f8eaab" stroke-width="2"/>
+        <path d="M84 82 Q102 90 121 82" fill="none" stroke="#d39f17" stroke-width="2"/>
+        <path d="M98 68 L103 68 L103 112 L98 112 Z" fill="#d6a319" opacity="0.85"/>
 
-        <!-- Left arm joins the shoulder and grips the first medal. -->
-        <path d="M76 73 Q69 70 65 78 L56 91 Q52 97 58 101 L64 97 L75 86 Q80 82 84 80 Z" fill="url(#got-skin)"/>
-        <path d="M70 77 Q67 83 62 89" fill="none" stroke="#f9dfc1" stroke-width="2"/>
-        <g class="mascot-award">
-          <path d="M62 91 Q65 94 67 99" fill="none" stroke="#c88658" stroke-width="3"/>
-          <g transform="translate(31 84) rotate(-8 18 20)">
-            <rect x="3" y="3" width="34" height="39" rx="4" fill="#77838e"/>
-            <rect x="0" y="0" width="34" height="39" rx="4" fill="url(#got-silver)" stroke="#687580" stroke-width="2"/>
-            <rect x="4" y="4" width="26" height="29" rx="2" fill="#f8fafc" stroke="#aab4bd" stroke-width="1"/>
-            <path d="M13 10 L24 18.5 L13 27 Z" fill="#929da7"/>
-            <path d="M5 5 H27" stroke="#fff" stroke-width="1.5" opacity=".9"/>
-            <path d="M8 36 L13 42 L18 37 L23 42 L28 36" fill="#c0c8ce" stroke="#7c8791" stroke-width="1"/>
-            <text x="17" y="32" fill="#65717b" stroke="none" font-size="4.2" font-weight="700" text-anchor="middle" font-family="Arial,sans-serif">SILVER</text>
-          </g>
-          <!-- Fingers visibly curl over the award edge. -->
-          <path d="M58 96 Q64 92 69 98 M57 100 Q63 97 68 102 M59 104 Q64 102 68 106" fill="none" stroke="#efbd91" stroke-width="2.2"/>
+        <!-- left arm attached to body -->
+        <path d="M74 72 Q66 76 60 88 L54 95 Q50 101 56 104 L66 101 L81 86 Z" fill="url(#m-skin)"/>
+        <path d="M58 98 Q63 96 69 101" fill="none" stroke="#f3cf9d" stroke-width="2"/>
+
+        <!-- right arm attached to body -->
+        <path d="M144 74 Q152 75 159 86 L166 95 Q170 100 164 104 L154 101 L139 86 Z" fill="url(#m-skin)"/>
+        <path d="M159 98 Q153 97 148 101" fill="none" stroke="#f3cf9d" stroke-width="2"/>
+
+        <!-- left award/prop -->
+        <g class="mascot-award" transform="translate(32 79) rotate(-10)">
+          <rect x="2" y="2" width="34" height="39" rx="5" fill="url(#m-silver)" stroke="#6d7a85" stroke-width="2"/>
+          <rect x="6" y="6" width="26" height="29" rx="3" fill="#f7fbff" stroke="#aebbc4" stroke-width="1.2"/>
+          <path d="M14 13 L25 19.5 L14 26 Z" fill="#95a0ab"/>
+          <text x="19" y="34" fill="#5a6975" font-size="4.2" font-weight="700" text-anchor="middle" font-family="Arial,sans-serif">SILVER</text>
         </g>
 
-        <!-- Neck -->
-        <path d="M91 54 L114 54 L112 68 Q102 75 92 67 Z" fill="url(#got-skin)"/>
+        <!-- right award/prop -->
+        <g class="mascot-award" transform="translate(145 81) rotate(12)">
+          <rect x="2" y="2" width="34" height="39" rx="5" fill="url(#m-silver)" stroke="#6d7a85" stroke-width="2"/>
+          <rect x="6" y="6" width="26" height="29" rx="3" fill="#f7fbff" stroke="#aebbc4" stroke-width="1.2"/>
+          <path d="M14 13 L25 19.5 L14 26 Z" fill="#95a0ab"/>
+          <text x="19" y="34" fill="#5a6975" font-size="4.2" font-weight="700" text-anchor="middle" font-family="Arial,sans-serif">SILVER</text>
+        </g>
 
-        <!-- Head, with ears and a friendly forward-facing expression. -->
+        <!-- neck -->
+        <path d="M94 52 L122 52 L118 66 L100 68 Z" fill="url(#m-skin)"/>
+
         <g class="mascot-head">
-          <path d="M78 32 Q80 18 100 17 Q122 17 128 34 L126 55 Q123 70 104 73 Q84 71 78 57 Z" fill="url(#got-skin)"/>
-          <path d="M78 42 Q69 39 70 48 Q71 56 80 55 M126 41 Q135 39 134 48 Q133 56 125 55" fill="url(#got-skin)"/>
-          <path d="M74 47 Q78 44 80 49 M130 47 Q127 44 125 49" fill="none" stroke="#b87855" stroke-width="1.5"/>
+          <path d="M82 29 Q96 13 114 15 Q130 17 139 33 L136 63 Q129 78 109 83 Q88 81 80 66 Z" fill="url(#m-skin)"/>
 
-          <!-- Ginger mohawk: one bold silhouette with separate combed locks. -->
-          <path d="M79 34 L78 21 L86 23 L91 8 L99 20 L106 4 L113 20 L121 11 L124 28 L130 35 Q116 29 104 32 Q91 29 79 37 Z" fill="url(#got-ginger)"/>
-          <path d="M82 26 L88 31 L94 17 L101 29 L107 13 L113 29 L121 19" fill="none" stroke="#f5b36f" stroke-width="2"/>
-          <path d="M81 36 Q88 30 95 33 M111 32 Q119 29 126 36" fill="none" stroke="#843719" stroke-width="2"/>
+          <!-- mohawk -->
+          <path d="M81 32 L87 18 L94 22 L99 8 L106 20 L113 10 L121 24 L127 31 L118 31 L108 26 L101 36 L92 31 Z" fill="url(#m-ginger)"/>
+          <path d="M86 25 L94 29 L101 16 L109 28 L118 19" fill="none" stroke="#f4c287" stroke-width="2"/>
 
-          <!-- Brows and eyes; pupils glance toward the viewer. -->
-          <path d="M85 41 Q91 37 97 41 M109 40 Q116 37 121 42" fill="none" stroke="#603b2d" stroke-width="2.4"/>
-          <ellipse cx="92" cy="47" rx="4" ry="4.8" fill="#fff" stroke="#754b35" stroke-width=".8"/>
-          <ellipse cx="115" cy="47" rx="4" ry="4.8" fill="#fff" stroke="#754b35" stroke-width=".8"/>
-          <g class="pupil" fill="#352820" stroke="none"><ellipse cx="93" cy="48" rx="1.8" ry="2.7"/><ellipse cx="116" cy="48" rx="1.8" ry="2.7"/></g>
-          <circle cx="93.5" cy="47" r=".75" fill="#fff" stroke="none"/><circle cx="116.5" cy="47" r=".75" fill="#fff" stroke="none"/>
-          <path d="M103 48 Q100 56 105 57 Q108 57 109 54" fill="none" stroke="#b97856" stroke-width="1.8"/>
-          <ellipse cx="84" cy="56" rx="4" ry="2" fill="#e99683" opacity=".34" stroke="none"/>
-          <ellipse cx="123" cy="56" rx="4" ry="2" fill="#e99683" opacity=".34" stroke="none"/>
+          <!-- eyes -->
+          <path d="M90 40 Q95 36 100 41 M116 40 Q120 36 125 41" fill="none" stroke="#643e2b" stroke-width="2.4"/>
+          <g class="eye">
+            <ellipse cx="95" cy="47" rx="4.2" ry="5" fill="#fff" stroke="#6b442e" stroke-width="0.8"/>
+            <ellipse cx="120" cy="47" rx="4.2" ry="5" fill="#fff" stroke="#6b442e" stroke-width="0.8"/>
+            <circle cx="95.8" cy="47" r="1.8" fill="#2b201d"/>
+            <circle cx="120.8" cy="47" r="1.8" fill="#2b201d"/>
+          </g>
 
-          <!-- Beard frames, rather than covers, the moving mouth. -->
-          <path d="M79 52 Q84 53 89 56 Q95 60 102 59 Q109 61 116 56 Q122 53 127 51 L125 64 Q121 73 111 77 L104 83 L97 77 Q86 74 81 65 Z" fill="url(#got-ginger)"/>
-          <path d="M82 56 Q89 60 95 59 M111 59 Q118 59 124 55" fill="none" stroke="#f0a25a" stroke-width="2"/>
-          <path d="M84 64 Q90 67 95 65 M114 66 Q119 65 122 62 M91 71 Q96 73 99 72 M109 72 Q114 70 117 68" fill="none" stroke="#8f3e19" stroke-width="1.5" opacity=".9"/>
-          <path d="M95 60 Q103 63 112 60 L111 67 Q104 71 97 67 Z" fill="#71382d" stroke="none"/>
-          <path class="mouth-open" d="M99 62 Q104 64 109 62 L108 66 Q104 69 100 66 Z" fill="#4c2020" stroke="none"/>
-          <path d="M99 62 Q104 64 109 62" fill="none" stroke="#fff1dc" stroke-width="1.1"/>
+          <!-- nose and mouth -->
+          <path d="M103 49 Q107 56 111 49" fill="none" stroke="#8b5a3d" stroke-width="2"/>
+          <path class="mouth" d="M97 59 Q106 67 115 59 L112 65 Q106 69 101 64 Z" fill="#5d2b2f"/>
+          <path d="M94 57 Q106 60 117 57" fill="none" stroke="#e7a57a" stroke-width="1.6" opacity="0.7"/>
+
+          <!-- beard -->
+          <path d="M84 56 Q91 63 99 64 Q107 66 115 63 Q122 62 129 56 L127 76 Q118 86 108 88 Q98 89 88 86 Q83 81 80 74 Z" fill="url(#m-ginger)"/>
+          <path d="M88 60 Q97 68 106 66 Q115 68 124 59" fill="none" stroke="#f1b86d" stroke-width="2"/>
+          <path d="M89 71 Q98 76 106 75 Q114 76 123 70" fill="none" stroke="#8b3d1a" stroke-width="2"/>
         </g>
 
-        <!-- Waving arm is attached to shoulder; hand is a clear open wave. -->
-        <path d="M127 72 Q134 67 139 75 L145 85" fill="none" stroke="#d7a31c" stroke-width="13"/>
+        <!-- waving arm -->
         <g class="mascot-wave">
-          <path d="M140 85 Q146 80 149 73 L154 61" fill="none" stroke="url(#got-skin)" stroke-width="9"/>
-          <path d="M152 64 Q149 56 152 50 Q154 47 156 51 L158 60 Q160 52 164 51 Q167 51 165 56 L162 65 Q168 59 171 62 Q173 64 169 68 L164 74 Q159 79 152 75 L147 71" fill="url(#got-skin)"/>
-          <path d="M154 53 L156 61 M163 54 L160 63 M169 63 L164 68" fill="none" stroke="#bd805b" stroke-width="1.2"/>
-        </g>
-
-        <!-- Second award held against the right hip: ribbon/strap connects it to the hand. -->
-        <path d="M129 91 Q139 94 148 101" fill="none" stroke="#d6a11c" stroke-width="5"/>
-        <g transform="translate(137 98) rotate(7 17 20)">
-          <path d="M7 0 L17 8 L27 0 L24 12 L10 12 Z" fill="#c84545" stroke="#843737" stroke-width="1"/>
-          <rect x="2" y="10" width="31" height="35" rx="4" fill="#77838e"/>
-          <rect x="0" y="8" width="31" height="35" rx="4" fill="url(#got-silver)" stroke="#687580" stroke-width="2"/>
-          <rect x="4" y="12" width="23" height="25" rx="2" fill="#f8fafc" stroke="#aab4bd" stroke-width="1"/>
-          <path d="M11 17 L21 24.5 L11 32 Z" fill="#929da7"/>
-          <path d="M5 13 H24" stroke="#fff" stroke-width="1.4" opacity=".9"/>
-          <path d="M7 40 L11 45 L16 41 L21 45 L26 40" fill="#c0c8ce" stroke="#7c8791" stroke-width="1"/>
-          <text x="15.5" y="36" fill="#65717b" stroke="none" font-size="4" font-weight="700" text-anchor="middle" font-family="Arial,sans-serif">SILVER</text>
+          <path d="M145 72 Q156 67 167 72 L172 86 Q177 95 169 101 L156 96 Q147 88 144 78 Z" fill="url(#m-skin)"/>
+          <path d="M168 96 Q176 90 181 93 Q183 96 179 100 L170 108 Q166 111 162 108 Q159 104 159 99 Z" fill="url(#m-skin)"/>
+          <path d="M168 92 Q162 88 158 91" fill="none" stroke="#d8a171" stroke-width="2"/>
+          <path d="M176 95 Q179 90 184 90" fill="none" stroke="#d8a171" stroke-width="2"/>
         </g>
       </g>
-    </svg>`;
+    </svg>
+  `;
 
   document.body.appendChild(mascot);
 })();
