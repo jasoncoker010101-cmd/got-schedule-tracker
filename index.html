@@ -334,7 +334,6 @@ footer.site-foot p{margin:0 0 14px}
 }
 </style>
 </head>
-  <script src="mascot.js"></script>
 <body>
 <div class="wrap">
   <header class="hero">
@@ -888,7 +887,7 @@ function render(){
   const liveKeys=currentLiveKeys(events,now);
 
   document.getElementById("range").textContent=
-    "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+
+    "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+ 
     " – "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(addDays(weekStart,6)))+
     " ("+zoneName(now)+")";
 
@@ -1068,5 +1067,6 @@ setInterval(loadShows,5*60*1000);
 setInterval(loadLive,2*60*1000);
 setInterval(render,60*1000);
 </script>
+<script src="mascot.js"></script>
 </body>
 </html>
