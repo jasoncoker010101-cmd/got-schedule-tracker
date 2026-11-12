@@ -48,7 +48,6 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 /* Main navigation */
 .main-nav{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
   grid-template-columns:repeat(4,minmax(0,1fr));
   gap:9px;
   margin-top:18px;
@@ -65,15 +64,17 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
   text-decoration:none;
   font-weight:800;
   font-size:.95rem;
-  transition:background .2s ease,border-color .2s ease;
+  transition:background .2s ease,border-color .2s ease, transform .2s ease, box-shadow .2s ease;
 }
 .main-nav a:hover{
   border-color:var(--accent);
+  transform:translateY(-1px);
 }
 .main-nav a.active{
   background:var(--accent);
   border-color:var(--accent);
   color:#16212c;
+  box-shadow:0 8px 18px -10px rgba(229,184,42,.8);
 }
 @media(max-width:420px){
   .main-nav{gap:6px}
