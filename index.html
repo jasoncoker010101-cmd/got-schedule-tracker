@@ -4,9 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>G.O.T. Games Schedule (Unofficial Fan Site)</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 :root{
   color-scheme:light dark;
@@ -32,12 +36,79 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line
   background:radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--card);
   border:1px solid var(--line);border-top:4px solid var(--accent);
 }
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.hero-heading{min-width:0;flex:1}
 h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:800;letter-spacing:-.02em}
 .sub{color:var(--mute);margin:0}
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:14px 0 0;color:var(--mute);font-size:.9rem}
 .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 0}
 .controls label{font-weight:600;font-size:.9rem}
 .controls select{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
+
+/* Account button */
+.account-area{display:flex;align-items:center;gap:8px}
+.account-button{
+  display:flex;align-items:center;gap:9px;padding:8px 13px;
+  border:1px solid var(--line);border-radius:999px;background:var(--card);
+  color:var(--ink);font:600 .9rem var(--font);cursor:pointer;
+}
+.account-button:hover{border-color:var(--accent)}
+.account-avatar{
+  width:27px;height:27px;border-radius:50%;object-fit:cover;
+  background:var(--line);display:none;
+}
+.account-avatar.visible{display:block}
+
+/* Login modal */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;z-index:1000;
+}
+.auth-modal{
+  width:min(100%,420px);background:var(--card);color:var(--ink);
+  border:1px solid var(--line);border-radius:16px;padding:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.3);
+}
+.auth-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.auth-heading h2{margin:0;font-size:1.4rem}
+.close-modal{
+  border:0;background:transparent;color:var(--mute);
+  font-size:1.5rem;cursor:pointer;padding:2px 8px;
+}
+.auth-tabs{display:flex;gap:8px;margin:18px 0}
+.auth-tab{
+  flex:1;padding:9px;border:1px solid var(--line);border-radius:9px;
+  background:transparent;color:var(--ink);font:600 .95rem var(--font);cursor:pointer;
+}
+.auth-tab.active{background:var(--today);color:var(--today-ink);border-color:var(--today)}
+.auth-form label{display:block;font-size:.9rem;font-weight:600;margin:12px 0 5px}
+.auth-form input{
+  width:100%;padding:11px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--bg);color:var(--ink);
+  font:inherit;outline:none;
+}
+.auth-form input:focus{border-color:var(--accent)}
+.auth-submit{
+  width:100%;padding:11px;margin-top:18px;border:0;border-radius:9px;
+  background:var(--accent);color:#16212c;font:800 1rem var(--font);cursor:pointer;
+}
+.auth-submit:disabled{opacity:.6;cursor:wait}
+.auth-message{font-size:.9rem;margin:12px 0 0;min-height:1.3em;color:var(--mute)}
+.auth-message.error{color:#e05252}
+.auth-message.success{color:#269b65}
+.auth-note{font-size:.82rem;color:var(--mute);margin:12px 0 0}
+.account-menu{
+  position:absolute;right:16px;top:85px;z-index:50;
+  min-width:180px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+.account-menu button{
+  display:block;width:100%;text-align:left;padding:10px;border:0;
+  border-radius:7px;background:transparent;color:var(--ink);
+  font:600 .9rem var(--font);cursor:pointer;
+}
+.account-menu button:hover{background:var(--bg)}
 
 /* Next up */
 .next{
@@ -140,14 +211,66 @@ a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 <body>
 <div class="wrap">
   <header class="hero">
-    <h1>G.O.T. Games schedule</h1>
-    <p class="sub">Luke Fitzpatrick's week. Times default to your local time, and you can switch timezone with the dropdown. Base times are GMT (Europe/London).</p>
+    <div class="hero-top">
+      <div class="hero-heading">
+        <h1>G.O.T. Games schedule</h1>
+        <p class="sub">Luke Fitzpatrick's week. Times default to your local time, and you can switch timezone with the dropdown. Base times are GMT (Europe/London).</p>
+      </div>
+
+      <div class="account-area">
+        <button class="account-button" id="accountButton" type="button">
+          <img class="account-avatar" id="accountAvatar" alt="">
+          <span id="accountButtonText">Log In / Sign Up</span>
+        </button>
+      </div>
+    </div>
+
     <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
     <div class="controls">
       <label for="tz">Timezone</label>
       <select id="tz" aria-label="Choose timezone"></select>
     </div>
   </header>
+
+  <div class="account-menu" id="accountMenu" hidden>
+    <button type="button" id="viewProfileButton">My Profile</button>
+    <button type="button" id="logoutButton">Log Out</button>
+  </div>
+
+  <div class="modal-backdrop" id="authBackdrop" hidden>
+    <section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="auth-heading">
+        <h2 id="authTitle">Welcome</h2>
+        <button class="close-modal" id="closeAuth" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" type="button">Log In</button>
+        <button class="auth-tab" id="signupTab" type="button">Sign Up</button>
+      </div>
+
+      <form class="auth-form" id="authForm">
+        <div id="usernameField" hidden>
+          <label for="authUsername">Username</label>
+          <input id="authUsername" type="text" minlength="3" maxlength="20"
+            pattern="[A-Za-z0-9_]+" autocomplete="username"
+            placeholder="Choose a username">
+        </div>
+
+        <label for="authEmail">Email address</label>
+        <input id="authEmail" type="email" autocomplete="email"
+          placeholder="you@example.com" required>
+
+        <label for="authPassword">Password</label>
+        <input id="authPassword" type="password" minlength="8"
+          autocomplete="current-password" placeholder="At least 8 characters" required>
+
+        <button class="auth-submit" id="authSubmit" type="submit">Log In</button>
+        <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
+        <p class="auth-note" id="authNote">Your email address will not appear on your public profile.</p>
+      </form>
+    </section>
+  </div>
 
   <div class="next" id="next" hidden></div>
 
@@ -179,6 +302,244 @@ a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </div>
 
 <script>
+/* Supabase connection */
+const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let currentUser = null;
+let currentProfile = null;
+let authMode = "login";
+
+const accountButton = document.getElementById("accountButton");
+const accountButtonText = document.getElementById("accountButtonText");
+const accountAvatar = document.getElementById("accountAvatar");
+const accountMenu = document.getElementById("accountMenu");
+const authBackdrop = document.getElementById("authBackdrop");
+const authForm = document.getElementById("authForm");
+const authMessage = document.getElementById("authMessage");
+const authSubmit = document.getElementById("authSubmit");
+const authTitle = document.getElementById("authTitle");
+const authUsername = document.getElementById("authUsername");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const usernameField = document.getElementById("usernameField");
+const loginTab = document.getElementById("loginTab");
+const signupTab = document.getElementById("signupTab");
+
+function showAuthMessage(message, type=""){
+  authMessage.textContent = message;
+  authMessage.className = "auth-message" + (type ? " " + type : "");
+}
+
+function openAuth(mode="login"){
+  accountMenu.hidden = true;
+  authBackdrop.hidden = false;
+  setAuthMode(mode);
+}
+
+function closeAuth(){
+  authBackdrop.hidden = true;
+  authForm.reset();
+  showAuthMessage("");
+}
+
+function setAuthMode(mode){
+  authMode = mode;
+  const signingUp = mode === "signup";
+
+  authTitle.textContent = signingUp ? "Create an account" : "Welcome back";
+  authSubmit.textContent = signingUp ? "Create Account" : "Log In";
+  usernameField.hidden = !signingUp;
+  authUsername.required = signingUp;
+  authPassword.autocomplete = signingUp ? "new-password" : "current-password";
+
+  loginTab.classList.toggle("active", !signingUp);
+  signupTab.classList.toggle("active", signingUp);
+  showAuthMessage("");
+}
+
+function updateAccountButton(){
+  if(currentUser){
+    accountButtonText.textContent =
+      currentProfile?.username || currentUser.email || "My Account";
+
+    if(currentProfile?.avatar_url){
+      accountAvatar.src = currentProfile.avatar_url;
+      accountAvatar.classList.add("visible");
+    }else{
+      accountAvatar.removeAttribute("src");
+      accountAvatar.classList.remove("visible");
+    }
+  }else{
+    accountButtonText.textContent = "Log In / Sign Up";
+    accountAvatar.removeAttribute("src");
+    accountAvatar.classList.remove("visible");
+  }
+}
+
+async function loadMyProfile(){
+  if(!currentUser){
+    currentProfile = null;
+    updateAccountButton();
+    return;
+  }
+
+  const {data, error} = await supabaseClient
+    .from("profiles")
+    .select("username, avatar_url")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if(error){
+    console.error("Could not load profile:", error.message);
+    currentProfile = null;
+  }else{
+    currentProfile = data;
+  }
+
+  updateAccountButton();
+}
+
+async function refreshAuthState(){
+  const {data, error} = await supabaseClient.auth.getSession();
+
+  if(error){
+    console.error("Session check failed:", error.message);
+    return;
+  }
+
+  currentUser = data.session?.user || null;
+  await loadMyProfile();
+}
+
+accountButton.addEventListener("click", ()=>{
+  if(currentUser){
+    accountMenu.hidden = !accountMenu.hidden;
+  }else{
+    openAuth("login");
+  }
+});
+
+document.getElementById("closeAuth").addEventListener("click", closeAuth);
+loginTab.addEventListener("click", ()=>setAuthMode("login"));
+signupTab.addEventListener("click", ()=>setAuthMode("signup"));
+
+authBackdrop.addEventListener("click", event=>{
+  if(event.target === authBackdrop) closeAuth();
+});
+
+document.addEventListener("keydown", event=>{
+  if(event.key === "Escape"){
+    closeAuth();
+    accountMenu.hidden = true;
+  }
+});
+
+document.getElementById("logoutButton").addEventListener("click", async ()=>{
+  const {error} = await supabaseClient.auth.signOut();
+
+  if(error){
+    alert("Couldn't log out: " + error.message);
+    return;
+  }
+
+  accountMenu.hidden = true;
+  currentUser = null;
+  currentProfile = null;
+  updateAccountButton();
+});
+
+document.getElementById("viewProfileButton").addEventListener("click", ()=>{
+  accountMenu.hidden = true;
+  alert("Public profile pages are the next step we're building!");
+});
+
+authForm.addEventListener("submit", async event=>{
+  event.preventDefault();
+
+  authSubmit.disabled = true;
+  showAuthMessage(authMode === "signup" ? "Creating your account..." : "Logging in...");
+
+  try{
+    if(authMode === "signup"){
+      const username = authUsername.value.trim();
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+
+      if(!/^[A-Za-z0-9_]{3,20}$/.test(username)){
+        showAuthMessage("Username must be 3–20 characters and use only letters, numbers, and underscores.", "error");
+        return;
+      }
+
+      if(password.length < 8){
+        showAuthMessage("Password must be at least 8 characters.", "error");
+        return;
+      }
+
+      const {data, error} = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options:{
+          data:{username}
+        }
+      });
+
+      if(error) throw error;
+
+      if(data.session){
+        currentUser = data.user;
+        await loadMyProfile();
+        closeAuth();
+      }else{
+        showAuthMessage(
+          "Account created! Check your email for the confirmation link before logging in.",
+          "success"
+        );
+      }
+    }else{
+      const {data, error} = await supabaseClient.auth.signInWithPassword({
+        email:authEmail.value.trim(),
+        password:authPassword.value
+      });
+
+      if(error) throw error;
+
+      currentUser = data.user;
+      await loadMyProfile();
+      closeAuth();
+    }
+  }catch(error){
+    let message = error.message || "Something went wrong.";
+
+    if(/already registered|already exists/i.test(message)){
+      message = "That email address is already registered. Try logging in instead.";
+    }else if(/duplicate key|unique constraint/i.test(message)){
+      message = "That username is already taken. Please choose another one.";
+    }else if(/invalid login credentials/i.test(message)){
+      message = "Email or password is incorrect.";
+    }else if(/email not confirmed/i.test(message)){
+      message = "Please confirm your email address before logging in.";
+    }
+
+    showAuthMessage(message, "error");
+  }finally{
+    authSubmit.disabled = false;
+  }
+});
+
+supabaseClient.auth.onAuthStateChange(async (_event, session)=>{
+  currentUser = session?.user || null;
+  await loadMyProfile();
+});
+
+refreshAuthState();
+
+/* Existing schedule code */
 const BASE_TZ = "Europe/London";
 const ENDED_AFTER_MS = 3 * 60 * 60 * 1000;
 const TIMEZONES = [
@@ -203,6 +564,7 @@ const TIMEZONES = [
   ["Australia/Sydney", "Sydney"],
   ["Pacific/Auckland", "New Zealand"]
 ];
+
 const PLATFORMS = {
   youtube:{label:"YouTube",color:"var(--yt)"},
   "youtube-live":{label:"YouTube Live",color:"var(--ytl)"},
@@ -215,266 +577,339 @@ const PLATFORMS = {
   got:{label:"G.O.T. Games",color:"#e5b82a"}
 };
 
-// Strips season and episode text, e.g. "My Hero Academia Season 5 E8" becomes "My Hero Academia"
 const EPISODE_RE = /\s+(?:Season\s*\d+\s*)?(?:S\d+\s*)?E\d+(?:\s*-\s*\d+)?\s*$/i;
 const cleanTitle = t => (t || "").replace(EPISODE_RE, "").trim();
-
-const fmtUpd = () => new Intl.DateTimeFormat("en-US",{timeZone:tz,dateStyle:"medium",timeStyle:"short"});
-const fmtDay = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"long"});
-const fmtMd  = new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"});
 
 let data = null;
 let liveFeed = null;
 let shows = {};
 let tz = pickStartZone();
 
-// Events the page has seen go live, saved in the browser so "Ended" survives a refresh
 const SEEN_KEY = "gotLiveSeen";
-let seenLive = (() => {
-  try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); }
-  catch(e){ return new Set(); }
+let seenLive = (()=>{
+  try{return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"));}
+  catch(e){return new Set();}
 })();
+
 function saveSeen(){
-  try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seenLive].slice(-200))); } catch(e){}
+  try{localStorage.setItem(SEEN_KEY, JSON.stringify([...seenLive].slice(-200)));}catch(e){}
 }
 
 function detectZone(){
-  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || BASE_TZ; }
-  catch(e){ return BASE_TZ; }
+  try{return Intl.DateTimeFormat().resolvedOptions().timeZone || BASE_TZ;}
+  catch(e){return BASE_TZ;}
 }
+
 function isValidZone(z){
-  try { new Intl.DateTimeFormat("en-US",{timeZone:z}); return true; }
-  catch(e){ return false; }
+  try{new Intl.DateTimeFormat("en-US",{timeZone:z});return true;}
+  catch(e){return false;}
 }
+
 function pickStartZone(){
   let saved = null;
-  try { saved = localStorage.getItem("gotTimezone"); } catch(e){}
+  try{saved = localStorage.getItem("gotTimezone");}catch(e){}
   return saved && isValidZone(saved) ? saved : detectZone();
 }
 
-// Day key (YYYY-MM-DD) for a Date, in the selected timezone
 function dayKey(d){
-  return new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+  return new Intl.DateTimeFormat("en-CA",{
+    timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"
+  }).format(d);
 }
-const utc = s => { const [y,m,d] = s.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); };
-const addDays = (s,n) => { const d = utc(s); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
-function mondayOf(s){ const wd = utc(s).getUTCDay(); return addDays(s, wd === 0 ? -6 : 1 - wd); }
+
+const utc = s=>{
+  const [y,m,d] = s.split("-").map(Number);
+  return new Date(Date.UTC(y,m-1,d));
+};
+
+const addDays = (s,n)=>{
+  const d = utc(s);
+  d.setUTCDate(d.getUTCDate()+n);
+  return d.toISOString().slice(0,10);
+};
+
+function mondayOf(s){
+  const wd = utc(s).getUTCDay();
+  return addDays(s, wd === 0 ? -6 : 1 - wd);
+}
+
 function zoneName(d){
   return new Intl.DateTimeFormat("en-US",{timeZone:tz,timeZoneName:"short"})
-    .formatToParts(d).find(p => p.type === "timeZoneName").value;
+    .formatToParts(d).find(p=>p.type==="timeZoneName").value;
 }
-const safeUrl = u => /^https?:\/\//i.test(u || "") ? u : "";
 
-function el(tag, cls, text){
+const safeUrl = u=>/^https?:\/\//i.test(u || "") ? u : "";
+
+function el(tag,cls,text){
   const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text != null) e.textContent = text;
+  if(cls)e.className=cls;
+  if(text!=null)e.textContent=text;
   return e;
 }
 
-function eventDate(ev){ return ev.start ? new Date(ev.start) : null; }
-function eventDay(ev){ const d = eventDate(ev); return d ? dayKey(d) : ev.date; }
+function eventDate(ev){return ev.start ? new Date(ev.start) : null;}
+function eventDay(ev){const d=eventDate(ev);return d ? dayKey(d) : ev.date;}
 
-// Patreon if the platform is patreon, or if a label says so
 function isPatreon(ev){
-  return ev.platform === "patreon" ||
-    (Array.isArray(ev.labels) && ev.labels.some(l => /patreon/i.test(l)));
+  return ev.platform==="patreon" ||
+    (Array.isArray(ev.labels) && ev.labels.some(l=>/patreon/i.test(l)));
 }
 
 function eventKey(ev){
-  return (ev.start || ev.date || "") + "|" + ev.platform + "|" + (ev.title || "");
+  return (ev.start || ev.date || "")+"|"+ev.platform+"|"+(ev.title || "");
 }
 
-// Poster for a show, or null if there isn't one
 function posterFor(title){
-  const show = shows[cleanTitle(title)];
+  const show=shows[cleanTitle(title)];
   return show && show.poster ? show.poster : null;
 }
 
-// On each platform, only the most recent event that has already started can be live.
-// Returns the set of event keys that are live right now, based on live.json.
-function currentLiveKeys(events, now){
-  const keys = new Set();
-  if (!liveFeed || !liveFeed.platforms) return keys;
-  for (const platform of Object.keys(liveFeed.platforms)){
-    if (!liveFeed.platforms[platform]) continue;
-    const started = events
-      .filter(ev => ev.platform === platform && !isPatreon(ev) && eventDate(ev) && eventDate(ev) <= now)
-      .sort((a,b) => eventDate(b) - eventDate(a));
-    if (started.length) keys.add(eventKey(started[0]));
+function currentLiveKeys(events,now){
+  const keys=new Set();
+  if(!liveFeed || !liveFeed.platforms)return keys;
+
+  for(const platform of Object.keys(liveFeed.platforms)){
+    if(!liveFeed.platforms[platform])continue;
+
+    const started=events
+      .filter(ev=>ev.platform===platform && !isPatreon(ev) && eventDate(ev) && eventDate(ev)<=now)
+      .sort((a,b)=>eventDate(b)-eventDate(a));
+
+    if(started.length)keys.add(eventKey(started[0]));
   }
   return keys;
 }
 
-// Returns "upcoming", "delayed", "live", "ended", or "none".
-// Live status comes only from live.json. Nothing is assumed live from the schedule time.
-function liveStatus(ev, now, liveKeys){
-  const d = eventDate(ev);
-  if (!d || isPatreon(ev) || !liveFeed || !liveFeed.platforms) return "none";
-  if (!(ev.platform in liveFeed.platforms)) return "none"; // no live checker for this platform
-  if (now < d) return "upcoming";
-  const key = eventKey(ev);
-  if (liveKeys.has(key)){
-    if (!seenLive.has(key)){ seenLive.add(key); saveSeen(); }
+function liveStatus(ev,now,liveKeys){
+  const d=eventDate(ev);
+  if(!d || isPatreon(ev) || !liveFeed || !liveFeed.platforms)return "none";
+  if(!(ev.platform in liveFeed.platforms))return "none";
+  if(now<d)return "upcoming";
+
+  const key=eventKey(ev);
+  if(liveKeys.has(key)){
+    if(!seenLive.has(key)){seenLive.add(key);saveSeen();}
     return "live";
   }
-  if (seenLive.has(key) || now - d > ENDED_AFTER_MS) return "ended";
+
+  if(seenLive.has(key) || now-d>ENDED_AFTER_MS)return "ended";
   return "delayed";
 }
 
-// Accepts notes as a string, an array of strings, or an array of {text} objects
 function noteList(n){
-  if (!n) return [];
-  if (typeof n === "string") return n.trim() ? [n.trim()] : [];
-  if (Array.isArray(n)) return n
-    .map(x => typeof x === "string" ? x : (x && x.text) || "")
-    .map(s => s.trim())
+  if(!n)return [];
+  if(typeof n==="string")return n.trim() ? [n.trim()] : [];
+  if(Array.isArray(n))return n
+    .map(x=>typeof x==="string" ? x : (x && x.text) || "")
+    .map(s=>s.trim())
     .filter(Boolean);
   return [];
 }
 
 function buildZoneOptions(){
-  const sel = document.getElementById("tz");
-  const detected = detectZone();
-  const opts = [[detected, "Your local time (" + detected.replace(/_/g," ") + ")"]]
-    .concat(TIMEZONES.filter(([v]) => v !== detected));
-  if (!opts.some(([v]) => v === tz)) opts.push([tz, tz.replace(/_/g," ")]);
-  sel.replaceChildren(...opts.map(([v,l]) => { const o = el("option", null, l); o.value = v; return o; }));
-  sel.value = tz;
-  sel.addEventListener("change", () => {
-    tz = sel.value;
-    try { localStorage.setItem("gotTimezone", tz); } catch(e){}
+  const sel=document.getElementById("tz");
+  const detected=detectZone();
+  const opts=[[detected,"Your local time ("+detected.replace(/_/g," ")+")"]]
+    .concat(TIMEZONES.filter(([v])=>v!==detected));
+
+  if(!opts.some(([v])=>v===tz))opts.push([tz,tz.replace(/_/g," ")]);
+  sel.replaceChildren(...opts.map(([v,l])=>{
+    const o=el("option",null,l);
+    o.value=v;
+    return o;
+  }));
+
+  sel.value=tz;
+  sel.addEventListener("change",()=>{
+    tz=sel.value;
+    try{localStorage.setItem("gotTimezone",tz);}catch(e){}
     render();
   });
 }
 
 function render(){
-  if (!data) return;
-  const now = new Date();
-  const today = dayKey(now);
-  const weekStart = data.weekStart || mondayOf(today);
-  const fmtTime = new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"numeric",minute:"2-digit",timeZoneName:"short"});
-  const events = (data.events || []).slice().sort((a,b) =>
-    (eventDate(a) || utc(eventDay(a))) - (eventDate(b) || utc(eventDay(b))));
-  const liveKeys = currentLiveKeys(events, now);
+  if(!data)return;
 
-  document.getElementById("range").textContent =
-    "Week of " + fmtMd.format(utc(weekStart)) + " – " + fmtMd.format(utc(addDays(weekStart,6))) + " (" + zoneName(now) + ")";
-  document.getElementById("updated").textContent =
-    data.updated ? "Last updated " + fmtUpd().format(new Date(data.updated)) : "";
+  const now=new Date();
+  const today=dayKey(now);
+  const weekStart=data.weekStart || mondayOf(today);
+  const fmtTime=new Intl.DateTimeFormat("en-US",{
+    timeZone:tz,hour:"numeric",minute:"2-digit",timeZoneName:"short"
+  });
 
-  const week = document.getElementById("week");
+  const events=(data.events || []).slice().sort((a,b)=>
+    (eventDate(a) || utc(eventDay(a)))-(eventDate(b) || utc(eventDay(b))));
+
+  const liveKeys=currentLiveKeys(events,now);
+
+  document.getElementById("range").textContent=
+    "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+
+    " – "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(addDays(weekStart,6)))+
+    " ("+zoneName(now)+")";
+
+  document.getElementById("updated").textContent=
+    data.updated ? "Last updated "+new Intl.DateTimeFormat("en-US",{
+      timeZone:tz,dateStyle:"medium",timeStyle:"short"
+    }).format(new Date(data.updated)) : "";
+
+  const week=document.getElementById("week");
   week.replaceChildren();
-  for (let i = 0; i < 7; i++){
-    const ds = addDays(weekStart, i);
-    const box = el("section", "day" + (ds === today ? " today" : ""));
-    box.style.setProperty("--i", i);
-    const h = el("h2", null, fmtDay.format(utc(ds)));
-    h.append(el("small", null, fmtMd.format(utc(ds))));
-    box.append(h);
-    const list = events.filter(ev => eventDay(ev) === ds);
-    if (!list.length) box.append(el("p", "none", "Nothing posted yet"));
-    for (const ev of list){
-      const p = PLATFORMS[ev.platform] || PLATFORMS.other;
-      const predicted = ev.status === "predicted";
-      const d = eventDate(ev);
-      const status = predicted ? "none" : liveStatus(ev, now, liveKeys);
-      const live = status === "live";
-      const posted = !live && !predicted && !!d && d <= now &&
-        (isPatreon(ev) || ev.status === "posted");
-      const row = el("div", "ev" +
-        (predicted ? " predicted" : "") +
-        (d && d < now && !live && status !== "delayed" ? " past" : "") +
-        (live ? " live" : ""));
-      row.style.setProperty("--c", p.color);
 
-      const src = posterFor(ev.title);
-      if (src){
-        const img = el("img", "thumb");
-        img.src = src; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+  for(let i=0;i<7;i++){
+    const ds=addDays(weekStart,i);
+    const box=el("section","day"+(ds===today ? " today" : ""));
+    box.style.setProperty("--i",i);
+
+    const h=el("h2",null,new Intl.DateTimeFormat("en-US",{
+      timeZone:"UTC",weekday:"long"
+    }).format(utc(ds)));
+
+    h.append(el("small",null,new Intl.DateTimeFormat("en-US",{
+      timeZone:"UTC",month:"short",day:"numeric"
+    }).format(utc(ds))));
+
+    box.append(h);
+
+    const list=events.filter(ev=>eventDay(ev)===ds);
+    if(!list.length)box.append(el("p","none","Nothing posted yet"));
+
+    for(const ev of list){
+      const p=PLATFORMS[ev.platform] || PLATFORMS.other;
+      const predicted=ev.status==="predicted";
+      const d=eventDate(ev);
+      const status=predicted ? "none" : liveStatus(ev,now,liveKeys);
+      const live=status==="live";
+      const posted=!live && !predicted && !!d && d<=now &&
+        (isPatreon(ev) || ev.status==="posted");
+
+      const row=el("div","ev"+
+        (predicted ? " predicted" : "")+
+        (d && d<now && !live && status!=="delayed" ? " past" : "")+
+        (live ? " live" : ""));
+
+      row.style.setProperty("--c",p.color);
+
+      const src=posterFor(ev.title);
+      if(src){
+        const img=el("img","thumb");
+        img.src=src;img.alt="";img.loading="lazy";img.decoding="async";
         row.append(img);
-      } else {
-        row.append(el("div", "thumb empty"));
+      }else{
+        row.append(el("div","thumb empty"));
       }
 
-      const body = el("div");
-      const t = el("div", "t", d ? fmtTime.format(d) : "All day");
-      const dotClass = live ? " live" : status === "delayed" ? " delayed" :
-        status === "ended" ? " ended" : posted ? " posted" : "";
-      const dot = el("span", "dot" + dotClass);
-      const dotLabel = live ? "Live now" : status === "delayed" ? "Delayed" :
-        status === "ended" ? "Ended" : posted ? "Posted" : "Not live";
-      dot.setAttribute("aria-label", dotLabel);
+      const body=el("div");
+      const t=el("div","t",d ? fmtTime.format(d) : "All day");
+      const dotClass=live ? " live" : status==="delayed" ? " delayed" :
+        status==="ended" ? " ended" : posted ? " posted" : "";
+
+      const dot=el("span","dot"+dotClass);
+      const dotLabel=live ? "Live now" : status==="delayed" ? "Delayed" :
+        status==="ended" ? "Ended" : posted ? "Posted" : "Not live";
+
+      dot.setAttribute("aria-label",dotLabel);
       t.prepend(dot);
-      const url = safeUrl(ev.url) ||
+
+      const url=safeUrl(ev.url) ||
         (isPatreon(ev) ? "https://www.patreon.com/cw/gotgames" : "");
-      const name = el("span", "n");
-      if (url){ const a = el("a", null, ev.title); a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer"; name.append(a); }
-      else name.textContent = ev.title;
+
+      const name=el("span","n");
+      if(url){
+        const a=el("a",null,ev.title);
+        a.href=url;a.target="_blank";a.rel="noopener noreferrer";
+        name.append(a);
+      }else{
+        name.textContent=ev.title;
+      }
+
       t.append(name);
-      const statusText = predicted ? "Predicted" : posted ? "Posted" : live ? "Live now" :
-        status === "delayed" ? "Delayed" : status === "ended" ? "Ended" : "Confirmed";
-      body.append(t, el("div", "k", (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label) + " · " + statusText));
+
+      const statusText=predicted ? "Predicted" : posted ? "Posted" :
+        live ? "Live now" : status==="delayed" ? "Delayed" :
+        status==="ended" ? "Ended" : "Confirmed";
+
+      body.append(t,el("div","k",
+        (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label)+" · "+statusText));
+
       row.append(body);
       box.append(row);
     }
+
     week.append(box);
   }
 
-  const nextEv = events.find(ev => { const d = eventDate(ev); return d && d > now; });
-  const nx = document.getElementById("next");
-  if (nextEv){
-    const d = eventDate(nextEv), mins = Math.round((d - now) / 60000);
-    const when = mins < 60 ? "in " + mins + " min"
-      : mins < 1440 ? "in " + Math.floor(mins/60) + " h " + (mins % 60) + " min"
-      : fmtDay.format(utc(dayKey(d))) + " at " + fmtTime.format(d);
-    const info = el("div");
-    info.append(el("span", null, "Next up"), el("b", null, nextEv.title), el("span", null,
-      (PLATFORMS[nextEv.platform] || PLATFORMS.other).label + " · " + when));
+  const nextEv=events.find(ev=>{
+    const d=eventDate(ev);
+    return d && d>now;
+  });
+
+  const nx=document.getElementById("next");
+
+  if(nextEv){
+    const d=eventDate(nextEv);
+    const mins=Math.round((d-now)/60000);
+    const when=mins<60 ? "in "+mins+" min" :
+      mins<1440 ? "in "+Math.floor(mins/60)+" h "+(mins%60)+" min" :
+      new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"long"}).format(utc(dayKey(d)))+
+      " at "+fmtTime.format(d);
+
+    const info=el("div");
+    info.append(
+      el("span",null,"Next up"),
+      el("b",null,nextEv.title),
+      el("span",null,(PLATFORMS[nextEv.platform] || PLATFORMS.other).label+" · "+when)
+    );
+
     nx.replaceChildren(info);
-    const nextPoster = posterFor(nextEv.title);
-    if (nextPoster){
-      const img = el("img", "poster");
-      img.src = nextPoster; img.alt = ""; img.loading = "lazy";
+
+    const nextPoster=posterFor(nextEv.title);
+    if(nextPoster){
+      const img=el("img","poster");
+      img.src=nextPoster;img.alt="";img.loading="lazy";
       nx.append(img);
     }
-    nx.hidden = false;
-  } else nx.hidden = true;
 
-  const notes = noteList(data.notes);
-  document.getElementById("notesBody").replaceChildren(...notes.map(t => el("p", null, t)));
-  document.getElementById("notes").hidden = notes.length === 0;
+    nx.hidden=false;
+  }else{
+    nx.hidden=true;
+  }
+
+  const notes=noteList(data.notes);
+  document.getElementById("notesBody").replaceChildren(...notes.map(t=>el("p",null,t)));
+  document.getElementById("notes").hidden=notes.length===0;
 }
 
 async function load(){
   try{
-    const r = await fetch("schedule.json?t=" + Date.now(), {cache:"no-store"});
-    if (!r.ok) throw new Error(r.status);
-    data = await r.json();
+    const r=await fetch("schedule.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)throw new Error(r.status);
+    data=await r.json();
     render();
   }catch(e){
-    if (!data){
-      document.getElementById("range").textContent = "Couldn't load the schedule. Refresh to try again.";
+    if(!data){
+      document.getElementById("range").textContent=
+        "Couldn't load the schedule. Refresh to try again.";
     }
   }
 }
 
 async function loadShows(){
   try{
-    const r = await fetch("shows.json?t=" + Date.now(), {cache:"no-store"});
-    if (!r.ok) return;
-    const j = await r.json();
-    shows = j.shows || {};
+    const r=await fetch("shows.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)return;
+    const j=await r.json();
+    shows=j.shows || {};
     render();
   }catch(e){}
 }
 
-// live.json is optional. Without it, live and delayed states are not shown.
 async function loadLive(){
   try{
-    const r = await fetch("live.json?t=" + Date.now(), {cache:"no-store"});
-    liveFeed = r.ok ? await r.json() : null;
-  }catch(e){ liveFeed = null; }
+    const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"});
+    liveFeed=r.ok ? await r.json() : null;
+  }catch(e){
+    liveFeed=null;
+  }
   render();
 }
 
@@ -482,10 +917,11 @@ buildZoneOptions();
 load();
 loadShows();
 loadLive();
-setInterval(load, 5 * 60 * 1000);
-setInterval(loadShows, 5 * 60 * 1000);
-setInterval(loadLive, 2 * 60 * 1000);
-setInterval(render, 60 * 1000);
+
+setInterval(load,5*60*1000);
+setInterval(loadShows,5*60*1000);
+setInterval(loadLive,2*60*1000);
+setInterval(render,60*1000);
 </script>
 </body>
 </html>
