@@ -2298,8 +2298,11 @@
       media.type === "ANIME" &&
       ["TV", "TV_SHORT", "ONA"].includes(media.format);
 
+    // A search result can contain relations: { edges: [] } even when
+    // its full relationship chain has not been expanded yet. Queue every
+    // discovered season once; the fetched set below tracks actual lookups.
     let frontier = [...mediaById.values()]
-      .filter(media => isSeasonEntry(media) && !media.relations)
+      .filter(media => isSeasonEntry(media))
       .map(media => media.id);
 
     const fetched = new Set();
@@ -2377,7 +2380,10 @@
             mediaById.set(related.id, related);
           }
 
-          if (!related.relations && !fetched.has(related.id)) {
+          // Do not use the presence of a relations object as proof that
+          // this entry was fetched. Nested/search results may only contain
+          // an empty or partial relations object.
+          if (!fetched.has(related.id)) {
             nextFrontier.push(related.id);
           }
         }
