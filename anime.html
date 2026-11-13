@@ -767,10 +767,10 @@
       );
 
       // Actual database columns:
-      // active_title, episode_start, episode_end.
+      // anime_title, episode_start, episode_end.
       url.searchParams.set(
         "select",
-        "event_key,active_title,season_number,episode_start,episode_end,watched_at,platform"
+        "event_key,anime_title,season_number,episode_start,episode_end,watched_at,platform"
       );
 
       url.searchParams.set("order", "watched_at.desc");
@@ -835,7 +835,7 @@
       const identity = row.event_key
         ? `event:${row.event_key}`
         : [
-            row.active_title,
+            row.anime_title,
             row.season_number,
             row.episode_start,
             row.episode_end,
@@ -937,7 +937,7 @@
     historyByTitle = new Map();
 
     for (const row of watchHistory) {
-      const title = normalizeTitle(row.active_title);
+      const title = normalizeTitle(row.anime_title);
 
       if (!title) continue;
 
@@ -961,7 +961,7 @@
         const identity = row.event_key
           ? `event:${row.event_key}`
           : [
-              row.active_title,
+              row.anime_title,
               row.season_number,
               row.episode_start,
               row.episode_end,
