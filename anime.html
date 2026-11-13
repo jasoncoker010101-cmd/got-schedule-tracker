@@ -481,6 +481,42 @@
       line-height: 1.4;
     }
 
+    .series-seasons {
+      margin: 10px 0;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .series-seasons summary {
+      padding: 9px 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .series-season-list {
+      display: grid;
+      gap: 7px;
+      padding: 0 10px 10px;
+    }
+
+    .series-season-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .series-season-row span:last-child {
+      flex-shrink: 0;
+      color: var(--text);
+      font-weight: 700;
+    }
+
     .empty {
       grid-column: 1/-1;
       padding: 54px 20px;
@@ -873,6 +909,36 @@
         format
         averageScore
         genres
+        relations {
+          edges {
+            relationType
+            node {
+              id
+              type
+              episodes
+              format
+              seasonYear
+              title { romaji english native }
+              synonyms
+              coverImage { large }
+              relations {
+                edges {
+                  relationType
+                  node {
+                    id
+                    type
+                    episodes
+                    format
+                    seasonYear
+                    title { romaji english native }
+                    synonyms
+                    coverImage { large }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }`;
@@ -1394,12 +1460,17 @@
   }
 
   function getAnimeAliases(anime) {
-    const aliases = [
-      anime.title?.english,
-      anime.title?.romaji,
-      anime.title?.native,
-      ...(Array.isArray(anime.synonyms) ? anime.synonyms : [])
+    const entries = [
+      anime,
+      ...(Array.isArray(anime.seriesEntries) ? anime.seriesEntries : [])
     ];
+
+    const aliases = entries.flatMap(entry => [
+      entry.title?.english,
+      entry.title?.romaji,
+      entry.title?.native,
+      ...(Array.isArray(entry.synonyms) ? entry.synonyms : [])
+    ]);
 
     return [...new Set(
       aliases.map(normalizeTitle).filter(Boolean)
@@ -1880,7 +1951,12 @@
     [
       anime.seasonYear,
       anime.format,
-      anime.episodes ? `${anime.episodes} eps` : "",
+      Number.isFinite(anime.seriesEpisodeTotal)
+        ? `${anime.seriesEpisodeTotal.toLocaleString()} eps total`
+        : anime.episodes ? `${anime.episodes} eps` : "",
+      anime.seriesEntries?.length > 1
+        ? `${anime.seriesEntries.length} seasons`
+        : "",
       anime.averageScore ? `★ ${anime.averageScore}%` : ""
     ].filter(Boolean).forEach(value => {
       const chip = document.createElement("span");
@@ -1890,6 +1966,37 @@
     });
 
     body.append(meta);
+
+    if (anime.seriesEntries?.length > 1) {
+      const seasonDetails = document.createElement("details");
+      seasonDetails.className = "series-seasons";
+
+      const summary = document.createElement("summary");
+      summary.textContent = "View seasons (" + anime.seriesEntries.length + ")";
+      seasonDetails.append(summary);
+
+      const seasonList = document.createElement("div");
+      seasonList.className = "series-season-list";
+
+      for (const season of anime.seriesEntries) {
+        const seasonRow = document.createElement("div");
+        seasonRow.className = "series-season-row";
+
+        const seasonName = document.createElement("span");
+        seasonName.textContent = titleFor(season);
+
+        const seasonCount = document.createElement("span");
+        seasonCount.textContent = Number.isFinite(Number(season.episodes))
+          ? Number(season.episodes).toLocaleString() + " eps"
+          : "Episode count unavailable";
+
+        seasonRow.append(seasonName, seasonCount);
+        seasonList.append(seasonRow);
+      }
+
+      seasonDetails.append(seasonList);
+      body.append(seasonDetails);
+    }
 
     const description = document.createElement("p");
     description.className = "description";
@@ -1929,6 +2036,98 @@
     );
   }
 
+  function buildSeriesGroups(items) {
+    const mediaById = new Map();
+    const links = new Map();
+
+    function visit(media, depth = 0) {
+      if (!media || media.type !== "ANIME" || media.id == null) return;
+      if (mediaById.has(media.id)) return;
+
+      mediaById.set(media.id, media);
+      if (depth >= 2) return;
+
+      for (const edge of media.relations?.edges || []) {
+        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
+
+        const related = edge.node;
+        if (!related || related.type !== "ANIME" || related.id == null) continue;
+
+        if (!links.has(media.id)) links.set(media.id, new Set());
+        if (!links.has(related.id)) links.set(related.id, new Set());
+
+        links.get(media.id).add(related.id);
+        links.get(related.id).add(media.id);
+        visit(related, depth + 1);
+      }
+    }
+
+    items.forEach(item => visit(item));
+
+    const visited = new Set();
+    const groups = [];
+
+    for (const item of items) {
+      if (visited.has(item.id)) continue;
+
+      const stack = [item.id];
+      const component = [];
+
+      while (stack.length) {
+        const id = stack.pop();
+        if (visited.has(id)) continue;
+        visited.add(id);
+
+        const media = mediaById.get(id);
+        if (media) component.push(media);
+
+        for (const neighbor of links.get(id) || []) {
+          if (!visited.has(neighbor)) stack.push(neighbor);
+        }
+      }
+
+      const unique = [...new Map(component.map(entry => [entry.id, entry])).values()];
+      unique.sort((a, b) =>
+        (a.seasonYear || 9999) - (b.seasonYear || 9999) ||
+        a.id - b.id
+      );
+
+      const roots = unique.filter(entry =>
+        !(entry.relations?.edges || []).some(edge =>
+          edge.relationType === "PREQUEL" &&
+          edge.node?.type === "ANIME" &&
+          unique.some(candidate => candidate.id === edge.node.id)
+        )
+      );
+
+      const root = roots[0] || unique[0];
+      const compactEntries = unique.map(entry => ({
+        id: entry.id,
+        title: entry.title,
+        synonyms: entry.synonyms || [],
+        episodes: entry.episodes,
+        format: entry.format,
+        seasonYear: entry.seasonYear,
+        coverImage: entry.coverImage
+      }));
+
+      const { relations, ...rootFields } = root;
+      const episodeCounts = compactEntries
+        .map(entry => Number(entry.episodes))
+        .filter(count => Number.isFinite(count) && count > 0);
+
+      groups.push({
+        ...rootFields,
+        seriesEntries: compactEntries,
+        seriesEpisodeTotal: episodeCounts.length
+          ? episodeCounts.reduce((sum, count) => sum + count, 0)
+          : null
+      });
+    }
+
+    return groups;
+  }
+
   function render(items) {
     results.replaceChildren();
 
@@ -1944,16 +2143,15 @@
       return;
     }
 
-    // Keep AniList's relevance order, but move titles with recorded G.O.T.
-    // episode reactions ahead of titles that do not have reaction links.
-    const orderedItems = [...items].sort((a, b) =>
+    const groupedItems = buildSeriesGroups(items);
+
+    // Preserve AniList relevance while prioritizing series with reaction links.
+    const orderedItems = [...groupedItems].sort((a, b) =>
       Number(hasRecordedReactionLinks(b)) -
       Number(hasRecordedReactionLinks(a))
     );
 
-    orderedItems.forEach(item => {
-      results.append(makeCard(item));
-    });
+    orderedItems.forEach(item => results.append(makeCard(item)));
   }
 
   function renderLastResults() {
