@@ -2724,25 +2724,33 @@
       displayedItems = pageData.media || [];
       hasNextPage = Boolean(pageData.pageInfo?.hasNextPage);
 
-      setStatus("Loading connected seasons…");
+      // Show AniList results immediately. Season discovery continues in the
+      // background so a slow relationship lookup never leaves the page blank.
+      render(displayedItems);
+      pagination.hidden = false;
+      previousButton.disabled = page <= 1;
+      nextButton.disabled = !hasNextPage;
+      pageLabel.textContent = `Page ${page}`;
+
+      const resultLabel =
+        `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
+        `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}`;
+
+      setStatus(
+        displayedItems.length
+          ? `${resultLabel}. Checking connected seasons in the background…`
+          : resultLabel + "."
+      );
+
       await loadFullSeriesRelations(displayedItems, controller.signal);
 
       if (controller.signal.aborted || requestController !== controller) {
         return;
       }
 
+      // Refresh the visible cards after AniList/Jikan season checks complete.
       render(displayedItems);
-
-      pagination.hidden = false;
-
-      previousButton.disabled = page <= 1;
-      nextButton.disabled = !hasNextPage;
-      pageLabel.textContent = `Page ${page}`;
-
-      setStatus(
-        `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
-        `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}.`
-      );
+      setStatus(resultLabel + ".");
 
     } catch (error) {
       if (error.name === "AbortError") return;
