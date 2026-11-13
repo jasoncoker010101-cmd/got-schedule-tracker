@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Supabase authentication library for the owner review panel -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
       color-scheme: dark;
@@ -387,7 +390,6 @@
       font-size: 12px;
     }
 
-    /* Expandable episode list */
     .episode-toggle {
       display: flex;
       align-items: center;
@@ -424,13 +426,8 @@
       border-top: 1px solid var(--line);
     }
 
-    .episode-season {
-      margin-bottom: 12px;
-    }
-
-    .episode-season:last-child {
-      margin-bottom: 0;
-    }
+    .episode-season { margin-bottom: 12px; }
+    .episode-season:last-child { margin-bottom: 0; }
 
     .episode-season-title {
       margin-bottom: 7px;
@@ -459,7 +456,6 @@
       font-weight: 700;
     }
 
-    /* Gold episode chips are clickable YouTube reaction links. */
     .episode-chip.youtube-link {
       border-color: rgba(239,189,50,.4);
       background: rgba(239,189,50,.12);
@@ -507,6 +503,118 @@
       cursor: not-allowed;
     }
 
+    /* =====================================================
+       OWNER PENDING-LINK REVIEW PANEL
+       ===================================================== */
+
+    .owner-tools {
+      width: min(1180px, calc(100% - 36px));
+      margin: 35px auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .owner-panel {
+      margin-top: 15px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--surface);
+    }
+
+    .owner-panel h2 {
+      margin-top: 0;
+      font: 800 23px var(--display);
+    }
+
+    .owner-status {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #ownerLoginForm {
+      display: grid;
+      gap: 10px;
+      max-width: 420px;
+      margin: 15px 0;
+    }
+
+    #ownerLoginForm input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--raised);
+      color: var(--text);
+    }
+
+    .pending-card {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .pending-card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .pending-card p {
+      margin: 7px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pending-card a {
+      display: inline-block;
+      margin: 5px 0 10px;
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .pending-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pending-actions button {
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--raised);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .pending-actions button.approve {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .pending-actions button.ignore {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .pending-actions button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .owner-small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
     footer {
       padding: 25px;
       border-top: 1px solid var(--line);
@@ -549,9 +657,7 @@
       main { margin-top: 28px; }
 
       .toolbar { align-items: stretch; }
-
       .tabs { width: 100%; }
-
       .tab { flex: 1; }
 
       .grid {
@@ -562,7 +668,6 @@
       .card h2 { font-size: 15px; }
       .card-body { padding: 10px; }
       .description { font-size: 12px; }
-
       .watch-box { padding: 8px; }
       .watch-number { font-size: 17px; }
     }
@@ -661,6 +766,46 @@
     </section>
   </main>
 
+  <!-- OWNER-ONLY PENDING LINKS REVIEW -->
+  <section class="owner-tools" aria-label="Owner tools">
+    <button class="page-button" id="ownerToolsToggle" type="button">
+      Owner review
+    </button>
+
+    <div class="owner-panel" id="ownerPanel" hidden>
+      <h2>Pending YouTube links</h2>
+      <p class="owner-status" id="ownerStatus" aria-live="polite">
+        Checking account…
+      </p>
+
+      <form id="ownerLoginForm" hidden>
+        <input
+          id="ownerEmail"
+          type="email"
+          placeholder="Owner email"
+          autocomplete="username"
+          required
+        >
+
+        <input
+          id="ownerPassword"
+          type="password"
+          placeholder="Password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button class="page-button" type="submit">Log in</button>
+      </form>
+
+      <button class="page-button" id="ownerLogout" type="button" hidden>
+        Log out
+      </button>
+
+      <div id="pendingLinks"></div>
+    </div>
+  </section>
+
   <footer>
     Anime information provided by
     <a href="https://anilist.co/" target="_blank" rel="noopener noreferrer">AniList</a>.
@@ -686,6 +831,19 @@
   const STORAGE_KEY = "gotAnimeFavoritesV1";
   const PAGE_SIZE = 24;
   const HISTORY_PAGE_SIZE = 1000;
+
+  // =========================================================
+  // SUPABASE CLIENT
+  // =========================================================
+
+  if (!window.supabase || !window.supabase.createClient) {
+    throw new Error("Supabase library failed to load.");
+  }
+
+  const authClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
   // =========================================================
   // ANILIST QUERY
@@ -741,6 +899,14 @@
   const nextButton = document.getElementById("nextButton");
   const pageLabel = document.getElementById("pageLabel");
 
+  // Owner review elements
+  const ownerToolsToggle = document.getElementById("ownerToolsToggle");
+  const ownerPanel = document.getElementById("ownerPanel");
+  const ownerStatus = document.getElementById("ownerStatus");
+  const ownerLoginForm = document.getElementById("ownerLoginForm");
+  const ownerLogout = document.getElementById("ownerLogout");
+  const pendingLinksContainer = document.getElementById("pendingLinks");
+
   // =========================================================
   // STATE
   // =========================================================
@@ -762,12 +928,14 @@
 
   let historyByTitle = new Map();
 
-  // YouTube reaction links are loaded separately from watch history.
   let episodeLinks = [];
   let episodeLinksLoaded = false;
-
-  // Key format: "1" for Season 1, "2" for Season 2, etc.
   let episodeLinksBySeason = new Map();
+
+  // Owner review state
+  let ownerSession = null;
+  let isSiteOwner = false;
+  let ownerCheckInProgress = false;
 
   // =========================================================
   // FAVORITES
@@ -871,7 +1039,7 @@
         parsed.error ||
         rawBody;
     } catch {
-      // Keep the original response text if it is not JSON.
+      // Keep original response text.
     }
 
     if (!detail) {
@@ -898,7 +1066,6 @@
         `${SUPABASE_URL}/rest/v1/${HISTORY_TABLE}`
       );
 
-      // These are the actual columns in your table.
       url.searchParams.set(
         "select",
         "event_key,anime_title,season_number,episode_start,episode_end,watched_at,platform"
@@ -928,9 +1095,7 @@
         });
 
         if (response.status === 401) {
-          throw new Error(
-            `Supabase authentication failed. ${detail}`
-          );
+          throw new Error(`Supabase authentication failed. ${detail}`);
         }
 
         if (response.status === 403) {
@@ -945,9 +1110,7 @@
           );
         }
 
-        throw new Error(
-          `Watch-history request failed. ${detail}`
-        );
+        throw new Error(`Watch-history request failed. ${detail}`);
       }
 
       const rows = await response.json();
@@ -967,7 +1130,6 @@
       if (offset >= 50000) break;
     }
 
-    // Remove duplicate database events using event_key.
     const uniqueRows = new Map();
 
     for (const row of allRows) {
@@ -1002,8 +1164,6 @@
     let offset = 0;
     const pageSize = 1000;
 
-    // Read the table in pages instead of relying on an exact title filter.
-    // This avoids missing rows if the stored title uses a subtitle or alias.
     while (true) {
       const url = new URL(
         `${SUPABASE_URL}/rest/v1/${EPISODE_LINKS_TABLE}`
@@ -1050,10 +1210,9 @@
       if (offset >= 20000) break;
     }
 
-    // This page currently imports Attack on Titan reaction links only.
-    // Keep other titles out of the index until they are intentionally added.
     episodeLinks = allRows.filter(row => {
       const storedTitle = normalizeTitle(row.anime_title);
+
       const isAot =
         storedTitle === "attack on titan" ||
         storedTitle === "shingeki no kyojin" ||
@@ -1062,6 +1221,7 @@
 
       const start = Number(row.episode_start);
       const end = Number(row.episode_end);
+
       const validYoutubeUrl =
         /^https:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/i.test(
           String(row.youtube_url || "")
@@ -1089,8 +1249,6 @@
     episodeLinksBySeason = new Map();
 
     for (const link of episodeLinks) {
-      // Link rows use season numbers for season-based anime.
-      // NULL represents overall numbering, just like watch history.
       const seasonKey = link.season_number == null
         ? "overall"
         : String(link.season_number);
@@ -1144,10 +1302,7 @@
   async function initializeEpisodeLinks() {
     try {
       await loadEpisodeLinks();
-
-      // Re-render cards so the newly loaded links become clickable.
       renderLastResults();
-
     } catch (error) {
       console.error("Attack on Titan episode links:", error);
 
@@ -1155,7 +1310,6 @@
       episodeLinks = [];
       episodeLinksBySeason = new Map();
 
-      // A link-table failure must not break AniList or watch history.
       renderLastResults();
     }
   }
@@ -1192,7 +1346,6 @@
     if (!ranges.length) return [];
 
     const sorted = [...ranges].sort((a, b) => a.start - b.start);
-
     const merged = [{ ...sorted[0] }];
 
     for (let i = 1; i < sorted.length; i++) {
@@ -1233,9 +1386,7 @@
     ];
 
     return [...new Set(
-      aliases
-        .map(normalizeTitle)
-        .filter(Boolean)
+      aliases.map(normalizeTitle).filter(Boolean)
     )];
   }
 
@@ -1289,11 +1440,8 @@
 
     for (const row of matchingRows) {
       const range = getRowRange(row);
-
       if (!range) continue;
 
-      // NULL season_number means overall episode numbering.
-      // This is used for long-running anime such as One Piece.
       const season = row.season_number == null
         ? "overall"
         : String(row.season_number);
@@ -1320,7 +1468,6 @@
     groupedRanges.sort((a, b) => {
       if (a.season === "overall") return -1;
       if (b.season === "overall") return 1;
-
       return Number(a.season) - Number(b.season);
     });
 
@@ -1413,7 +1560,6 @@
   async function initializeHistory() {
     try {
       watchHistory = await loadWatchHistory();
-
       buildHistoryIndex();
 
       historyLoaded = true;
@@ -1485,6 +1631,7 @@
             chip.className = "episode-chip youtube-link";
 
             const videoTitle = safeText(youtubeLink.video_title);
+
             chip.title = videoTitle
               ? `Watch G.O.T.'s reaction: ${videoTitle}`
               : `Watch G.O.T.'s reaction to episode ${episode}`;
@@ -1590,7 +1737,6 @@
       ? `Last recorded: ${formatDate(history.latestRow.watched_at)}`
       : "Watch date unavailable";
 
-    // Button that opens and closes the individual episode list.
     const toggle = document.createElement("button");
     toggle.className = "episode-toggle";
     toggle.type = "button";
@@ -1866,7 +2012,6 @@
 
     } catch (error) {
       if (error.name === "AbortError") return;
-
       if (controller !== requestController) return;
 
       displayedItems = [];
@@ -1903,6 +2048,324 @@
 
     searchAnime();
   }
+
+  // =========================================================
+  // OWNER REVIEW: LOGIN AND PERMISSION CHECK
+  // =========================================================
+
+  ownerToolsToggle.addEventListener("click", async () => {
+    ownerPanel.hidden = !ownerPanel.hidden;
+
+    if (!ownerPanel.hidden) {
+      await checkOwnerAccess();
+    }
+  });
+
+  ownerLoginForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    ownerStatus.textContent = "Signing in…";
+
+    const email = document.getElementById("ownerEmail").value.trim();
+    const password = document.getElementById("ownerPassword").value;
+
+    const { data, error } = await authClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    document.getElementById("ownerPassword").value = "";
+
+    if (error) {
+      ownerStatus.textContent = "Login failed: " + error.message;
+      return;
+    }
+
+    ownerSession = data.session;
+    await checkOwnerAccess();
+  });
+
+  ownerLogout.addEventListener("click", async () => {
+    await authClient.auth.signOut();
+
+    ownerSession = null;
+    isSiteOwner = false;
+
+    pendingLinksContainer.replaceChildren();
+    await checkOwnerAccess();
+  });
+
+  async function checkOwnerAccess() {
+    if (ownerCheckInProgress) return;
+
+    ownerCheckInProgress = true;
+
+    try {
+      const { data, error } = await authClient.auth.getSession();
+
+      if (error || !data.session) {
+        ownerSession = null;
+        isSiteOwner = false;
+
+        ownerStatus.textContent =
+          "Log in with your existing G.O.T. Games owner account.";
+
+        ownerLoginForm.hidden = false;
+        ownerLogout.hidden = true;
+        pendingLinksContainer.replaceChildren();
+
+        return;
+      }
+
+      ownerSession = data.session;
+
+      // This query only checks whether the signed-in user has the owner role.
+      // The database approval/ignore functions independently check the role.
+      const { data: role, error: roleError } = await authClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", ownerSession.user.id)
+        .eq("role", "owner")
+        .maybeSingle();
+
+      if (roleError || !role) {
+        isSiteOwner = false;
+
+        ownerStatus.textContent =
+          "This account does not have owner permission.";
+
+        ownerLoginForm.hidden = true;
+        ownerLogout.hidden = false;
+        pendingLinksContainer.replaceChildren();
+
+        return;
+      }
+
+      isSiteOwner = true;
+
+      ownerLoginForm.hidden = true;
+      ownerLogout.hidden = false;
+
+      await loadPendingLinks();
+
+    } finally {
+      ownerCheckInProgress = false;
+    }
+  }
+
+  // =========================================================
+  // OWNER REVIEW: LOAD PENDING LINKS
+  // =========================================================
+
+  async function loadPendingLinks() {
+    if (!isSiteOwner || !ownerSession) return;
+
+    ownerStatus.textContent = "Loading pending links…";
+    pendingLinksContainer.replaceChildren();
+
+    const { data, error } = await authClient
+      .from("got_anime_pending_episode_links")
+      .select(
+        "id,youtube_video_id,youtube_url,video_title,anime_title,anilist_id,season_number,episode_start,episode_end,uploaded_at,source_url,detected_at,status,confidence,review_note"
+      )
+      .in("status", ["pending", "needs_checking"])
+      .order("detected_at", { ascending: false })
+      .limit(100);
+
+    if (error) {
+      ownerStatus.textContent =
+        "Could not load pending links: " + error.message;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      ownerStatus.textContent = "No pending links right now.";
+      return;
+    }
+
+    ownerStatus.textContent =
+      `${data.length} candidate(s) waiting for review.`;
+
+    for (const item of data) {
+      pendingLinksContainer.append(makePendingLinkCard(item));
+    }
+  }
+
+  // =========================================================
+  // OWNER REVIEW: BUILD A PENDING LINK CARD
+  // =========================================================
+
+  function makePendingLinkCard(item) {
+    const card = document.createElement("article");
+    card.className = "pending-card";
+
+    const heading = document.createElement("h3");
+    heading.textContent = item.video_title || "Untitled reaction";
+
+    const details = document.createElement("p");
+
+    const episodeStart = Number(item.episode_start);
+    const episodeEnd = Number(item.episode_end);
+
+    const hasEpisode =
+      Number.isInteger(episodeStart) &&
+      Number.isInteger(episodeEnd) &&
+      episodeStart >= 1 &&
+      episodeEnd >= episodeStart;
+
+    const episodeText = !hasEpisode
+      ? "Episode not identified"
+      : episodeStart === episodeEnd
+        ? `Episode ${episodeStart}`
+        : `Episodes ${episodeStart}–${episodeEnd}`;
+
+    const seasonText = item.season_number == null
+      ? "Overall numbering"
+      : `Season ${item.season_number}`;
+
+    details.textContent =
+      `${item.anime_title || "Anime not identified"} · ${seasonText} · ${episodeText}`;
+
+    const confidence = document.createElement("p");
+
+    confidence.textContent = item.confidence == null
+      ? "Match confidence: not available"
+      : `Match confidence: ${item.confidence}%`;
+
+    const detected = document.createElement("p");
+    detected.className = "owner-small";
+    detected.textContent =
+      `Detected: ${formatDate(item.detected_at)}`;
+
+    const video = document.createElement("a");
+    video.href = item.youtube_url;
+    video.target = "_blank";
+    video.rel = "noopener noreferrer";
+    video.textContent = "Open YouTube video";
+
+    const actions = document.createElement("div");
+    actions.className = "pending-actions";
+
+    const approve = document.createElement("button");
+    approve.type = "button";
+    approve.className = "approve";
+    approve.textContent = "Approve";
+
+    const ignore = document.createElement("button");
+    ignore.type = "button";
+    ignore.className = "ignore";
+    ignore.textContent = "Ignore";
+
+    // Do not allow approval when the candidate is missing episode data.
+    approve.disabled = !(
+      item.anime_title &&
+      hasEpisode &&
+      item.youtube_url
+    );
+
+    if (approve.disabled) {
+      approve.title =
+        "This candidate needs its anime and episode details checked first.";
+    }
+
+    approve.addEventListener("click", async () => {
+      if (!isSiteOwner || !ownerSession) return;
+
+      approve.disabled = true;
+      ignore.disabled = true;
+      ownerStatus.textContent = "Approving link…";
+
+      const { error } = await authClient.rpc(
+        "approve_got_anime_pending_episode_link",
+        { p_pending_id: item.id }
+      );
+
+      if (error) {
+        ownerStatus.textContent =
+          "Approval failed: " + error.message;
+
+        approve.disabled = false;
+        ignore.disabled = false;
+        return;
+      }
+
+      // Refresh the public episode-link list after successful approval.
+      try {
+        await loadEpisodeLinks();
+        renderLastResults();
+      } catch (refreshError) {
+        console.error("Could not refresh episode links:", refreshError);
+      }
+
+      await loadPendingLinks();
+    });
+
+    ignore.addEventListener("click", async () => {
+      if (!isSiteOwner || !ownerSession) return;
+
+      ignore.disabled = true;
+      approve.disabled = true;
+      ownerStatus.textContent = "Ignoring candidate…";
+
+      const { error } = await authClient.rpc(
+        "ignore_got_anime_pending_episode_link",
+        { p_pending_id: item.id }
+      );
+
+      if (error) {
+        ownerStatus.textContent =
+          "Could not ignore candidate: " + error.message;
+
+        ignore.disabled = false;
+        approve.disabled = !(
+          item.anime_title &&
+          hasEpisode &&
+          item.youtube_url
+        );
+
+        return;
+      }
+
+      await loadPendingLinks();
+    });
+
+    actions.append(approve, ignore);
+
+    card.append(
+      heading,
+      details,
+      confidence,
+      detected,
+      video,
+      actions
+    );
+
+    return card;
+  }
+
+  // =========================================================
+  // AUTH STATE CHANGES
+  // =========================================================
+
+  authClient.auth.onAuthStateChange((_event, session) => {
+    ownerSession = session;
+
+    if (!session) {
+      isSiteOwner = false;
+      pendingLinksContainer.replaceChildren();
+
+      if (!ownerPanel.hidden) {
+        ownerStatus.textContent =
+          "Log in with your existing G.O.T. Games owner account.";
+
+        ownerLoginForm.hidden = false;
+        ownerLogout.hidden = true;
+      }
+    } else if (!ownerPanel.hidden) {
+      // Defer the role check until after the auth event finishes.
+      setTimeout(() => checkOwnerAccess(), 0);
+    }
+  });
 
   // =========================================================
   // EVENTS
@@ -1949,7 +2412,7 @@
   initializeHistory();
 
   // Load reaction links independently so a link-table problem
-  // cannot stop the AniList search or the watch-history display.
+  // cannot stop AniList search or watch-history display.
   initializeEpisodeLinks();
 </script>
 </body>
