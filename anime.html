@@ -1031,6 +1031,7 @@
       media(type: ANIME, search: $search, sort: POPULARITY_DESC) {
         id
         idMal
+        type
         title {
           romaji
           english
@@ -2228,11 +2229,24 @@
       const newEdges = incoming.relations?.edges || [];
       if (newEdges.length) {
         const mergedEdges = new Map();
-        for (const edge of [...oldEdges, ...newEdges]) {
+        for (const edge of oldEdges) {
           const key = edge.node?.id == null
             ? null
             : edge.relationType + ":" + edge.node.id;
           if (key) mergedEdges.set(key, edge);
+        }
+        for (const edge of newEdges) {
+          const key = edge.node?.id == null
+            ? null
+            : edge.relationType + ":" + edge.node.id;
+          if (!key) continue;
+
+          const existingEdge = mergedEdges.get(key);
+          if (existingEdge?.node && edge.node) {
+            mergeMediaData(existingEdge.node, edge.node);
+          } else {
+            mergedEdges.set(key, edge);
+          }
         }
         existing.relations = {
           ...(existing.relations || {}),
