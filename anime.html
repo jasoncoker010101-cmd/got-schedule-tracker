@@ -2212,39 +2212,79 @@
   async function loadFullSeriesRelations(items, signal) {
     const mediaById = new Map();
 
-    function addMedia(media) {
-      if (!media || media.id == null) return;
-      if (!mediaById.has(media.id)) mediaById.set(media.id, media);
+    function mergeMediaData(existing, incoming) {
+      if (!existing || !incoming) return existing;
 
-      for (const edge of media.relations?.edges || []) {
+      for (const field of [
+        "type", "idMal", "episodes", "format", "seasonYear",
+        "title", "synonyms", "coverImage"
+      ]) {
+        if (existing[field] == null && incoming[field] != null) {
+          existing[field] = incoming[field];
+        }
+      }
+
+      const oldEdges = existing.relations?.edges || [];
+      const newEdges = incoming.relations?.edges || [];
+      if (newEdges.length) {
+        const mergedEdges = new Map();
+        for (const edge of [...oldEdges, ...newEdges]) {
+          const key = edge.node?.id == null
+            ? null
+            : edge.relationType + ":" + edge.node.id;
+          if (key) mergedEdges.set(key, edge);
+        }
+        existing.relations = {
+          ...(existing.relations || {}),
+          ...(incoming.relations || {}),
+          edges: [...mergedEdges.values()]
+        };
+      } else if (!existing.relations && incoming.relations) {
+        existing.relations = incoming.relations;
+      }
+
+      return existing;
+    }
+
+    // Register every search result first. A season may appear both as a
+    // top-level search result and as a shallow nested relation node. Keeping
+    // the full top-level object prevents the shallow copy from hiding later
+    // seasons in the chain.
+    for (const media of items) {
+      if (media?.id != null) mediaById.set(media.id, media);
+    }
+
+    const expandedRelationEdges = new Set();
+
+    function addMediaChildrenOnly(media) {
+      if (!media || media.id == null) return;
+
+      const storedMedia = mediaById.get(media.id) || media;
+      if (!mediaById.has(media.id)) mediaById.set(media.id, storedMedia);
+
+      for (const edge of storedMedia.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
         const node = edge.node;
         if (!node || node.id == null) continue;
 
-        const existing = mediaById.get(node.id);
-        if (existing) {
-          if (!existing.relations && node.relations) {
-            existing.relations = node.relations;
-          }
-          continue;
+        const edgeKey = storedMedia.id + ":" + edge.relationType + ":" + node.id;
+        if (expandedRelationEdges.has(edgeKey)) continue;
+        expandedRelationEdges.add(edgeKey);
+
+        let related = mediaById.get(node.id);
+        if (related) {
+          mergeMediaData(related, node);
+          edge.node = related;
+        } else {
+          related = node;
+          mediaById.set(node.id, related);
         }
 
-        mediaById.set(node.id, node);
-        addMediaChildrenOnly(node);
+        addMediaChildrenOnly(related);
       }
     }
 
-    function addMediaChildrenOnly(media) {
-      for (const edge of media.relations?.edges || []) {
-        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
-        const node = edge.node;
-        if (!node || node.id == null || mediaById.has(node.id)) continue;
-        mediaById.set(node.id, node);
-        addMediaChildrenOnly(node);
-      }
-    }
-
-    items.forEach(addMedia);
+    items.forEach(addMediaChildrenOnly);
 
     const isSeasonEntry = media =>
       media &&
@@ -2483,28 +2523,42 @@
       );
     }
 
-    function visit(media, depth = 0, isRelated = false) {
-      // Top-level results already come from media(type: ANIME), so AniList
-      // does not need to return a separate type field for those entries.
+    // Prefer full search-result objects over shallow copies nested inside
+    // another result's relation graph.
+    for (const item of items) {
+      if (item?.id != null) mediaById.set(item.id, item);
+    }
+
+    const visitedMedia = new Set();
+
+    function visit(media) {
       if (!media || media.id == null) return;
-      if (isRelated && media.type !== "ANIME") return;
-      if (mediaById.has(media.id)) return;
 
-      mediaById.set(media.id, media);
-      if (!isSeasonEntry(media)) return;
+      const storedMedia = mediaById.get(media.id) || media;
+      if (!mediaById.has(media.id)) mediaById.set(media.id, storedMedia);
+      if (visitedMedia.has(storedMedia.id)) return;
+      visitedMedia.add(storedMedia.id);
 
-      for (const edge of media.relations?.edges || []) {
+      if (!isSeasonEntry(storedMedia)) return;
+
+      for (const edge of storedMedia.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
 
-        const related = edge.node;
-        if (!isSeasonEntry(related) || related.id == null) continue;
+        const relationNode = edge.node;
+        if (!isSeasonEntry(relationNode) || relationNode.id == null) continue;
 
-        if (!links.has(media.id)) links.set(media.id, new Set());
+        const related = mediaById.get(relationNode.id) || relationNode;
+        if (!mediaById.has(relationNode.id)) {
+          mediaById.set(relationNode.id, related);
+        }
+        edge.node = related;
+
+        if (!links.has(storedMedia.id)) links.set(storedMedia.id, new Set());
         if (!links.has(related.id)) links.set(related.id, new Set());
 
-        links.get(media.id).add(related.id);
-        links.get(related.id).add(media.id);
-        visit(related, depth + 1, true);
+        links.get(storedMedia.id).add(related.id);
+        links.get(related.id).add(storedMedia.id);
+        visit(related);
       }
     }
 
