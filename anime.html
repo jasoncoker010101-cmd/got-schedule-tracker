@@ -1190,37 +1190,6 @@
         format
         averageScore
         genres
-        relations {
-          edges {
-            relationType
-            node {
-              id
-              idMal
-              type
-              episodes
-              format
-              seasonYear
-              title { romaji english native }
-              synonyms
-              coverImage { large }
-              relations {
-                edges {
-                  relationType
-                  node {
-                    id
-                    type
-                    episodes
-                    format
-                    seasonYear
-                    title { romaji english native }
-                    synonyms
-                    coverImage { large }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   }`;
@@ -3140,6 +3109,8 @@ gth) {
     pagination.hidden = true;
 
     try {
+      // Keep the first search request small and reliable. Season relationships
+      // are fetched separately after the basic anime results are displayed.
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
@@ -3186,44 +3157,57 @@ gth) {
       displayedItems = pageData.media || [];
       hasNextPage = Boolean(pageData.pageInfo?.hasNextPage);
 
-      // Show AniList results immediately. Season discovery continues in the
-      // background so a slow relationship lookup never leaves the page blank.
-      render(displayedItems, [...seriesLookupCache.values()]);
+      const resultLabel =
+        `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
+        `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}`;
+
+      // Display the search results before attempting any optional season lookups.
+      render(displayedItems);
       pagination.hidden = false;
       previousButton.disabled = page <= 1;
       nextButton.disabled = !hasNextPage;
       pageLabel.textContent = `Page ${page}`;
 
-      const resultLabel =
-        `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
-        `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}`;
-
-      setStatus(
-        displayedItems.length
-          ? `${resultLabel}. Checking seasons for these page results in the background…`
-          : resultLabel + "."
-      );
-
-      // Snapshot the current page. A new search/page change aborts this lookup.
-      const currentPageItems = [...displayedItems];
-      await loadFullSeriesRelations(currentPageItems, controller.signal);
-
-      if (controller.signal.aborted || requestController !== controller) {
+      if (!displayedItems.length) {
+        setStatus(resultLabel + ".");
         return;
       }
 
-      // Remember only records reached from this page's search results. Future
-      // pages are untouched until the user navigates to them.
-      rememberSeriesMedia(currentPageItems);
+      setStatus(resultLabel + ". Loading season details separately…");
 
-      // Merge connected seasons gathered on pages already visited and avoid
-      // showing the same franchise as a second search result on later pages.
-      render(
-        currentPageItems,
-        [...seriesLookupCache.values()],
-        { suppressEarlierPages: true }
-      );
-      setStatus(resultLabel + ".");
+      const currentPageItems = [...displayedItems];
+
+      // A failed season lookup must never erase the anime results that already
+      // loaded successfully above.
+      try {
+        await loadFullSeriesRelations(currentPageItems, controller.signal);
+
+        if (controller.signal.aborted || requestController !== controller) {
+          return;
+        }
+
+        rememberSeriesMedia(currentPageItems);
+
+        render(
+          currentPageItems,
+          [...seriesLookupCache.values()],
+          { suppressEarlierPages: true }
+        );
+
+        setStatus(resultLabel + ".");
+      } catch (seasonError) {
+        if (
+          seasonError.name === "AbortError" ||
+          controller.signal.aborted ||
+          requestController !== controller
+        ) {
+          return;
+        }
+
+        console.warn("Season details could not be fully loaded:", seasonError);
+        // Keep the original AniList results visible when relation discovery fails.
+        setStatus(resultLabel + ". Some season details are temporarily unavailable.");
+      }
 
     } catch (error) {
       if (error.name === "AbortError") return;
