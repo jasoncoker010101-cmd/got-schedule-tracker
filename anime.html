@@ -943,6 +943,36 @@
     }
   }`;
 
+  const RELATIONS_QUERY = `query ($ids: [Int]) {
+    Page(perPage: 50) {
+      media(id_in: $ids, type: ANIME) {
+        id
+        type
+        episodes
+        format
+        seasonYear
+        title { romaji english native }
+        synonyms
+        coverImage { large }
+        relations {
+          edges {
+            relationType
+            node {
+              id
+              type
+              episodes
+              format
+              seasonYear
+              title { romaji english native }
+              synonyms
+              coverImage { large }
+            }
+          }
+        }
+      }
+    }
+  }`;
+
   // =========================================================
   // ELEMENTS
   // =========================================================
@@ -2039,6 +2069,126 @@
     );
   }
 
+  async function loadFullSeriesRelations(items, signal) {
+    const mediaById = new Map();
+
+    function addMedia(media) {
+      if (!media || media.id == null) return;
+      if (!mediaById.has(media.id)) mediaById.set(media.id, media);
+
+      for (const edge of media.relations?.edges || []) {
+        const node = edge.node;
+        if (!node || node.id == null) continue;
+
+        const existing = mediaById.get(node.id);
+        if (existing) {
+          if (!existing.relations && node.relations) {
+            existing.relations = node.relations;
+          }
+          continue;
+        }
+
+        mediaById.set(node.id, node);
+        addMediaChildrenOnly(node);
+      }
+    }
+
+    function addMediaChildrenOnly(media) {
+      for (const edge of media.relations?.edges || []) {
+        const node = edge.node;
+        if (!node || node.id == null || mediaById.has(node.id)) continue;
+        mediaById.set(node.id, node);
+        addMediaChildrenOnly(node);
+      }
+    }
+
+    items.forEach(addMedia);
+
+    const isSeasonEntry = media =>
+      media &&
+      media.type === "ANIME" &&
+      ["TV", "TV_SHORT", "ONA"].includes(media.format);
+
+    let frontier = [...mediaById.values()]
+      .filter(media => isSeasonEntry(media) && !media.relations)
+      .map(media => media.id);
+
+    const fetched = new Set();
+    let rounds = 0;
+    let totalFetched = 0;
+
+    while (frontier.length && rounds < 8 && totalFetched < 160) {
+      if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+
+      const batch = [...new Set(frontier)]
+        .filter(id => !fetched.has(id))
+        .slice(0, 40);
+
+      if (!batch.length) break;
+      batch.forEach(id => fetched.add(id));
+      rounds++;
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          query: RELATIONS_QUERY,
+          variables: { ids: batch }
+        }),
+        signal
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          response.status === 429
+            ? "AniList is receiving too many requests while loading seasons. Please try again shortly."
+            : `AniList season lookup failed (${response.status}).`
+        );
+      }
+
+      const payload = await response.json();
+      if (payload.errors?.length) {
+        throw new Error(payload.errors[0].message || "AniList couldn't load all season relationships.");
+      }
+
+      const returned = payload.data?.Page?.media || [];
+      totalFetched += returned.length;
+      const nextFrontier = [];
+
+      for (const media of returned) {
+        const existing = mediaById.get(media.id);
+        if (existing) {
+          existing.relations = media.relations || { edges: [] };
+          existing.episodes = media.episodes ?? existing.episodes;
+          existing.format = media.format || existing.format;
+          existing.seasonYear = media.seasonYear || existing.seasonYear;
+        } else {
+          mediaById.set(media.id, media);
+        }
+
+        for (const edge of media.relations?.edges || []) {
+          const related = edge.node;
+          if (!isSeasonEntry(related)) continue;
+
+          if (!mediaById.has(related.id)) {
+            mediaById.set(related.id, related);
+          }
+
+          if (!related.relations && !fetched.has(related.id)) {
+            nextFrontier.push(related.id);
+          }
+        }
+      }
+
+      frontier = nextFrontier;
+    }
+
+    return items;
+  }
+
   function buildSeriesGroups(items) {
     const mediaById = new Map();
     const links = new Map();
@@ -2059,7 +2209,7 @@
       if (mediaById.has(media.id)) return;
 
       mediaById.set(media.id, media);
-      if (depth >= 2 || !isSeasonEntry(media)) return;
+      if (!isSeasonEntry(media)) return;
 
       for (const edge of media.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
@@ -2291,6 +2441,13 @@
 
       displayedItems = pageData.media || [];
       hasNextPage = Boolean(pageData.pageInfo?.hasNextPage);
+
+      setStatus("Loading connected seasons…");
+      await loadFullSeriesRelations(displayedItems, controller.signal);
+
+      if (controller.signal.aborted || requestController !== controller) {
+        return;
+      }
 
       render(displayedItems);
 
