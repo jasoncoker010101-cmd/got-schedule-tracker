@@ -2229,24 +2229,11 @@
       const newEdges = incoming.relations?.edges || [];
       if (newEdges.length) {
         const mergedEdges = new Map();
-        for (const edge of oldEdges) {
+        for (const edge of [...oldEdges, ...newEdges]) {
           const key = edge.node?.id == null
             ? null
             : edge.relationType + ":" + edge.node.id;
-          if (key) mergedEdges.set(key, edge);
-        }
-        for (const edge of newEdges) {
-          const key = edge.node?.id == null
-            ? null
-            : edge.relationType + ":" + edge.node.id;
-          if (!key) continue;
-
-          const existingEdge = mergedEdges.get(key);
-          if (existingEdge?.node && edge.node) {
-            mergeMediaData(existingEdge.node, edge.node);
-          } else {
-            mergedEdges.set(key, edge);
-          }
+          if (key && !mergedEdges.has(key)) mergedEdges.set(key, edge);
         }
         existing.relations = {
           ...(existing.relations || {}),
@@ -2268,37 +2255,43 @@
       if (media?.id != null) mediaById.set(media.id, media);
     }
 
-    const expandedRelationEdges = new Set();
+    // Walk the relationship graph iteratively. Franchise graphs contain
+    // cycles, so recursive merging/traversal can overflow the browser stack.
+    const pendingMedia = [...items];
+    const processedMedia = new Set();
 
-    function addMediaChildrenOnly(media) {
-      if (!media || media.id == null) return;
+    while (pendingMedia.length) {
+      const media = pendingMedia.pop();
+      if (!media || media.id == null) continue;
 
-      const storedMedia = mediaById.get(media.id) || media;
-      if (!mediaById.has(media.id)) mediaById.set(media.id, storedMedia);
+      let storedMedia = mediaById.get(media.id);
+      if (storedMedia && storedMedia !== media) {
+        mergeMediaData(storedMedia, media);
+      } else if (!storedMedia) {
+        storedMedia = media;
+        mediaById.set(media.id, storedMedia);
+      }
+
+      if (processedMedia.has(storedMedia.id)) continue;
+      processedMedia.add(storedMedia.id);
 
       for (const edge of storedMedia.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
         const node = edge.node;
         if (!node || node.id == null) continue;
 
-        const edgeKey = storedMedia.id + ":" + edge.relationType + ":" + node.id;
-        if (expandedRelationEdges.has(edgeKey)) continue;
-        expandedRelationEdges.add(edgeKey);
-
         let related = mediaById.get(node.id);
-        if (related) {
+        if (related && related !== node) {
           mergeMediaData(related, node);
-          edge.node = related;
-        } else {
+        } else if (!related) {
           related = node;
           mediaById.set(node.id, related);
         }
 
-        addMediaChildrenOnly(related);
+        edge.node = related;
+        if (!processedMedia.has(related.id)) pendingMedia.push(related);
       }
     }
-
-    items.forEach(addMediaChildrenOnly);
 
     const isSeasonEntry = media =>
       media &&
@@ -2544,16 +2537,18 @@
     }
 
     const visitedMedia = new Set();
+    const pendingMedia = [...items];
 
-    function visit(media) {
-      if (!media || media.id == null) return;
+    while (pendingMedia.length) {
+      const media = pendingMedia.pop();
+      if (!media || media.id == null) continue;
 
       const storedMedia = mediaById.get(media.id) || media;
       if (!mediaById.has(media.id)) mediaById.set(media.id, storedMedia);
-      if (visitedMedia.has(storedMedia.id)) return;
+      if (visitedMedia.has(storedMedia.id)) continue;
       visitedMedia.add(storedMedia.id);
 
-      if (!isSeasonEntry(storedMedia)) return;
+      if (!isSeasonEntry(storedMedia)) continue;
 
       for (const edge of storedMedia.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
@@ -2572,11 +2567,9 @@
 
         links.get(storedMedia.id).add(related.id);
         links.get(related.id).add(storedMedia.id);
-        visit(related);
+        if (!visitedMedia.has(related.id)) pendingMedia.push(related);
       }
     }
-
-    items.forEach(item => visit(item));
 
     const visited = new Set();
     const groups = [];
