@@ -1924,7 +1924,10 @@
     button.className = "favorite";
     button.type = "button";
 
-    const isFavorite = Boolean(favorites[anime.id]);
+    const isFavorite = Boolean(
+      favorites[anime.id] ||
+      anime.seriesEntries?.some(entry => favorites[entry.id])
+    );
 
     button.textContent = isFavorite ? "♥" : "♡";
     button.setAttribute("aria-pressed", String(isFavorite));
@@ -2177,8 +2180,17 @@
   // =========================================================
 
   function toggleFavorite(anime) {
-    if (favorites[anime.id]) {
-      delete favorites[anime.id];
+    const seriesIds = [
+      anime.id,
+      ...(Array.isArray(anime.seriesEntries)
+        ? anime.seriesEntries.map(entry => entry.id)
+        : [])
+    ];
+
+    const alreadySaved = seriesIds.some(id => favorites[id]);
+
+    if (alreadySaved) {
+      seriesIds.forEach(id => delete favorites[id]);
     } else {
       favorites[anime.id] = anime;
     }
