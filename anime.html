@@ -2424,7 +2424,8 @@
             idMal: malId,
             type: "ANIME",
             format: detail.type,
-            episodes: Number.isFinite(Number(detail.episodes)) ? Number(detail.episodes) : null,
+            episodes: detail.episodes != null && Number.isFinite(Number(detail.episodes))
+              ? Number(detail.episodes) : null,
             seasonYear: detail.year || detail.aired?.prop?.from?.year || null,
             title: {
               romaji: title,
