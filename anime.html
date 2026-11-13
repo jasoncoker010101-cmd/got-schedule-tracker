@@ -2609,12 +2609,6 @@
     const mediaById = new Map();
     const links = new Map();
 
-    // Previously visited pages can supply connected season records, but they
-    // do not trigger any additional AniList requests.
-    for (const media of supplementalMedia) {
-      if (media?.id != null) mediaById.set(media.id, media);
-    }
-
     function isSeasonEntry(media) {
       return Boolean(
         media &&
@@ -2623,11 +2617,54 @@
       );
     }
 
-    // Prefer full search-result objects over shallow copies nested inside
-    // another result's relation graph.
-    for (const item of items) {
-      if (item?.id != null) mediaById.set(item.id, item);
+    // Keep the richest known object for each AniList ID. A search result may
+    // be shallower than the same season cached from a previous page, so never
+    // replace a full cached record with a partial current-page copy.
+    function registerMedia(incoming) {
+      if (!incoming || incoming.id == null) return null;
+
+      const existing = mediaById.get(incoming.id);
+      if (!existing) {
+        mediaById.set(incoming.id, incoming);
+        return incoming;
+      }
+      if (existing === incoming) return existing;
+
+      for (const field of [
+        "type", "idMal", "episodes", "format", "seasonYear",
+        "title", "synonyms", "coverImage"
+      ]) {
+        if (existing[field] == null && incoming[field] != null) {
+          existing[field] = incoming[field];
+        }
+      }
+
+      const edges = new Map();
+      for (const edge of [
+        ...(existing.relations?.edges || []),
+        ...(incoming.relations?.edges || [])
+      ]) {
+        const key = edge.node?.id == null
+          ? null
+          : edge.relationType + ":" + edge.node.id;
+        if (key && !edges.has(key)) edges.set(key, edge);
+      }
+
+      if (edges.size) {
+        existing.relations = {
+          ...(existing.relations || {}),
+          ...(incoming.relations || {}),
+          edges: [...edges.values()]
+        };
+      }
+
+      return existing;
     }
+
+    // Register the cached records first, then merge current-page results into
+    // them. Cached full relations therefore survive shallow search responses.
+    for (const media of supplementalMedia) registerMedia(media);
+    for (const item of items) registerMedia(item);
 
     const visitedMedia = new Set();
     const pendingMedia = [...items];
@@ -2647,12 +2684,12 @@
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
 
         const relationNode = edge.node;
-        if (!isSeasonEntry(relationNode) || relationNode.id == null) continue;
+        if (!relationNode || relationNode.id == null) continue;
 
-        const related = mediaById.get(relationNode.id) || relationNode;
-        if (!mediaById.has(relationNode.id)) {
-          mediaById.set(relationNode.id, related);
-        }
+        // Check the canonical full record, not the possibly shallow edge copy.
+        const related = mediaById.get(relationNode.id) || registerMedia(relationNode);
+        if (!isSeasonEntry(related)) continue;
+
         edge.node = related;
 
         if (!links.has(storedMedia.id)) links.set(storedMedia.id, new Set());
