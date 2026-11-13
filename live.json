@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-12T23:53:21.989050Z",
+  "updated": "2026-11-13T00:54:13.514721Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,7 +19,7 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "skipped": "Twitch stream ended",
+      "skipped": "This scheduled Rumble session has already ended",
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
       "session_state": "ended",
