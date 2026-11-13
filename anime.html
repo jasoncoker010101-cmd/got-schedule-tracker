@@ -2077,6 +2077,7 @@
       if (!mediaById.has(media.id)) mediaById.set(media.id, media);
 
       for (const edge of media.relations?.edges || []) {
+        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
         const node = edge.node;
         if (!node || node.id == null) continue;
 
@@ -2095,6 +2096,7 @@
 
     function addMediaChildrenOnly(media) {
       for (const edge of media.relations?.edges || []) {
+        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
         const node = edge.node;
         if (!node || node.id == null || mediaById.has(node.id)) continue;
         mediaById.set(node.id, node);
@@ -2170,6 +2172,7 @@
         }
 
         for (const edge of media.relations?.edges || []) {
+          if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
           const related = edge.node;
           if (!isSeasonEntry(related)) continue;
 
