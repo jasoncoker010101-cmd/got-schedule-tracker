@@ -2040,18 +2040,26 @@
     const mediaById = new Map();
     const links = new Map();
 
+    function isSeasonEntry(media) {
+      return Boolean(
+        media &&
+        media.type === "ANIME" &&
+        ["TV", "TV_SHORT", "ONA"].includes(media.format)
+      );
+    }
+
     function visit(media, depth = 0) {
       if (!media || media.type !== "ANIME" || media.id == null) return;
       if (mediaById.has(media.id)) return;
 
       mediaById.set(media.id, media);
-      if (depth >= 2) return;
+      if (depth >= 2 || !isSeasonEntry(media)) return;
 
       for (const edge of media.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
 
         const related = edge.node;
-        if (!related || related.type !== "ANIME" || related.id == null) continue;
+        if (!isSeasonEntry(related) || related.id == null) continue;
 
         if (!links.has(media.id)) links.set(media.id, new Set());
         if (!links.has(related.id)) links.set(related.id, new Set());
@@ -2112,14 +2120,16 @@
       }));
 
       const { relations, ...rootFields } = root;
-      const episodeCounts = compactEntries
-        .map(entry => Number(entry.episodes))
-        .filter(count => Number.isFinite(count) && count > 0);
+      const episodeCounts = compactEntries.map(entry => Number(entry.episodes));
+      const hasCompleteEpisodeCounts =
+        unique.length > 1 &&
+        episodeCounts.length === compactEntries.length &&
+        episodeCounts.every(count => Number.isFinite(count) && count > 0);
 
       groups.push({
         ...rootFields,
         seriesEntries: compactEntries,
-        seriesEpisodeTotal: episodeCounts.length
+        seriesEpisodeTotal: hasCompleteEpisodeCounts
           ? episodeCounts.reduce((sum, count) => sum + count, 0)
           : null
       });
@@ -2180,18 +2190,9 @@
   function getFilteredFavorites() {
     const term = normalizeTitle(searchInput.value);
 
-    return Object.values(favorites).filter(anime => {
-      const titles = [
-        anime.title?.english,
-        anime.title?.romaji,
-        anime.title?.native,
-        ...(Array.isArray(anime.synonyms) ? anime.synonyms : [])
-      ];
-
-      return !term || titles.some(title =>
-        normalizeTitle(title).includes(term)
-      );
-    });
+    return Object.values(favorites).filter(anime =>
+      !term || getAnimeAliases(anime).some(title => title.includes(term))
+    );
   }
 
   // =========================================================
