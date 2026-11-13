@@ -2051,8 +2051,11 @@
       );
     }
 
-    function visit(media, depth = 0) {
-      if (!media || media.type !== "ANIME" || media.id == null) return;
+    function visit(media, depth = 0, isRelated = false) {
+      // Top-level results already come from media(type: ANIME), so AniList
+      // does not need to return a separate type field for those entries.
+      if (!media || media.id == null) return;
+      if (isRelated && media.type !== "ANIME") return;
       if (mediaById.has(media.id)) return;
 
       mediaById.set(media.id, media);
@@ -2069,7 +2072,7 @@
 
         links.get(media.id).add(related.id);
         links.get(related.id).add(media.id);
-        visit(related, depth + 1);
+        visit(related, depth + 1, true);
       }
     }
 
@@ -2111,7 +2114,9 @@
         )
       );
 
-      const root = roots[0] || unique[0];
+      const root = roots[0] || unique[0] || item;
+      if (!root) continue;
+
       const compactEntries = unique.map(entry => ({
         id: entry.id,
         title: entry.title,
