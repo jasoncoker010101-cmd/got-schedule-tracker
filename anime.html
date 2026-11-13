@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,8 +119,6 @@
       line-height: 1.65;
     }
 
-    /* Watch history overview */
-
     .history-overview {
       display: grid;
       grid-template-columns: 1.5fr 1fr 1fr;
@@ -164,6 +161,7 @@
       margin: 0 0 20px;
       color: var(--muted);
       font-size: 12px;
+      overflow-wrap: anywhere;
     }
 
     .connection-dot {
@@ -212,6 +210,7 @@
       top: 11px;
       color: var(--muted);
       font-size: 19px;
+      pointer-events: none;
     }
 
     .tabs {
@@ -336,8 +335,6 @@
       font-size: 13px;
       line-height: 1.5;
     }
-
-    /* G.O.T. watch history on each anime */
 
     .watch-box {
       margin-top: 12px;
@@ -582,8 +579,8 @@
 
   const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 
-  // Replace this with your Supabase Publishable Key.
-  // Never use your Service Role Key in this file.
+  // This must be the Publishable key from THIS Supabase project.
+  // Never put the Service Role key in this file.
   const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
 
   const HISTORY_TABLE = "got_anime_watch_history";
@@ -640,6 +637,12 @@
   const connectionDot = document.getElementById("connectionDot");
   const connectionText = document.getElementById("connectionText");
 
+  const browseTab = document.getElementById("browseTab");
+  const favoritesTab = document.getElementById("favoritesTab");
+  const previousButton = document.getElementById("previousButton");
+  const nextButton = document.getElementById("nextButton");
+  const pageLabel = document.getElementById("pageLabel");
+
   // =========================================================
   // STATE
   // =========================================================
@@ -672,7 +675,8 @@
       return saved && typeof saved === "object" && !Array.isArray(saved)
         ? saved
         : {};
-    } catch {
+    } catch (error) {
+      console.warn("Could not load saved favorites:", error);
       return {};
     }
   }
@@ -680,7 +684,9 @@
   function saveFavorites() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
-    } catch {
+    } catch (error) {
+      console.error("Could not save favorites:", error);
+
       setStatus(
         "Your browser couldn't save favorites. Check available storage space or privacy settings.",
         true
@@ -748,9 +754,9 @@
   async function loadWatchHistory() {
     if (
       !SUPABASE_KEY ||
-      SUPABASE_KEY === "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E"
+      SUPABASE_KEY === "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE"
     ) {
-      throw new Error("Add your Supabase Publishable Key in the configuration.");
+      throw new Error("Supabase Publishable Key is missing.");
     }
 
     const allRows = [];
@@ -763,7 +769,7 @@
 
       url.searchParams.set(
         "select",
-        "active_title,season_number,episode_num,episode_end,watched_at,platform"
+        "event_key,active_title,season_number,episode_num,episode_end,watched_at,platform"
       );
 
       url.searchParams.set("order", "watched_at.desc");
@@ -772,8 +778,9 @@
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
+          // Publishable key belongs in the apikey header.
+          // It is not a user access token.
           "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
           "Accept": "application/json",
           "Range": `${offset}-${offset + HISTORY_PAGE_SIZE - 1}`
         }
@@ -781,6 +788,25 @@
 
       if (!response.ok) {
         const message = await response.text();
+
+        if (response.status === 401) {
+          throw new Error(
+            "Supabase rejected the API key (401). Check that the Publishable Key belongs to this exact Supabase project."
+          );
+        }
+
+        if (response.status === 403) {
+          throw new Error(
+            "Supabase denied access (403). Check the table's SELECT permission and Row Level Security policy."
+          );
+        }
+
+        if (response.status === 404) {
+          throw new Error(
+            "The watch-history table or Supabase endpoint could not be found (404)."
+          );
+        }
+
         throw new Error(
           `Watch history request failed (${response.status}): ${message}`
         );
@@ -789,7 +815,9 @@
       const rows = await response.json();
 
       if (!Array.isArray(rows)) {
-        throw new Error("Supabase returned an unexpected watch-history response.");
+        throw new Error(
+          "Supabase returned an unexpected watch-history response."
+        );
       }
 
       allRows.push(...rows);
@@ -802,7 +830,27 @@
       if (offset >= 50000) break;
     }
 
-    return allRows;
+    // Remove duplicate database events using event_key.
+    // Fall back to a row identity if an older row has no event_key.
+    const uniqueRows = new Map();
+
+    for (const row of allRows) {
+      const identity = row.event_key
+        ? `event:${row.event_key}`
+        : [
+            row.active_title,
+            row.season_number,
+            row.episode_num,
+            row.episode_end,
+            row.watched_at
+          ].join("|");
+
+      if (!uniqueRows.has(identity)) {
+        uniqueRows.set(identity, row);
+      }
+    }
+
+    return [...uniqueRows.values()];
   }
 
   // =========================================================
@@ -810,6 +858,10 @@
   // =========================================================
 
   function validEpisodeNumber(value) {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+
     const number = Number(value);
 
     return Number.isInteger(number) && number >= 1
@@ -829,14 +881,14 @@
     return { start, end };
   }
 
-  // Merge overlapping ranges so repeated records don't inflate
-  // the episode count.
+  // Merge overlapping and consecutive ranges.
+  // This prevents repeated events from inflating episode counts.
   function mergeRanges(ranges) {
     if (!ranges.length) return [];
 
     const sorted = [...ranges].sort((a, b) => a.start - b.start);
 
-    const merged = [ { ...sorted[0] } ];
+    const merged = [{ ...sorted[0] }];
 
     for (let i = 1; i < sorted.length; i++) {
       const current = sorted[i];
@@ -911,14 +963,15 @@
       const rows = historyByTitle.get(alias) || [];
 
       for (const row of rows) {
-        // Avoid counting the same database event twice.
-        const identity = [
-          row.active_title,
-          row.season_number,
-          row.episode_num,
-          row.episode_end,
-          row.watched_at
-        ].join("|");
+        const identity = row.event_key
+          ? `event:${row.event_key}`
+          : [
+              row.active_title,
+              row.season_number,
+              row.episode_num,
+              row.episode_end,
+              row.watched_at
+            ].join("|");
 
         if (seenRows.has(identity)) continue;
 
@@ -934,6 +987,8 @@
 
       if (!range) continue;
 
+      // Long-running shows such as One Piece use overall episode
+      // numbering, so NULL season_number is treated as "overall".
       const season = row.season_number == null
         ? "overall"
         : String(row.season_number);
@@ -1010,7 +1065,10 @@
           ? "overall"
           : String(row.season_number);
 
-        if (!seasons.has(season)) seasons.set(season, []);
+        if (!seasons.has(season)) {
+          seasons.set(season, []);
+        }
+
         seasons.get(season).push(range);
       }
 
@@ -1071,7 +1129,10 @@
       historyLoaded = false;
       historyError = true;
 
-      setConnection(false, "Watch history unavailable · " + error.message);
+      setConnection(
+        false,
+        "Watch history unavailable · " + error.message
+      );
 
       updateOverview();
       renderLastResults();
@@ -1088,7 +1149,10 @@
 
     if (!historyLoaded) {
       const message = document.createElement("div");
-      message.className = historyError ? "watch-error" : "watch-loading";
+
+      message.className = historyError
+        ? "watch-error"
+        : "watch-loading";
 
       message.textContent = historyError
         ? "Watch history unavailable"
@@ -1173,7 +1237,10 @@
 
       image.onerror = () => {
         image.remove();
-        coverWrap.setAttribute("aria-label", "Cover image unavailable");
+        coverWrap.setAttribute(
+          "aria-label",
+          "Cover image unavailable"
+        );
       };
 
       coverWrap.append(image);
@@ -1227,7 +1294,6 @@
       safeText(anime.description) || "No description available.";
 
     body.append(description);
-
     body.append(makeWatchBox(anime));
 
     card.append(coverWrap, body);
@@ -1254,7 +1320,9 @@
       return;
     }
 
-    items.forEach(item => results.append(makeCard(item)));
+    items.forEach(item => {
+      results.append(makeCard(item));
+    });
   }
 
   function renderLastResults() {
@@ -1277,23 +1345,22 @@
     }
 
     saveFavorites();
-
     renderLastResults();
   }
 
   function getFilteredFavorites() {
-    const term = searchInput.value.trim().toLocaleLowerCase();
+    const term = normalizeTitle(searchInput.value);
 
     return Object.values(favorites).filter(anime => {
       const titles = [
         anime.title?.english,
         anime.title?.romaji,
         anime.title?.native,
-        ...(anime.synonyms || [])
+        ...(Array.isArray(anime.synonyms) ? anime.synonyms : [])
       ];
 
       return !term || titles.some(title =>
-        title?.toLocaleLowerCase().includes(term)
+        normalizeTitle(title).includes(term)
       );
     });
   }
@@ -1303,7 +1370,13 @@
   // =========================================================
 
   async function searchAnime() {
+    // Favorites are stored locally, so no AniList request is needed.
     if (mode === "favorites") {
+      if (requestController) {
+        requestController.abort();
+        requestController = null;
+      }
+
       pagination.hidden = true;
 
       displayedItems = getFilteredFavorites();
@@ -1316,11 +1389,13 @@
       return;
     }
 
+    // Cancel the previous request before starting another.
     if (requestController) {
       requestController.abort();
     }
 
-    requestController = new AbortController();
+    const controller = new AbortController();
+    requestController = controller;
 
     setStatus("Searching AniList…");
     pagination.hidden = true;
@@ -1339,7 +1414,7 @@
             search: searchInput.value.trim() || null
           }
         }),
-        signal: requestController.signal
+        signal: controller.signal
       });
 
       if (!response.ok) {
@@ -1352,24 +1427,34 @@
 
       const payload = await response.json();
 
+      // Ignore results from requests that are no longer current.
+      if (controller.signal.aborted || requestController !== controller) {
+        return;
+      }
+
       if (payload.errors?.length) {
         throw new Error(
-          payload.errors[0].message || "AniList couldn't complete the search."
+          payload.errors[0].message ||
+          "AniList couldn't complete the search."
         );
       }
 
       const pageData = payload.data?.Page;
 
-      displayedItems = pageData?.media || [];
-      hasNextPage = Boolean(pageData?.pageInfo?.hasNextPage);
+      if (!pageData) {
+        throw new Error("AniList returned an unexpected response.");
+      }
+
+      displayedItems = pageData.media || [];
+      hasNextPage = Boolean(pageData.pageInfo?.hasNextPage);
 
       render(displayedItems);
 
       pagination.hidden = false;
 
-      document.getElementById("previousButton").disabled = page <= 1;
-      document.getElementById("nextButton").disabled = !hasNextPage;
-      document.getElementById("pageLabel").textContent = `Page ${page}`;
+      previousButton.disabled = page <= 1;
+      nextButton.disabled = !hasNextPage;
+      pageLabel.textContent = `Page ${page}`;
 
       setStatus(
         `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
@@ -1379,6 +1464,8 @@
     } catch (error) {
       if (error.name === "AbortError") return;
 
+      if (controller !== requestController) return;
+
       displayedItems = [];
       render([]);
       pagination.hidden = true;
@@ -1387,6 +1474,11 @@
         `${error.message || "Couldn't connect to AniList."} Check your connection and try again.`,
         true
       );
+
+    } finally {
+      if (requestController === controller) {
+        requestController = null;
+      }
     }
   }
 
@@ -1400,19 +1492,11 @@
 
     const isDiscover = mode === "discover";
 
-    document.getElementById("browseTab").classList.toggle("active", isDiscover);
+    browseTab.classList.toggle("active", isDiscover);
+    browseTab.setAttribute("aria-pressed", String(isDiscover));
 
-    document.getElementById("browseTab").setAttribute(
-      "aria-pressed",
-      String(isDiscover)
-    );
-
-    document.getElementById("favoritesTab").classList.toggle("active", !isDiscover);
-
-    document.getElementById("favoritesTab").setAttribute(
-      "aria-pressed",
-      String(!isDiscover)
-    );
+    favoritesTab.classList.toggle("active", !isDiscover);
+    favoritesTab.setAttribute("aria-pressed", String(!isDiscover));
 
     searchAnime();
   }
@@ -1429,24 +1513,22 @@
     debounceTimer = setTimeout(searchAnime, 350);
   });
 
-  document.getElementById("browseTab").addEventListener(
-    "click",
-    () => setMode("discover")
-  );
+  browseTab.addEventListener("click", () => {
+    setMode("discover");
+  });
 
-  document.getElementById("favoritesTab").addEventListener(
-    "click",
-    () => setMode("favorites")
-  );
+  favoritesTab.addEventListener("click", () => {
+    setMode("favorites");
+  });
 
-  document.getElementById("previousButton").addEventListener("click", () => {
+  previousButton.addEventListener("click", () => {
     if (page > 1) {
       page--;
       searchAnime();
     }
   });
 
-  document.getElementById("nextButton").addEventListener("click", () => {
+  nextButton.addEventListener("click", () => {
     if (hasNextPage) {
       page++;
       searchAnime();
@@ -1464,4 +1546,4 @@
   initializeHistory();
 </script>
 </body>
-</html>
+</html>    
