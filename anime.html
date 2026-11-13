@@ -306,6 +306,90 @@
 
     .card-body { padding: 13px; }
 
+    .season-number-label {
+      margin-bottom: 6px;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+    }
+
+    .open-season-button,
+    .back-to-seasons {
+      min-height: 40px;
+      padding: 9px 13px;
+      border: 1px solid rgba(239,189,50,.4);
+      border-radius: 8px;
+      background: rgba(239,189,50,.1);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .open-season-button {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .open-season-button:hover,
+    .back-to-seasons:hover {
+      border-color: var(--accent);
+      background: rgba(239,189,50,.2);
+    }
+
+    .back-to-seasons {
+      margin-bottom: 14px;
+    }
+
+    .season-detail-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: linear-gradient(145deg, rgba(30,29,25,.98), rgba(22,22,20,.98));
+    }
+
+    .season-detail-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    .season-detail-cover {
+      width: 150px;
+      max-width: 35%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      border-radius: 10px;
+      background: var(--raised);
+    }
+
+    .season-detail-heading { min-width: 0; }
+    .season-detail-heading h2 {
+      margin: 0 0 10px;
+      font: 800 23px/1.25 var(--display);
+    }
+
+    .season-detail-description,
+    .season-series-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .season-series-note {
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 11px;
+    }
+
+    @media(max-width:540px) {
+      .season-detail-card { padding: 12px; }
+      .season-detail-header { gap: 12px; }
+      .season-detail-cover { width: 112px; }
+      .season-detail-heading h2 { font-size: 17px; }
+    }
+
     .card h2 {
       margin: 0 0 8px;
       font: 700 17px/1.25 var(--display);
@@ -2070,74 +2154,59 @@
   // ANIME CARDS
   // =========================================================
 
-  function makeCard(anime) {
+  function makeSeasonCard(season, series, seasonIndex) {
     const card = document.createElement("article");
-    card.className = "card";
+    card.className = "card season-card";
 
     const coverWrap = document.createElement("div");
     coverWrap.className = "cover-wrap";
 
-    if (anime.coverImage?.large) {
+    if (season.coverImage?.large) {
       const image = document.createElement("img");
-
       image.className = "cover";
-      image.src = anime.coverImage.large;
-      image.alt = `Cover art for ${titleFor(anime)}`;
+      image.src = season.coverImage.large;
+      image.alt = `Cover art for ${titleFor(season)}`;
       image.loading = "lazy";
       image.referrerPolicy = "no-referrer";
-
-      image.onerror = () => {
-        image.remove();
-        coverWrap.setAttribute(
-          "aria-label",
-          "Cover image unavailable"
-        );
-      };
-
+      image.onerror = () => image.remove();
       coverWrap.append(image);
     }
 
-    const button = document.createElement("button");
-    button.className = "favorite";
-    button.type = "button";
+    const favoriteButton = document.createElement("button");
+    favoriteButton.className = "favorite";
+    favoriteButton.type = "button";
 
     const isFavorite = Boolean(
-      favorites[anime.id] ||
-      anime.seriesEntries?.some(entry => favorites[entry.id])
+      favorites[series.id] ||
+      series.seriesEntries?.some(entry => favorites[entry.id])
     );
 
-    button.textContent = isFavorite ? "♥" : "♡";
-    button.setAttribute("aria-pressed", String(isFavorite));
-
-    button.setAttribute(
+    favoriteButton.textContent = isFavorite ? "♥" : "♡";
+    favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+    favoriteButton.setAttribute(
       "aria-label",
-      `${isFavorite ? "Remove" : "Add"} ${titleFor(anime)} ${isFavorite ? "from" : "to"} favorites`
+      `${isFavorite ? "Remove" : "Add"} ${titleFor(series)} ${isFavorite ? "from" : "to"} favorites`
     );
-
-    button.addEventListener("click", () => toggleFavorite(anime));
-
-    coverWrap.append(button);
+    favoriteButton.addEventListener("click", () => toggleFavorite(series));
+    coverWrap.append(favoriteButton);
 
     const body = document.createElement("div");
     body.className = "card-body";
 
+    const seasonLabel = document.createElement("div");
+    seasonLabel.className = "season-number-label";
+    seasonLabel.textContent = `SEASON ${seasonIndex + 1}`;
+
     const heading = document.createElement("h2");
-    heading.textContent = titleFor(anime);
-    body.append(heading);
+    heading.textContent = titleFor(season);
 
     const meta = document.createElement("div");
     meta.className = "meta";
 
     [
-      anime.seasonYear,
-      anime.format,
-      Number.isFinite(anime.seriesEpisodeTotal)
-        ? `${anime.seriesEpisodeTotal.toLocaleString()} eps total`
-        : anime.episodes ? `${anime.episodes} eps` : "",
-      anime.seriesEntries?.length > 1
-        ? `${anime.seriesEntries.length} seasons`
-        : "",
-      anime.averageScore ? `★ ${anime.averageScore}%` : ""
+      season.seasonYear,
+      season.format,
+      season.episodes ? `${season.episodes} eps` : "Episode count unavailable"
     ].filter(Boolean).forEach(value => {
       const chip = document.createElement("span");
       chip.className = "chip";
@@ -2145,50 +2214,95 @@
       meta.append(chip);
     });
 
-    body.append(meta);
-
-    if (anime.seriesEntries?.length > 1) {
-      const seasonDetails = document.createElement("details");
-      seasonDetails.className = "series-seasons";
-
-      const summary = document.createElement("summary");
-      summary.textContent = "View seasons (" + anime.seriesEntries.length + ")";
-      seasonDetails.append(summary);
-
-      const seasonList = document.createElement("div");
-      seasonList.className = "series-season-list";
-
-      for (const season of anime.seriesEntries) {
-        const seasonRow = document.createElement("div");
-        seasonRow.className = "series-season-row";
-
-        const seasonName = document.createElement("span");
-        seasonName.textContent = titleFor(season);
-
-        const seasonCount = document.createElement("span");
-        seasonCount.textContent = Number.isFinite(Number(season.episodes))
-          ? Number(season.episodes).toLocaleString() + " eps"
-          : "Episode count unavailable";
-
-        seasonRow.append(seasonName, seasonCount);
-        seasonList.append(seasonRow);
-      }
-
-      seasonDetails.append(seasonList);
-      body.append(seasonDetails);
-    }
-
     const description = document.createElement("p");
     description.className = "description";
     description.textContent =
-      safeText(anime.description) || "No description available.";
+      safeText(season.description) || "No description available.";
 
-    body.append(description);
-    body.append(makeWatchBox(anime));
+    const openButton = document.createElement("button");
+    openButton.type = "button";
+    openButton.className = "open-season-button";
+    openButton.textContent = "Open season";
+    openButton.addEventListener("click", () => {
+      showSeasonDetail(season, series, seasonIndex);
+    });
 
+    body.append(seasonLabel, heading, meta, description, openButton);
     card.append(coverWrap, body);
-
     return card;
+  }
+
+  function showSeasonDetail(season, series, seasonIndex) {
+    results.replaceChildren();
+
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "back-to-seasons";
+    backButton.textContent = "← Back to seasons";
+    backButton.addEventListener("click", renderLastResults);
+
+    const detail = document.createElement("article");
+    detail.className = "season-detail-card";
+
+    const header = document.createElement("div");
+    header.className = "season-detail-header";
+
+    if (season.coverImage?.large) {
+      const image = document.createElement("img");
+      image.className = "season-detail-cover";
+      image.src = season.coverImage.large;
+      image.alt = `Cover art for ${titleFor(season)}`;
+      image.referrerPolicy = "no-referrer";
+      header.append(image);
+    }
+
+    const headingArea = document.createElement("div");
+    headingArea.className = "season-detail-heading";
+
+    const label = document.createElement("div");
+    label.className = "season-number-label";
+    label.textContent = `SEASON ${seasonIndex + 1}`;
+
+    const heading = document.createElement("h2");
+    heading.textContent = titleFor(season);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    [
+      season.seasonYear,
+      season.format,
+      season.episodes ? `${season.episodes} episodes` : "Episode count unavailable",
+      season.averageScore ? `★ ${season.averageScore}%` : ""
+    ].filter(Boolean).forEach(value => {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = value;
+      meta.append(chip);
+    });
+
+    headingArea.append(label, heading, meta);
+    header.append(headingArea);
+
+    const description = document.createElement("p");
+    description.className = "season-detail-description";
+    description.textContent =
+      safeText(season.description) || "No description available.";
+
+    const seriesNote = document.createElement("p");
+    seriesNote.className = "season-series-note";
+    seriesNote.textContent = series.seriesEntries?.length > 1
+      ? `Part of ${titleFor(series)} · ${series.seriesEntries.length} seasons listed`
+      : "Anime details and G.O.T. watch history";
+
+    detail.append(header, description, seriesNote);
+
+    // Preserve franchise-wide history and reaction-link matching on the
+    // focused season page, without duplicating or changing stored records.
+    detail.append(makeWatchBox(series));
+
+    results.append(backButton, detail);
+    results.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   // =========================================================
@@ -2747,7 +2861,9 @@
         episodes: entry.episodes,
         format: entry.format,
         seasonYear: entry.seasonYear,
-        coverImage: entry.coverImage
+        coverImage: entry.coverImage,
+        description: entry.description,
+        averageScore: entry.averageScore
       }));
 
       const { relations, ...rootFields } = root;
@@ -2773,6 +2889,62 @@
     results.replaceChildren();
 
     if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+
+      empty.textContent = mode === "favorites"
+        ? "No favorites yet. Browse anime and tap ♡ to save one here."
+        : "No anime found. Try a different title.";
+
+      results.append(empty);
+      return;
+    }
+
+    let groupedItems = buildSeriesGroups(items, supplementalMedia);
+
+    // Keep each connected franchise on the first page where it appeared.
+    if (options.suppressEarlierPages && mode === "discover") {
+      groupedItems = groupedItems.filter(group => {
+        const ids = (group.seriesEntries || [])
+          .map(entry => entry.id)
+          .filter(id => id != null);
+        if (group.id != null && !ids.includes(group.id)) ids.push(group.id);
+
+        const previouslySeen = ids
+          .map(id => seriesFirstSeenPage.get(id))
+          .filter(Number.isFinite);
+        const firstSeenPage = previouslySeen.length
+          ? Math.min(...previouslySeen)
+          : null;
+
+        for (const id of ids) {
+          if (!seriesFirstSeenPage.has(id)) {
+            seriesFirstSeenPage.set(id, page);
+          }
+        }
+
+        return firstSeenPage == null || firstSeenPage >= page;
+      });
+    }
+
+    const orderedItems = [...groupedItems].sort((a, b) =>
+      Number(hasRecordedReactionLinks(b)) -
+      Number(hasRecordedReactionLinks(a))
+    );
+
+    // Every season is its own card. Connected seasons remain adjacent in the
+    // results grid, and each card opens a focused view for that exact entry.
+    for (const series of orderedItems) {
+      const seasons = Array.isArray(series.seriesEntries) && series.seriesEntries.length
+        ? series.seriesEntries
+        : [series];
+
+      seasons.forEach((season, index) => {
+        results.append(makeSeasonCard(season, series, index));
+      });
+    }
+  }
+gth) {
       const empty = document.createElement("div");
       empty.className = "empty";
 
