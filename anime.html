@@ -1093,14 +1093,76 @@
   // SUPABASE CLIENT
   // =========================================================
 
-  if (!window.supabase || !window.supabase.createClient) {
-    throw new Error("Supabase library failed to load.");
+  // Anime discovery must keep working even if the optional Supabase
+  // authentication library is temporarily unavailable.
+  let authClient = window.supabase?.createClient
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
+
+  let supabaseLoadPromise = null;
+  let authListenerRegistered = false;
+
+  function registerAuthStateListener() {
+    if (!authClient || authListenerRegistered) return;
+
+    authListenerRegistered = true;
+
+    authClient.auth.onAuthStateChange((_event, session) => {
+      ownerSession = session;
+
+      if (!session) {
+        isSiteOwner = false;
+        pendingLinksContainer.replaceChildren();
+
+        if (!ownerPanel.hidden) {
+          ownerStatus.textContent =
+            "Log in with your existing G.O.T. Games owner account.";
+
+          ownerLoginForm.hidden = false;
+          ownerLogout.hidden = true;
+        }
+      } else if (!ownerPanel.hidden) {
+        setTimeout(() => checkOwnerAccess(), 0);
+      }
+    });
   }
 
-  const authClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+  async function ensureSupabaseClient() {
+    if (authClient) return authClient;
+    if (supabaseLoadPromise) return supabaseLoadPromise;
+
+    supabaseLoadPromise = (async () => {
+      const loadScript = url => new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Could not load " + url));
+        document.head.appendChild(script);
+      });
+
+      try {
+        await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+      } catch {
+        await loadScript("https://unpkg.com/@supabase/supabase-js@2");
+      }
+
+      if (!window.supabase?.createClient) {
+        throw new Error("Supabase authentication library is unavailable.");
+      }
+
+      authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      registerAuthStateListener();
+      return authClient;
+    })().catch(error => {
+      supabaseLoadPromise = null;
+      throw error;
+    });
+
+    return supabaseLoadPromise;
+  }
+
+  registerAuthStateListener();
 
   // =========================================================
   // ANILIST QUERY
@@ -3222,6 +3284,13 @@ gth) {
 
     ownerStatus.textContent = "Signing in…";
 
+    try {
+      await ensureSupabaseClient();
+    } catch (error) {
+      ownerStatus.textContent = "Authentication service unavailable. Please try again.";
+      return;
+    }
+
     const email = document.getElementById("ownerEmail").value.trim();
     const password = document.getElementById("ownerPassword").value;
 
@@ -3242,6 +3311,13 @@ gth) {
   });
 
   ownerLogout.addEventListener("click", async () => {
+    try {
+      await ensureSupabaseClient();
+    } catch (error) {
+      ownerStatus.textContent = "Authentication service unavailable. Please try again.";
+      return;
+    }
+
     await authClient.auth.signOut();
 
     ownerSession = null;
@@ -3257,6 +3333,16 @@ gth) {
     ownerCheckInProgress = true;
 
     try {
+      try {
+        await ensureSupabaseClient();
+      } catch (error) {
+        ownerStatus.textContent =
+          "Owner review could not connect to the authentication service. Please check your connection and try again.";
+        ownerLoginForm.hidden = true;
+        ownerLogout.hidden = true;
+        return;
+      }
+
       const { data, error } = await authClient.auth.getSession();
 
       if (error || !data.session) {
@@ -3502,26 +3588,6 @@ gth) {
   // =========================================================
   // AUTH STATE CHANGES
   // =========================================================
-
-  authClient.auth.onAuthStateChange((_event, session) => {
-    ownerSession = session;
-
-    if (!session) {
-      isSiteOwner = false;
-      pendingLinksContainer.replaceChildren();
-
-      if (!ownerPanel.hidden) {
-        ownerStatus.textContent =
-          "Log in with your existing G.O.T. Games owner account.";
-
-        ownerLoginForm.hidden = false;
-        ownerLogout.hidden = true;
-      }
-    } else if (!ownerPanel.hidden) {
-      // Defer the role check until after the auth event finishes.
-      setTimeout(() => checkOwnerAccess(), 0);
-    }
-  });
 
   // =========================================================
   // EVENTS
