@@ -2361,24 +2361,35 @@
       const nextFrontier = [];
 
       for (const media of returned) {
-        const existing = mediaById.get(media.id);
-        if (existing) {
-          existing.relations = media.relations || { edges: [] };
-          existing.episodes = media.episodes ?? existing.episodes;
-          existing.format = media.format || existing.format;
-          existing.seasonYear = media.seasonYear || existing.seasonYear;
+        let storedMedia = mediaById.get(media.id);
+
+        if (storedMedia) {
+          // Update the canonical object already referenced by the graph.
+          storedMedia.relations = media.relations || { edges: [] };
+          storedMedia.episodes = media.episodes ?? storedMedia.episodes;
+          storedMedia.format = media.format || storedMedia.format;
+          storedMedia.seasonYear = media.seasonYear || storedMedia.seasonYear;
         } else {
-          mediaById.set(media.id, media);
+          storedMedia = media;
+          mediaById.set(media.id, storedMedia);
         }
 
-        for (const edge of media.relations?.edges || []) {
+        // IMPORTANT: AniList returns shallow relation-node objects here.
+        // Reconnect each edge to the canonical object in mediaById, so its
+        // fully fetched relations remain reachable from the original result.
+        for (const edge of storedMedia.relations?.edges || []) {
           if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
-          const related = edge.node;
-          if (!isSeasonEntry(related)) continue;
 
-          if (!mediaById.has(related.id)) {
+          const relationNode = edge.node;
+          if (!isSeasonEntry(relationNode)) continue;
+
+          let related = mediaById.get(relationNode.id);
+          if (!related) {
+            related = relationNode;
             mediaById.set(related.id, related);
           }
+
+          edge.node = related;
 
           // Do not use the presence of a relations object as proof that
           // this entry was fetched. Nested/search results may only contain
