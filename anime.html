@@ -1030,6 +1030,7 @@
       }
       media(type: ANIME, search: $search, sort: POPULARITY_DESC) {
         id
+        idMal
         title {
           romaji
           english
@@ -1050,6 +1051,7 @@
             relationType
             node {
               id
+              idMal
               type
               episodes
               format
@@ -1083,6 +1085,7 @@
     Page(perPage: 50) {
       media(id_in: $ids, type: ANIME) {
         id
+        idMal
         type
         episodes
         format
@@ -1095,6 +1098,7 @@
             relationType
             node {
               id
+              idMal
               type
               episodes
               format
@@ -2333,6 +2337,134 @@
       }
 
       frontier = nextFrontier;
+    }
+
+    // Jikan/MyAnimeList fallback: check a few disconnected results only.
+    // AniList remains primary; a Jikan outage never prevents the page rendering.
+    if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+
+    const jikanCandidates = items
+      .filter(media => media?.idMal && !(media.relations?.edges || [])
+        .some(edge => ["PREQUEL", "SEQUEL"].includes(edge.relationType)))
+      .slice(0, 3);
+
+    const detailCache = loadFullSeriesRelations.jikanDetailCache ||
+      (loadFullSeriesRelations.jikanDetailCache = new Map());
+    const relationCache = loadFullSeriesRelations.jikanRelationCache ||
+      (loadFullSeriesRelations.jikanRelationCache = new Map());
+    const relatedByMalId = new Map();
+    let lastJikanRequestAt = 0;
+
+    async function jikanGet(url) {
+      if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+      const wait = Math.max(0, 360 - (Date.now() - lastJikanRequestAt));
+      if (wait) await new Promise(resolve => setTimeout(resolve, wait));
+      if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+      lastJikanRequestAt = Date.now();
+      const response = await fetch(url, {
+        headers: { "Accept": "application/json" },
+        signal
+      });
+      if (!response.ok) throw new Error("Jikan request failed: " + response.status);
+      return response.json();
+    }
+
+    async function getJikanRelations(malId) {
+      if (!relationCache.has(malId)) {
+        relationCache.set(malId,
+          jikanGet("https://api.jikan.moe/v4/anime/" + malId + "/relations")
+            .catch(error => { relationCache.delete(malId); throw error; })
+        );
+      }
+      return relationCache.get(malId);
+    }
+
+    async function getJikanAnime(malId) {
+      if (!detailCache.has(malId)) {
+        detailCache.set(malId,
+          jikanGet("https://api.jikan.moe/v4/anime/" + malId)
+            .then(payload => payload.data || null)
+            .catch(error => { detailCache.delete(malId); throw error; })
+        );
+      }
+      return detailCache.get(malId);
+    }
+
+    for (const source of jikanCandidates) {
+      try {
+        const relationPayload = await getJikanRelations(Number(source.idMal));
+        const relationGroups = relationPayload.data || [];
+        const relatedIds = [];
+
+        for (const relation of relationGroups) {
+          if (!["Prequel", "Sequel"].includes(relation.relation)) continue;
+          for (const entry of relation.entry || []) {
+            const malId = Number(entry.mal_id);
+            if (entry.type === "anime" && Number.isInteger(malId) &&
+                malId > 0 && malId !== Number(source.idMal) && !relatedIds.includes(malId)) {
+              relatedIds.push(malId);
+            }
+          }
+        }
+
+        // Limit detail lookups so we stay comfortably below Jikan's rate limit.
+        for (const malId of relatedIds.slice(0, 3)) {
+          if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+          if (relatedByMalId.has(malId)) continue;
+          const detail = await getJikanAnime(malId);
+          if (!detail || !["TV", "ONA"].includes(detail.type)) continue;
+
+          const imageUrl = detail.images?.webp?.large_image_url ||
+            detail.images?.jpg?.large_image_url ||
+            detail.images?.webp?.image_url || detail.images?.jpg?.image_url || null;
+          const title = detail.title || detail.title_english || detail.title_japanese ||
+            ("MyAnimeList entry " + malId);
+          relatedByMalId.set(malId, {
+            id: -malId,
+            idMal: malId,
+            type: "ANIME",
+            format: detail.type,
+            episodes: Number.isFinite(Number(detail.episodes)) ? Number(detail.episodes) : null,
+            seasonYear: detail.year || detail.aired?.prop?.from?.year || null,
+            title: {
+              romaji: title,
+              english: detail.title_english || title,
+              native: detail.title_japanese || title
+            },
+            synonyms: detail.title_synonyms || [],
+            coverImage: imageUrl ? { large: imageUrl } : null,
+            relations: { edges: [] }
+          });
+        }
+
+        const sourceEdges = source.relations?.edges || [];
+        const knownMalIds = new Set(sourceEdges
+          .map(edge => Number(edge.node?.idMal)).filter(Number.isFinite));
+        const knownTitles = new Set(sourceEdges
+          .map(edge => normalizeTitle(titleFor(edge.node))).filter(Boolean));
+
+        for (const relation of relationGroups) {
+          if (!["Prequel", "Sequel"].includes(relation.relation)) continue;
+          const relationType = relation.relation.toUpperCase();
+          for (const entry of relation.entry || []) {
+            const malId = Number(entry.mal_id);
+            const relatedMedia = relatedByMalId.get(malId);
+            if (!relatedMedia || knownMalIds.has(malId)) continue;
+            const relatedTitle = normalizeTitle(titleFor(relatedMedia));
+            if (relatedTitle && knownTitles.has(relatedTitle)) continue;
+
+            source.relations = source.relations || { edges: [] };
+            source.relations.edges = source.relations.edges || [];
+            source.relations.edges.push({ relationType, node: relatedMedia });
+            knownMalIds.add(malId);
+            if (relatedTitle) knownTitles.add(relatedTitle);
+          }
+        }
+      } catch (error) {
+        if (error.name === "AbortError") throw error;
+        console.warn("Jikan season fallback was skipped:", error.message);
+        if (String(error.message).includes("429")) break;
+      }
     }
 
     return items;
