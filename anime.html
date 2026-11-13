@@ -1908,6 +1908,27 @@
   // RENDERING
   // =========================================================
 
+  function hasRecordedReactionLinks(anime) {
+    if (!episodeLinksLoaded || !episodeLinks.length) return false;
+
+    const aliases = new Set(getAnimeAliases(anime));
+
+    // AniList may list Attack on Titan under either of its common titles.
+    if ([...aliases].some(alias =>
+      alias === "attack on titan" ||
+      alias === "shingeki no kyojin" ||
+      alias.startsWith("attack on titan ") ||
+      alias.startsWith("shingeki no kyojin ")
+    )) {
+      aliases.add("attack on titan");
+      aliases.add("shingeki no kyojin");
+    }
+
+    return episodeLinks.some(link =>
+      aliases.has(normalizeTitle(link.anime_title))
+    );
+  }
+
   function render(items) {
     results.replaceChildren();
 
@@ -1923,7 +1944,14 @@
       return;
     }
 
-    items.forEach(item => {
+    // Keep AniList's relevance order, but move titles with recorded G.O.T.
+    // episode reactions ahead of titles that do not have reaction links.
+    const orderedItems = [...items].sort((a, b) =>
+      Number(hasRecordedReactionLinks(b)) -
+      Number(hasRecordedReactionLinks(a))
+    );
+
+    orderedItems.forEach(item => {
       results.append(makeCard(item));
     });
   }
