@@ -2298,11 +2298,17 @@
       media.type === "ANIME" &&
       ["TV", "TV_SHORT", "ONA"].includes(media.format);
 
-    // A search result can contain relations: { edges: [] } even when
-    // its full relationship chain has not been expanded yet. Queue every
-    // discovered season once; the fetched set below tracks actual lookups.
+    // Relation nodes can arrive without format populated. Fetch those nodes
+    // before filtering, or one incomplete record can break the sequel chain.
+    const isPotentialSeasonEntry = media =>
+      media &&
+      media.type === "ANIME" &&
+      (media.format == null ||
+        ["TV", "TV_SHORT", "ONA"].includes(media.format));
+
+    // Seed only from this page's search results, never from a catalogue search.
     let frontier = [...mediaById.values()]
-      .filter(media => isSeasonEntry(media))
+      .filter(media => isPotentialSeasonEntry(media))
       .map(media => media.id);
 
     const fetched = new Set();
@@ -2381,7 +2387,7 @@
           if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
 
           const relationNode = edge.node;
-          if (!isSeasonEntry(relationNode)) continue;
+          if (!isPotentialSeasonEntry(relationNode)) continue;
 
           let related = mediaById.get(relationNode.id);
           if (!related) {
@@ -2819,11 +2825,13 @@
 
       setStatus(
         displayedItems.length
-          ? `${resultLabel}. Checking connected seasons in the background…`
+          ? `${resultLabel}. Checking seasons for these page results in the background…`
           : resultLabel + "."
       );
 
-      await loadFullSeriesRelations(displayedItems, controller.signal);
+      // Snapshot the current page. A new search/page change aborts this lookup.
+      const currentPageItems = [...displayedItems];
+      await loadFullSeriesRelations(currentPageItems, controller.signal);
 
       if (controller.signal.aborted || requestController !== controller) {
         return;
