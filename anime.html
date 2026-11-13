@@ -813,6 +813,7 @@
     Watch history is provided by G.O.T. Games.
   </footer>
 
+<script src="patreon-links.js"></script>
 <script>
   // =========================================================
   // CONFIGURATION
@@ -1171,7 +1172,7 @@
 
       url.searchParams.set(
         "select",
-        "anime_title,season_number,episode_start,episode_end,youtube_url,video_title"
+        "anime_title,season_number,episode_start,episode_end,link_type,youtube_url,patreon_url,video_title"
       );
       url.searchParams.set("order", "season_number.asc,episode_start.asc");
       url.searchParams.set("limit", String(pageSize));
@@ -1211,25 +1212,28 @@
     }
 
     episodeLinks = allRows.filter(row => {
-      const storedTitle = normalizeTitle(row.anime_title);
-
-      const isAot =
-        storedTitle === "attack on titan" ||
-        storedTitle === "shingeki no kyojin" ||
-        storedTitle.startsWith("attack on titan ") ||
-        storedTitle.startsWith("shingeki no kyojin ");
-
       const start = Number(row.episode_start);
       const end = Number(row.episode_end);
+      const linkType = row.link_type || "youtube";
 
       const validYoutubeUrl =
         /^https:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/i.test(
           String(row.youtube_url || "")
         );
 
+      const validPatreonUrl =
+        /^https:\/\/(www\.)?patreon\.com\//i.test(
+          String(row.patreon_url || "")
+        );
+
+      const validTarget = linkType === "patreon"
+        ? validPatreonUrl && !row.youtube_url
+        : linkType === "youtube"
+          ? validYoutubeUrl && !row.patreon_url
+          : false;
+
       return (
-        isAot &&
-        validYoutubeUrl &&
+        validTarget &&
         Number.isInteger(start) &&
         Number.isInteger(end) &&
         start >= 1 &&
@@ -1241,7 +1245,7 @@
     episodeLinksLoaded = true;
 
     console.log(
-      `Loaded ${episodeLinks.length} Attack on Titan YouTube episode links.`
+      `Loaded ${episodeLinks.length} G.O.T. anime episode reaction links.`
     );
   }
 
@@ -1249,15 +1253,17 @@
     episodeLinksBySeason = new Map();
 
     for (const link of episodeLinks) {
+      const titleKey = normalizeTitle(link.anime_title);
       const seasonKey = link.season_number == null
         ? "overall"
         : String(link.season_number);
+      const indexKey = `${titleKey}|${seasonKey}`;
 
-      if (!episodeLinksBySeason.has(seasonKey)) {
-        episodeLinksBySeason.set(seasonKey, []);
+      if (!episodeLinksBySeason.has(indexKey)) {
+        episodeLinksBySeason.set(indexKey, []);
       }
 
-      episodeLinksBySeason.get(seasonKey).push(link);
+      episodeLinksBySeason.get(indexKey).push(link);
     }
 
     for (const links of episodeLinksBySeason.values()) {
@@ -1267,36 +1273,46 @@
     }
   }
 
-  function isAttackOnTitan(anime) {
+  function getEpisodeReactionLink(anime, season, episode) {
+    if (!episodeLinksLoaded) return null;
+
     const aliases = getAnimeAliases(anime);
-
-    return aliases.some(alias =>
-      alias === "attack on titan" ||
-      alias === "shingeki no kyojin" ||
-      alias.startsWith("attack on titan season ") ||
-      alias.startsWith("attack on titan 3rd season") ||
-      alias.startsWith("attack on titan final season") ||
-      alias.startsWith("shingeki no kyojin season ")
-    );
-  }
-
-  function getEpisodeYouTubeLink(anime, season, episode) {
-    if (!episodeLinksLoaded || !isAttackOnTitan(anime)) {
-      return null;
-    }
-
     const seasonKey = season === "overall"
       ? "overall"
       : String(season);
 
-    const links = episodeLinksBySeason.get(seasonKey) || [];
+    for (const alias of aliases) {
+      const links = episodeLinksBySeason.get(`${alias}|${seasonKey}`) || [];
+      const match = links.find(link => {
+        const start = Number(link.episode_start);
+        const end = Number(link.episode_end);
 
-    return links.find(link => {
-      const start = Number(link.episode_start);
-      const end = Number(link.episode_end);
+        return episode >= start && episode <= end;
+      });
 
-      return episode >= start && episode <= end;
-    }) || null;
+      if (match) return match;
+    }
+
+    if (aliases.some(alias =>
+      alias === "attack on titan" ||
+      alias === "shingeki no kyojin" ||
+      alias.startsWith("attack on titan ") ||
+      alias.startsWith("shingeki no kyojin ")
+    )) {
+      const alternateTitle = aliases.some(alias => alias.includes("shingeki no kyojin"))
+        ? "attack on titan"
+        : "shingeki no kyojin";
+      const links = episodeLinksBySeason.get(`${alternateTitle}|${seasonKey}`) || [];
+
+      return links.find(link => {
+        const start = Number(link.episode_start);
+        const end = Number(link.episode_end);
+
+        return episode >= start && episode <= end;
+      }) || null;
+    }
+
+    return null;
   }
 
   async function initializeEpisodeLinks() {
@@ -1615,7 +1631,7 @@
 
       for (const range of group.ranges) {
         for (let episode = range.start; episode <= range.end; episode++) {
-          const youtubeLink = getEpisodeYouTubeLink(
+          const reactionLink = getEpisodeReactionLink(
             anime,
             group.season,
             episode
@@ -1623,14 +1639,19 @@
 
           let chip;
 
-          if (youtubeLink) {
+          if (reactionLink?.link_type === "patreon") {
+            chip = window.GOTPatreonLinks.createEpisodeLink(
+              reactionLink,
+              episode
+            );
+          } else if (reactionLink?.link_type === "youtube" || reactionLink?.youtube_url) {
             chip = document.createElement("a");
-            chip.href = youtubeLink.youtube_url;
+            chip.href = reactionLink.youtube_url;
             chip.target = "_blank";
             chip.rel = "noopener noreferrer";
             chip.className = "episode-chip youtube-link";
 
-            const videoTitle = safeText(youtubeLink.video_title);
+            const videoTitle = safeText(reactionLink.video_title);
 
             chip.title = videoTitle
               ? `Watch G.O.T.'s reaction: ${videoTitle}`
@@ -1640,13 +1661,14 @@
               "aria-label",
               `Episode ${episode}. Open G.O.T.'s YouTube reaction in a new tab.`
             );
+            chip.textContent = `EP ${episode}`;
           } else {
             chip = document.createElement("span");
             chip.className = "episode-chip";
             chip.title = `Episode ${episode}`;
+            chip.textContent = `EP ${episode}`;
           }
 
-          chip.textContent = `EP ${episode}`;
           chips.append(chip);
         }
       }
@@ -1655,10 +1677,39 @@
       list.append(seasonSection);
     }
 
+    const patreonLinksForAnime = [];
+    const seenPatreonUrls = new Set();
+
+    for (const group of groups) {
+      for (const range of group.ranges) {
+        for (let episode = range.start; episode <= range.end; episode++) {
+          const reactionLink = getEpisodeReactionLink(
+            anime,
+            group.season,
+            episode
+          );
+
+          if (
+            reactionLink?.link_type === "patreon" &&
+            !seenPatreonUrls.has(reactionLink.patreon_url)
+          ) {
+            seenPatreonUrls.add(reactionLink.patreon_url);
+            patreonLinksForAnime.push(reactionLink);
+          }
+        }
+      }
+    }
+
+    if (patreonLinksForAnime.length) {
+      list.prepend(
+        window.GOTPatreonLinks.createNotice(patreonLinksForAnime)
+      );
+    }
+
     const note = document.createElement("div");
     note.className = "episode-note";
     note.textContent = episodeLinksLoaded
-      ? "Green episodes are recorded in G.O.T.'s watch history. Gold episodes have a clickable YouTube reaction link."
+      ? "Green episodes are recorded in G.O.T.'s watch history. Gold episodes link to YouTube reactions; Patreon-exclusive episodes are marked separately."
       : "Only episodes recorded in G.O.T.'s watch history are shown.";
 
     list.append(note);
