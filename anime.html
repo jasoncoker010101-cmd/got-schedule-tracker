@@ -766,10 +766,11 @@
         `${SUPABASE_URL}/rest/v1/${HISTORY_TABLE}`
       );
 
-      // FIX: The actual database column is anime_title.
+      // Actual database columns:
+      // active_title, episode_start, episode_end.
       url.searchParams.set(
         "select",
-        "event_key,anime_title,season_number,episode_num,episode_end,watched_at,platform"
+        "event_key,active_title,season_number,episode_start,episode_end,watched_at,platform"
       );
 
       url.searchParams.set("order", "watched_at.desc");
@@ -834,9 +835,9 @@
       const identity = row.event_key
         ? `event:${row.event_key}`
         : [
-            row.anime_title,
+            row.active_title,
             row.season_number,
-            row.episode_num,
+            row.episode_start,
             row.episode_end,
             row.watched_at
           ].join("|");
@@ -866,7 +867,7 @@
   }
 
   function getRowRange(row) {
-    const start = validEpisodeNumber(row.episode_num);
+    const start = validEpisodeNumber(row.episode_start);
 
     if (!start) return null;
 
@@ -936,8 +937,7 @@
     historyByTitle = new Map();
 
     for (const row of watchHistory) {
-      // FIX: Read anime_title, not active_title.
-      const title = normalizeTitle(row.anime_title);
+      const title = normalizeTitle(row.active_title);
 
       if (!title) continue;
 
@@ -961,9 +961,9 @@
         const identity = row.event_key
           ? `event:${row.event_key}`
           : [
-              row.anime_title,
+              row.active_title,
               row.season_number,
-              row.episode_num,
+              row.episode_start,
               row.episode_end,
               row.watched_at
             ].join("|");
