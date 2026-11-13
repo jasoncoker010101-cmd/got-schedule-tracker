@@ -332,6 +332,82 @@ footer.site-foot p{margin:0 0 14px}
   .next{grid-template-columns:minmax(0,1fr)}
   .next .poster{width:72px}
 }
+
+    /* Shared navigation: keep page-switching buttons consistent everywhere. */
+    .main-nav,
+    .site-nav {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: stretch !important;
+      flex-wrap: wrap !important;
+      gap: 7px !important;
+      width: 100%;
+      padding: 5px !important;
+      border: 1px solid #39362f !important;
+      border-radius: 13px !important;
+      background: #1b1a17 !important;
+      box-sizing: border-box;
+    }
+
+    .main-nav a,
+    .site-nav a {
+      display: flex !important;
+      flex: 1 1 110px !important;
+      align-items: center !important;
+      justify-content: center !important;
+      min-height: 42px !important;
+      padding: 10px 14px !important;
+      border: 1px solid transparent !important;
+      border-radius: 9px !important;
+      background: transparent !important;
+      color: #e9e4d8 !important;
+      text-align: center !important;
+      text-decoration: none !important;
+      font-family: inherit !important;
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      line-height: 1.2 !important;
+      transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease !important;
+      box-sizing: border-box;
+    }
+
+    .main-nav a:hover,
+    .site-nav a:hover {
+      border-color: #c99d35 !important;
+      background: #29251c !important;
+      color: #f5c957 !important;
+      transform: translateY(-1px);
+    }
+
+    .main-nav a.active,
+    .site-nav a.active {
+      border-color: #e8b83f !important;
+      background: #e8b83f !important;
+      color: #211a0b !important;
+      box-shadow: 0 4px 12px rgba(232,184,63,.18) !important;
+    }
+
+    .main-nav a:focus-visible,
+    .site-nav a:focus-visible {
+      outline: 3px solid rgba(232,184,63,.55) !important;
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 560px) {
+      .main-nav,
+      .site-nav {
+        gap: 5px !important;
+      }
+
+      .main-nav a,
+      .site-nav a {
+        flex-basis: 105px !important;
+        min-height: 40px !important;
+        padding: 9px 8px !important;
+        font-size: 12px !important;
+      }
+    }
+
 </style>
 </head>
 <body>
@@ -352,10 +428,11 @@ footer.site-foot p{margin:0 0 14px}
     </div>
 
     <nav class="main-nav" aria-label="Main navigation">
-      <a href="index.html" class="active" aria-current="page">Schedule</a>
-      <a href="player-directory.html">Fanbase</a>
-      <a href="anime.html">Anime</a>
-    </nav>
+        <a href="index.html" class="active" aria-current="page">Schedule</a>
+        <a href="profile.html">Profile</a>
+        <a href="player-directory.html">Fanbase</a>
+        <a href="anime.html">Anime</a>
+      </nav>
 
     <div class="meta"><span id="range">Loading…</span><span id="updated"></span></div>
     <div class="controls">
