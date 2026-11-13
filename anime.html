@@ -2686,7 +2686,7 @@
       } else if (stored !== incoming) {
         for (const field of [
           "type", "idMal", "episodes", "format", "seasonYear",
-          "title", "synonyms", "coverImage"
+          "averageScore", "description", "title", "synonyms", "coverImage"
         ]) {
           if (incoming[field] != null) stored[field] = incoming[field];
         }
@@ -2752,7 +2752,7 @@
 
       for (const field of [
         "type", "idMal", "episodes", "format", "seasonYear",
-        "title", "synonyms", "coverImage"
+        "averageScore", "description", "title", "synonyms", "coverImage"
       ]) {
         if (existing[field] == null && incoming[field] != null) {
           existing[field] = incoming[field];
