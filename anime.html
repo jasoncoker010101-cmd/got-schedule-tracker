@@ -258,6 +258,14 @@
       gap: 18px;
     }
 
+    .series-group {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 18px;
+      min-width: 0;
+    }
+
     .card {
       overflow: hidden;
       border: 1px solid var(--line);
@@ -660,7 +668,8 @@
       .tabs { width: 100%; }
       .tab { flex: 1; }
 
-      .grid {
+      .grid,
+      .series-group {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
       }
@@ -873,6 +882,22 @@
         format
         averageScore
         genres
+        relations {
+          edges {
+            relationType
+            node {
+              id
+              title { romaji english native }
+              synonyms
+              coverImage { large }
+              description(asHtml: false)
+              episodes
+              seasonYear
+              format
+              averageScore
+            }
+          }
+        }
       }
     }
   }`;
@@ -1822,7 +1847,7 @@
   // ANIME CARDS
   // =========================================================
 
-  function makeCard(anime) {
+  function makeCard(anime, seasonLabel = "") {
     const card = document.createElement("article");
     card.className = "card";
 
@@ -1878,6 +1903,7 @@
     meta.className = "meta";
 
     [
+      seasonLabel,
       anime.seasonYear,
       anime.format,
       anime.episodes ? `${anime.episodes} eps` : "",
@@ -1929,33 +1955,71 @@
     );
   }
 
+  function getRelatedSeasonGroups(items) {
+    const groups = [];
+    const claimed = new Set();
+    const byId = new Map(items.map(item => [Number(item.id), item]));
+
+    for (const anime of items) {
+      if (claimed.has(Number(anime.id))) continue;
+      const seasons = new Map([[Number(anime.id), anime]]);
+      for (const edge of anime.relations?.edges || []) {
+        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
+        const related = edge.node;
+        if (!related || !Number.isFinite(Number(related.id))) continue;
+        if (!["TV", "TV_SHORT"].includes(related.format)) continue;
+        seasons.set(Number(related.id), byId.get(Number(related.id)) || related);
+      }
+      const ordered = [...seasons.values()].sort((x, y) =>
+        (Number(x.seasonYear) || Number.MAX_SAFE_INTEGER) -
+        (Number(y.seasonYear) || Number.MAX_SAFE_INTEGER) ||
+        Number(x.id) - Number(y.id)
+      );
+      ordered.forEach(item => claimed.add(Number(item.id)));
+      groups.push(ordered);
+    }
+    return groups;
+  }
+
   function render(items) {
     results.replaceChildren();
-
     if (!items.length) {
       const empty = document.createElement("div");
       empty.className = "empty";
-
       empty.textContent = mode === "favorites"
         ? "No favorites yet. Browse anime and tap ♡ to save one here."
         : "No anime found. Try a different title.";
-
       results.append(empty);
       return;
     }
 
-    // Keep AniList's relevance order, but move titles with recorded G.O.T.
-    // episode reactions ahead of titles that do not have reaction links.
     const orderedItems = [...items].sort((a, b) =>
-      Number(hasRecordedReactionLinks(b)) -
-      Number(hasRecordedReactionLinks(a))
+      Number(hasRecordedReactionLinks(b)) - Number(hasRecordedReactionLinks(a))
     );
+    const groups = getRelatedSeasonGroups(orderedItems);
+    const rendered = new Set();
 
-    orderedItems.forEach(item => {
-      results.append(makeCard(item));
-    });
+    for (const seasons of groups) {
+      const unique = seasons.filter(item => {
+        const id = Number(item.id);
+        if (rendered.has(id)) return false;
+        rendered.add(id);
+        return true;
+      });
+      if (!unique.length) continue;
+      if (unique.length === 1) {
+        results.append(makeCard(unique[0]));
+        continue;
+      }
+      const group = document.createElement("section");
+      group.className = "series-group";
+      group.setAttribute("aria-label", "Related anime seasons");
+      unique.forEach((season, index) => {
+        group.append(makeCard(season, "Season " + (index + 1)));
+      });
+      results.append(group);
+    }
   }
-
   function renderLastResults() {
     render(
       mode === "favorites"
