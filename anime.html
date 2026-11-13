@@ -1175,6 +1175,8 @@
         episodes
         format
         seasonYear
+        averageScore
+        description(asHtml: false)
         title { romaji english native }
         synonyms
         coverImage { large }
@@ -1188,6 +1190,8 @@
               episodes
               format
               seasonYear
+              averageScore
+              description(asHtml: false)
               title { romaji english native }
               synonyms
               coverImage { large }
@@ -2338,7 +2342,7 @@
 
       for (const field of [
         "type", "idMal", "episodes", "format", "seasonYear",
-        "title", "synonyms", "coverImage"
+        "averageScore", "description", "title", "synonyms", "coverImage"
       ]) {
         if (existing[field] == null && incoming[field] != null) {
           existing[field] = incoming[field];
@@ -2495,6 +2499,8 @@
           storedMedia.episodes = media.episodes ?? storedMedia.episodes;
           storedMedia.format = media.format || storedMedia.format;
           storedMedia.seasonYear = media.seasonYear || storedMedia.seasonYear;
+          storedMedia.averageScore = media.averageScore ?? storedMedia.averageScore;
+          storedMedia.description = media.description || storedMedia.description;
         } else {
           storedMedia = media;
           mediaById.set(media.id, storedMedia);
