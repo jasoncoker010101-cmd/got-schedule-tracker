@@ -2196,7 +2196,17 @@
     let rounds = 0;
     let totalFetched = 0;
 
-    while (frontier.length && rounds < 8 && totalFetched < 160) {
+    // Long-running franchises can have far more than a handful of connected
+    // entries. Keep following PREQUEL/SEQUEL links across additional batches.
+    // The guardrails prevent a malformed relationship graph from running forever.
+    const MAX_RELATION_ROUNDS = 30;
+    const MAX_RELATED_ENTRIES = 1200;
+
+    while (
+      frontier.length &&
+      rounds < MAX_RELATION_ROUNDS &&
+      totalFetched < MAX_RELATED_ENTRIES
+    ) {
       if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
 
       const batch = [...new Set(frontier)]
