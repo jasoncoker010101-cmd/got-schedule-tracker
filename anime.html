@@ -12,7 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Supabase authentication is loaded only when Owner Review is opened. -->
+  <!-- Supabase authentication library for the owner review panel -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -305,90 +306,6 @@
 
     .card-body { padding: 13px; }
 
-    .season-number-label {
-      margin-bottom: 6px;
-      color: var(--accent);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: .12em;
-    }
-
-    .open-season-button,
-    .back-to-seasons {
-      min-height: 40px;
-      padding: 9px 13px;
-      border: 1px solid rgba(239,189,50,.4);
-      border-radius: 8px;
-      background: rgba(239,189,50,.1);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .open-season-button {
-      width: 100%;
-      margin-top: 12px;
-    }
-
-    .open-season-button:hover,
-    .back-to-seasons:hover {
-      border-color: var(--accent);
-      background: rgba(239,189,50,.2);
-    }
-
-    .back-to-seasons {
-      margin-bottom: 14px;
-    }
-
-    .season-detail-card {
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      background: linear-gradient(145deg, rgba(30,29,25,.98), rgba(22,22,20,.98));
-    }
-
-    .season-detail-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 18px;
-    }
-
-    .season-detail-cover {
-      width: 150px;
-      max-width: 35%;
-      aspect-ratio: 3/4;
-      object-fit: cover;
-      border-radius: 10px;
-      background: var(--raised);
-    }
-
-    .season-detail-heading { min-width: 0; }
-    .season-detail-heading h2 {
-      margin: 0 0 10px;
-      font: 800 23px/1.25 var(--display);
-    }
-
-    .season-detail-description,
-    .season-series-note {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .season-series-note {
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--line);
-      font-size: 11px;
-    }
-
-    @media(max-width:540px) {
-      .season-detail-card { padding: 12px; }
-      .season-detail-header { gap: 12px; }
-      .season-detail-cover { width: 112px; }
-      .season-detail-heading h2 { font-size: 17px; }
-    }
-
     .card h2 {
       margin: 0 0 8px;
       font: 700 17px/1.25 var(--display);
@@ -562,42 +479,6 @@
       color: var(--muted);
       font-size: 10px;
       line-height: 1.4;
-    }
-
-    .series-seasons {
-      margin: 10px 0;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      background: rgba(255,255,255,.025);
-    }
-
-    .series-seasons summary {
-      padding: 9px 10px;
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .series-season-list {
-      display: grid;
-      gap: 7px;
-      padding: 0 10px 10px;
-    }
-
-    .series-season-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.4;
-    }
-
-    .series-season-row span:last-child {
-      flex-shrink: 0;
-      color: var(--text);
-      font-weight: 700;
     }
 
     .empty {
@@ -798,141 +679,6 @@
         transition-duration: .01ms!important;
       }
     }
-  
-    /* Shared navigation: keep page-switching buttons consistent everywhere. */
-    .main-nav,
-    .site-nav {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: stretch !important;
-      flex-wrap: wrap !important;
-      gap: 7px !important;
-      width: 100%;
-      padding: 5px !important;
-      border: 1px solid #39362f !important;
-      border-radius: 13px !important;
-      background: #1b1a17 !important;
-      box-sizing: border-box;
-    }
-
-    .main-nav a,
-    .site-nav a {
-      display: flex !important;
-      flex: 1 1 110px !important;
-      align-items: center !important;
-      justify-content: center !important;
-      min-height: 42px !important;
-      padding: 10px 14px !important;
-      border: 1px solid transparent !important;
-      border-radius: 9px !important;
-      background: transparent !important;
-      color: #e9e4d8 !important;
-      text-align: center !important;
-      text-decoration: none !important;
-      font-family: inherit !important;
-      font-size: 13px !important;
-      font-weight: 800 !important;
-      line-height: 1.2 !important;
-      transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease !important;
-      box-sizing: border-box;
-    }
-
-    .main-nav a:hover,
-    .site-nav a:hover {
-      border-color: #c99d35 !important;
-      background: #29251c !important;
-      color: #f5c957 !important;
-      transform: translateY(-1px);
-    }
-
-    .main-nav a.active,
-    .site-nav a.active {
-      border-color: #e8b83f !important;
-      background: #e8b83f !important;
-      color: #211a0b !important;
-      box-shadow: 0 4px 12px rgba(232,184,63,.18) !important;
-    }
-
-    .main-nav a:focus-visible,
-    .site-nav a:focus-visible {
-      outline: 3px solid rgba(232,184,63,.55) !important;
-      outline-offset: 2px;
-    }
-
-    @media (max-width: 560px) {
-      .main-nav,
-      .site-nav {
-        gap: 5px !important;
-      }
-
-      .main-nav a,
-      .site-nav a {
-        flex-basis: 105px !important;
-        min-height: 40px !important;
-        padding: 9px 8px !important;
-        font-size: 12px !important;
-      }
-    }
-
-
-    /* Shared navigation theme: charcoal surfaces with matching gold accents */
-    nav[aria-label="Main navigation"] {
-      display: flex !important;
-      align-items: center;
-      justify-content: stretch;
-      gap: 7px !important;
-      width: 100%;
-      padding: 5px !important;
-      border: 1px solid rgba(245,235,206,.13) !important;
-      border-radius: 13px !important;
-      background: #191916 !important;
-      box-sizing: border-box;
-    }
-    nav[aria-label="Main navigation"] a {
-      display: flex;
-      flex: 1 1 0;
-      align-items: center;
-      justify-content: center;
-      min-width: 0;
-      min-height: 44px;
-      padding: 9px 12px !important;
-      border: 1px solid transparent !important;
-      border-radius: 9px !important;
-      background: #22211c !important;
-      color: #c4beaf !important;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.2;
-      text-align: center;
-      text-decoration: none;
-      transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
-    }
-    nav[aria-label="Main navigation"] a:hover {
-      border-color: rgba(239,189,50,.65) !important;
-      background: #2b2922 !important;
-      color: #fff3cf !important;
-      transform: translateY(-1px);
-    }
-    nav[aria-label="Main navigation"] a.active,
-    nav[aria-label="Main navigation"] a[aria-current="page"] {
-      border-color: #efbd32 !important;
-      background: #efbd32 !important;
-      color: #211a0b !important;
-      box-shadow: 0 4px 12px rgba(239,189,50,.18);
-    }
-    nav[aria-label="Main navigation"] a:focus-visible {
-      outline: 3px solid rgba(239,189,50,.7);
-      outline-offset: 2px;
-    }
-    @media (max-width: 520px) {
-      nav[aria-label="Main navigation"] { gap: 4px !important; }
-      nav[aria-label="Main navigation"] a {
-        min-height: 42px;
-        padding: 8px 4px !important;
-        font-size: 12px;
-      }
-    }
-
   </style>
 </head>
 
@@ -942,7 +688,6 @@
 
     <nav class="site-nav" aria-label="Main navigation">
       <a href="index.html">Schedule</a>
-      <a href="profile.html">Profile</a>
       <a href="player-directory.html">Fanbase</a>
       <a href="anime.html" class="active" aria-current="page">Anime</a>
     </nav>
@@ -1092,74 +837,14 @@
   // SUPABASE CLIENT
   // =========================================================
 
-  // Anime discovery must keep working even if the optional Supabase
-  // authentication library is temporarily unavailable.
-  let authClient = window.supabase?.createClient
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-    : null;
-
-  let supabaseLoadPromise = null;
-  let authListenerRegistered = false;
-
-  function registerAuthStateListener() {
-    if (!authClient || authListenerRegistered) return;
-
-    authListenerRegistered = true;
-
-    authClient.auth.onAuthStateChange((_event, session) => {
-      ownerSession = session;
-
-      if (!session) {
-        isSiteOwner = false;
-        pendingLinksContainer.replaceChildren();
-
-        if (!ownerPanel.hidden) {
-          ownerStatus.textContent =
-            "Log in with your existing G.O.T. Games owner account.";
-
-          ownerLoginForm.hidden = false;
-          ownerLogout.hidden = true;
-        }
-      } else if (!ownerPanel.hidden) {
-        setTimeout(() => checkOwnerAccess(), 0);
-      }
-    });
+  if (!window.supabase || !window.supabase.createClient) {
+    throw new Error("Supabase library failed to load.");
   }
 
-  async function ensureSupabaseClient() {
-    if (authClient) return authClient;
-    if (supabaseLoadPromise) return supabaseLoadPromise;
-
-    supabaseLoadPromise = (async () => {
-      const loadScript = url => new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = url;
-        script.async = true;
-        script.onload = resolve;
-        script.onerror = () => reject(new Error("Could not load " + url));
-        document.head.appendChild(script);
-      });
-
-      try {
-        await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
-      } catch {
-        await loadScript("https://unpkg.com/@supabase/supabase-js@2");
-      }
-
-      if (!window.supabase?.createClient) {
-        throw new Error("Supabase authentication library is unavailable.");
-      }
-
-      authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      registerAuthStateListener();
-      return authClient;
-    })().catch(error => {
-      supabaseLoadPromise = null;
-      throw error;
-    });
-
-    return supabaseLoadPromise;
-  }
+  const authClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
   // =========================================================
   // ANILIST QUERY
@@ -1173,8 +858,6 @@
       }
       media(type: ANIME, search: $search, sort: POPULARITY_DESC) {
         id
-        idMal
-        type
         title {
           romaji
           english
@@ -1190,42 +873,6 @@
         format
         averageScore
         genres
-      }
-    }
-  }`;
-
-  const RELATIONS_QUERY = `query ($ids: [Int]) {
-    Page(perPage: 50) {
-      media(id_in: $ids, type: ANIME) {
-        id
-        idMal
-        type
-        episodes
-        format
-        seasonYear
-        averageScore
-        description(asHtml: false)
-        title { romaji english native }
-        synonyms
-        coverImage { large }
-        relations {
-          edges {
-            relationType
-            node {
-              id
-              idMal
-              type
-              episodes
-              format
-              seasonYear
-              averageScore
-              description(asHtml: false)
-              title { romaji english native }
-              synonyms
-              coverImage { large }
-            }
-          }
-        }
       }
     }
   }`;
@@ -1275,12 +922,6 @@
   let debounceTimer = null;
 
   let displayedItems = [];
-
-  // Keep only relation data discovered while the user visits pages for the
-  // current search. This is a grouping cache, not a background page crawler.
-  let seriesLookupQuery = null;
-  let seriesLookupCache = new Map();
-  let seriesFirstSeenPage = new Map();
 
   let watchHistory = [];
   let historyLoaded = false;
@@ -1753,17 +1394,12 @@
   }
 
   function getAnimeAliases(anime) {
-    const entries = [
-      anime,
-      ...(Array.isArray(anime.seriesEntries) ? anime.seriesEntries : [])
+    const aliases = [
+      anime.title?.english,
+      anime.title?.romaji,
+      anime.title?.native,
+      ...(Array.isArray(anime.synonyms) ? anime.synonyms : [])
     ];
-
-    const aliases = entries.flatMap(entry => [
-      entry.title?.english,
-      entry.title?.romaji,
-      entry.title?.native,
-      ...(Array.isArray(entry.synonyms) ? entry.synonyms : [])
-    ]);
 
     return [...new Set(
       aliases.map(normalizeTitle).filter(Boolean)
@@ -2186,155 +1822,86 @@
   // ANIME CARDS
   // =========================================================
 
-  function makeSeasonCard(season, series, seasonIndex) {
+  function makeCard(anime) {
     const card = document.createElement("article");
-    card.className = "card season-card";
+    card.className = "card";
 
     const coverWrap = document.createElement("div");
     coverWrap.className = "cover-wrap";
 
-    if (season.coverImage?.large) {
+    if (anime.coverImage?.large) {
       const image = document.createElement("img");
+
       image.className = "cover";
-      image.src = season.coverImage.large;
-      image.alt = `Cover art for ${titleFor(season)}`;
+      image.src = anime.coverImage.large;
+      image.alt = `Cover art for ${titleFor(anime)}`;
       image.loading = "lazy";
       image.referrerPolicy = "no-referrer";
-      image.onerror = () => image.remove();
+
+      image.onerror = () => {
+        image.remove();
+        coverWrap.setAttribute(
+          "aria-label",
+          "Cover image unavailable"
+        );
+      };
+
       coverWrap.append(image);
     }
 
-    const favoriteButton = document.createElement("button");
-    favoriteButton.className = "favorite";
-    favoriteButton.type = "button";
+    const button = document.createElement("button");
+    button.className = "favorite";
+    button.type = "button";
 
-    const isFavorite = Boolean(
-      favorites[series.id] ||
-      series.seriesEntries?.some(entry => favorites[entry.id])
-    );
+    const isFavorite = Boolean(favorites[anime.id]);
 
-    favoriteButton.textContent = isFavorite ? "♥" : "♡";
-    favoriteButton.setAttribute("aria-pressed", String(isFavorite));
-    favoriteButton.setAttribute(
+    button.textContent = isFavorite ? "♥" : "♡";
+    button.setAttribute("aria-pressed", String(isFavorite));
+
+    button.setAttribute(
       "aria-label",
-      `${isFavorite ? "Remove" : "Add"} ${titleFor(series)} ${isFavorite ? "from" : "to"} favorites`
+      `${isFavorite ? "Remove" : "Add"} ${titleFor(anime)} ${isFavorite ? "from" : "to"} favorites`
     );
-    favoriteButton.addEventListener("click", () => toggleFavorite(series));
-    coverWrap.append(favoriteButton);
+
+    button.addEventListener("click", () => toggleFavorite(anime));
+
+    coverWrap.append(button);
 
     const body = document.createElement("div");
     body.className = "card-body";
 
-    const seasonLabel = document.createElement("div");
-    seasonLabel.className = "season-number-label";
-    seasonLabel.textContent = `SEASON ${seasonIndex + 1}`;
-
     const heading = document.createElement("h2");
-    heading.textContent = titleFor(season);
+    heading.textContent = titleFor(anime);
+    body.append(heading);
 
     const meta = document.createElement("div");
     meta.className = "meta";
 
     [
-      season.seasonYear,
-      season.format,
-      season.episodes ? `${season.episodes} eps` : "Episode count unavailable"
+      anime.seasonYear,
+      anime.format,
+      anime.episodes ? `${anime.episodes} eps` : "",
+      anime.averageScore ? `★ ${anime.averageScore}%` : ""
     ].filter(Boolean).forEach(value => {
       const chip = document.createElement("span");
       chip.className = "chip";
       chip.textContent = value;
       meta.append(chip);
     });
+
+    body.append(meta);
 
     const description = document.createElement("p");
     description.className = "description";
     description.textContent =
-      safeText(season.description) || "No description available.";
+      safeText(anime.description) || "No description available.";
 
-    const openButton = document.createElement("button");
-    openButton.type = "button";
-    openButton.className = "open-season-button";
-    openButton.textContent = "Open season";
-    openButton.addEventListener("click", () => {
-      showSeasonDetail(season, series, seasonIndex);
-    });
+    body.append(description);
+    body.append(makeWatchBox(anime));
 
-    body.append(seasonLabel, heading, meta, description, openButton);
     card.append(coverWrap, body);
+
     return card;
-  }
-
-  function showSeasonDetail(season, series, seasonIndex) {
-    results.replaceChildren();
-
-    const backButton = document.createElement("button");
-    backButton.type = "button";
-    backButton.className = "back-to-seasons";
-    backButton.textContent = "← Back to seasons";
-    backButton.addEventListener("click", renderLastResults);
-
-    const detail = document.createElement("article");
-    detail.className = "season-detail-card";
-
-    const header = document.createElement("div");
-    header.className = "season-detail-header";
-
-    if (season.coverImage?.large) {
-      const image = document.createElement("img");
-      image.className = "season-detail-cover";
-      image.src = season.coverImage.large;
-      image.alt = `Cover art for ${titleFor(season)}`;
-      image.referrerPolicy = "no-referrer";
-      header.append(image);
-    }
-
-    const headingArea = document.createElement("div");
-    headingArea.className = "season-detail-heading";
-
-    const label = document.createElement("div");
-    label.className = "season-number-label";
-    label.textContent = `SEASON ${seasonIndex + 1}`;
-
-    const heading = document.createElement("h2");
-    heading.textContent = titleFor(season);
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-
-    [
-      season.seasonYear,
-      season.format,
-      season.episodes ? `${season.episodes} episodes` : "Episode count unavailable",
-      season.averageScore ? `★ ${season.averageScore}%` : ""
-    ].filter(Boolean).forEach(value => {
-      const chip = document.createElement("span");
-      chip.className = "chip";
-      chip.textContent = value;
-      meta.append(chip);
-    });
-
-    headingArea.append(label, heading, meta);
-    header.append(headingArea);
-
-    const description = document.createElement("p");
-    description.className = "season-detail-description";
-    description.textContent =
-      safeText(season.description) || "No description available.";
-
-    const seriesNote = document.createElement("p");
-    seriesNote.className = "season-series-note";
-    seriesNote.textContent = series.seriesEntries?.length > 1
-      ? `Part of ${titleFor(series)} · ${series.seriesEntries.length} seasons listed`
-      : "Anime details and G.O.T. watch history";
-
-    detail.append(header, description, seriesNote);
-
-    // Preserve franchise-wide history and reaction-link matching on the
-    // focused season page, without duplicating or changing stored records.
-    detail.append(makeWatchBox(series));
-
-    results.append(backButton, detail);
-    results.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   // =========================================================
@@ -2362,564 +1929,7 @@
     );
   }
 
-  async function loadFullSeriesRelations(items, signal) {
-    const mediaById = new Map();
-
-    function mergeMediaData(existing, incoming) {
-      if (!existing || !incoming) return existing;
-
-      for (const field of [
-        "type", "idMal", "episodes", "format", "seasonYear",
-        "averageScore", "description", "title", "synonyms", "coverImage"
-      ]) {
-        if (existing[field] == null && incoming[field] != null) {
-          existing[field] = incoming[field];
-        }
-      }
-
-      const oldEdges = existing.relations?.edges || [];
-      const newEdges = incoming.relations?.edges || [];
-      if (newEdges.length) {
-        const mergedEdges = new Map();
-        for (const edge of [...oldEdges, ...newEdges]) {
-          const key = edge.node?.id == null
-            ? null
-            : edge.relationType + ":" + edge.node.id;
-          if (key && !mergedEdges.has(key)) mergedEdges.set(key, edge);
-        }
-        existing.relations = {
-          ...(existing.relations || {}),
-          ...(incoming.relations || {}),
-          edges: [...mergedEdges.values()]
-        };
-      } else if (!existing.relations && incoming.relations) {
-        existing.relations = incoming.relations;
-      }
-
-      return existing;
-    }
-
-    // Register every search result first. A season may appear both as a
-    // top-level search result and as a shallow nested relation node. Keeping
-    // the full top-level object prevents the shallow copy from hiding later
-    // seasons in the chain.
-    for (const media of items) {
-      if (media?.id != null) mediaById.set(media.id, media);
-    }
-
-    // Walk the relationship graph iteratively. Franchise graphs contain
-    // cycles, so recursive merging/traversal can overflow the browser stack.
-    const pendingMedia = [...items];
-    const processedMedia = new Set();
-
-    while (pendingMedia.length) {
-      const media = pendingMedia.pop();
-      if (!media || media.id == null) continue;
-
-      let storedMedia = mediaById.get(media.id);
-      if (storedMedia && storedMedia !== media) {
-        mergeMediaData(storedMedia, media);
-      } else if (!storedMedia) {
-        storedMedia = media;
-        mediaById.set(media.id, storedMedia);
-      }
-
-      if (processedMedia.has(storedMedia.id)) continue;
-      processedMedia.add(storedMedia.id);
-
-      for (const edge of storedMedia.relations?.edges || []) {
-        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
-        const node = edge.node;
-        if (!node || node.id == null) continue;
-
-        let related = mediaById.get(node.id);
-        if (related && related !== node) {
-          mergeMediaData(related, node);
-        } else if (!related) {
-          related = node;
-          mediaById.set(node.id, related);
-        }
-
-        edge.node = related;
-        if (!processedMedia.has(related.id)) pendingMedia.push(related);
-      }
-    }
-
-    const isSeasonEntry = media =>
-      media &&
-      media.type === "ANIME" &&
-      ["TV", "TV_SHORT", "ONA"].includes(media.format);
-
-    // Relation nodes can arrive without format populated. Fetch those nodes
-    // before filtering, or one incomplete record can break the sequel chain.
-    const isPotentialSeasonEntry = media =>
-      media &&
-      media.type === "ANIME" &&
-      (media.format == null ||
-        ["TV", "TV_SHORT", "ONA"].includes(media.format));
-
-    // Seed only from this page's search results, never from a catalogue search.
-    let frontier = [...mediaById.values()]
-      .filter(media => isPotentialSeasonEntry(media))
-      .map(media => media.id);
-
-    const fetched = new Set();
-    let rounds = 0;
-    let totalFetched = 0;
-
-    // Long-running franchises can have far more than a handful of connected
-    // entries. Keep following PREQUEL/SEQUEL links across additional batches.
-    // The guardrails prevent a malformed relationship graph from running forever.
-    const MAX_RELATION_ROUNDS = 30;
-    const MAX_RELATED_ENTRIES = 1200;
-
-    while (
-      frontier.length &&
-      rounds < MAX_RELATION_ROUNDS &&
-      totalFetched < MAX_RELATED_ENTRIES
-    ) {
-      if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
-
-      const batch = [...new Set(frontier)]
-        .filter(id => !fetched.has(id))
-        .slice(0, 40);
-
-      if (!batch.length) break;
-      batch.forEach(id => fetched.add(id));
-      rounds++;
-
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          query: RELATIONS_QUERY,
-          variables: { ids: batch }
-        }),
-        signal
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          response.status === 429
-            ? "AniList is receiving too many requests while loading seasons. Please try again shortly."
-            : `AniList season lookup failed (${response.status}).`
-        );
-      }
-
-      const payload = await response.json();
-      if (payload.errors?.length) {
-        throw new Error(payload.errors[0].message || "AniList couldn't load all season relationships.");
-      }
-
-      const returned = payload.data?.Page?.media || [];
-      totalFetched += returned.length;
-      const nextFrontier = [];
-
-      for (const media of returned) {
-        let storedMedia = mediaById.get(media.id);
-
-        if (storedMedia) {
-          // Update the canonical object already referenced by the graph.
-          storedMedia.relations = media.relations || { edges: [] };
-          storedMedia.episodes = media.episodes ?? storedMedia.episodes;
-          storedMedia.format = media.format || storedMedia.format;
-          storedMedia.seasonYear = media.seasonYear || storedMedia.seasonYear;
-          storedMedia.averageScore = media.averageScore ?? storedMedia.averageScore;
-          storedMedia.description = media.description || storedMedia.description;
-        } else {
-          storedMedia = media;
-          mediaById.set(media.id, storedMedia);
-        }
-
-        // IMPORTANT: AniList returns shallow relation-node objects here.
-        // Reconnect each edge to the canonical object in mediaById, so its
-        // fully fetched relations remain reachable from the original result.
-        for (const edge of storedMedia.relations?.edges || []) {
-          if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
-
-          const relationNode = edge.node;
-          if (!isPotentialSeasonEntry(relationNode)) continue;
-
-          let related = mediaById.get(relationNode.id);
-          if (!related) {
-            related = relationNode;
-            mediaById.set(related.id, related);
-          }
-
-          edge.node = related;
-
-          // Do not use the presence of a relations object as proof that
-          // this entry was fetched. Nested/search results may only contain
-          // an empty or partial relations object.
-          if (!fetched.has(related.id)) {
-            nextFrontier.push(related.id);
-          }
-        }
-      }
-
-      // Keep IDs that did not fit in this 40-entry batch. Previously,
-      // assigning only nextFrontier discarded the rest of a large queue.
-      const unprocessed = frontier.filter(id => !fetched.has(id));
-      frontier = [...new Set([...unprocessed, ...nextFrontier])];
-    }
-
-    // Jikan/MyAnimeList fallback: check a few disconnected results only.
-    // AniList remains primary; a Jikan outage never prevents the page rendering.
-    if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
-
-    const jikanCandidates = items
-      .filter(media => media?.idMal && !(media.relations?.edges || [])
-        .some(edge => ["PREQUEL", "SEQUEL"].includes(edge.relationType)))
-      .slice(0, 3);
-
-    const detailCache = loadFullSeriesRelations.jikanDetailCache ||
-      (loadFullSeriesRelations.jikanDetailCache = new Map());
-    const relationCache = loadFullSeriesRelations.jikanRelationCache ||
-      (loadFullSeriesRelations.jikanRelationCache = new Map());
-    const relatedByMalId = new Map();
-    let lastJikanRequestAt = 0;
-
-    async function jikanGet(url) {
-      if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
-      const wait = Math.max(0, 360 - (Date.now() - lastJikanRequestAt));
-      if (wait) await new Promise(resolve => setTimeout(resolve, wait));
-      if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
-      lastJikanRequestAt = Date.now();
-      const response = await fetch(url, {
-        headers: { "Accept": "application/json" },
-        signal
-      });
-      if (!response.ok) throw new Error("Jikan request failed: " + response.status);
-      return response.json();
-    }
-
-    async function getJikanRelations(malId) {
-      if (!relationCache.has(malId)) {
-        relationCache.set(malId,
-          jikanGet("https://api.jikan.moe/v4/anime/" + malId + "/relations")
-            .catch(error => { relationCache.delete(malId); throw error; })
-        );
-      }
-      return relationCache.get(malId);
-    }
-
-    async function getJikanAnime(malId) {
-      if (!detailCache.has(malId)) {
-        detailCache.set(malId,
-          jikanGet("https://api.jikan.moe/v4/anime/" + malId)
-            .then(payload => payload.data || null)
-            .catch(error => { detailCache.delete(malId); throw error; })
-        );
-      }
-      return detailCache.get(malId);
-    }
-
-    for (const source of jikanCandidates) {
-      try {
-        const relationPayload = await getJikanRelations(Number(source.idMal));
-        const relationGroups = relationPayload.data || [];
-        const relatedIds = [];
-
-        for (const relation of relationGroups) {
-          if (!["Prequel", "Sequel"].includes(relation.relation)) continue;
-          for (const entry of relation.entry || []) {
-            const malId = Number(entry.mal_id);
-            if (entry.type === "anime" && Number.isInteger(malId) &&
-                malId > 0 && malId !== Number(source.idMal) && !relatedIds.includes(malId)) {
-              relatedIds.push(malId);
-            }
-          }
-        }
-
-        // Limit detail lookups so we stay comfortably below Jikan's rate limit.
-        for (const malId of relatedIds.slice(0, 3)) {
-          if (signal?.aborted) throw new DOMException("Request aborted", "AbortError");
-          if (relatedByMalId.has(malId)) continue;
-          const detail = await getJikanAnime(malId);
-          if (!detail || !["TV", "ONA"].includes(detail.type)) continue;
-
-          const imageUrl = detail.images?.webp?.large_image_url ||
-            detail.images?.jpg?.large_image_url ||
-            detail.images?.webp?.image_url || detail.images?.jpg?.image_url || null;
-          const title = detail.title || detail.title_english || detail.title_japanese ||
-            ("MyAnimeList entry " + malId);
-          relatedByMalId.set(malId, {
-            id: -malId,
-            idMal: malId,
-            type: "ANIME",
-            format: detail.type,
-            episodes: detail.episodes != null && Number.isFinite(Number(detail.episodes))
-              ? Number(detail.episodes) : null,
-            seasonYear: detail.year || detail.aired?.prop?.from?.year || null,
-            title: {
-              romaji: title,
-              english: detail.title_english || title,
-              native: detail.title_japanese || title
-            },
-            synonyms: detail.title_synonyms || [],
-            coverImage: imageUrl ? { large: imageUrl } : null,
-            relations: { edges: [] }
-          });
-        }
-
-        const sourceEdges = source.relations?.edges || [];
-        const knownMalIds = new Set(sourceEdges
-          .map(edge => Number(edge.node?.idMal)).filter(Number.isFinite));
-        const knownTitles = new Set(sourceEdges
-          .map(edge => normalizeTitle(titleFor(edge.node))).filter(Boolean));
-
-        for (const relation of relationGroups) {
-          if (!["Prequel", "Sequel"].includes(relation.relation)) continue;
-          const relationType = relation.relation.toUpperCase();
-          for (const entry of relation.entry || []) {
-            const malId = Number(entry.mal_id);
-            const relatedMedia = relatedByMalId.get(malId);
-            if (!relatedMedia || knownMalIds.has(malId)) continue;
-            const relatedTitle = normalizeTitle(titleFor(relatedMedia));
-            if (relatedTitle && knownTitles.has(relatedTitle)) continue;
-
-            source.relations = source.relations || { edges: [] };
-            source.relations.edges = source.relations.edges || [];
-            source.relations.edges.push({ relationType, node: relatedMedia });
-            knownMalIds.add(malId);
-            if (relatedTitle) knownTitles.add(relatedTitle);
-          }
-        }
-      } catch (error) {
-        if (error.name === "AbortError") throw error;
-        console.warn("Jikan season fallback was skipped:", error.message);
-        if (String(error.message).includes("429")) break;
-      }
-    }
-
-    return items;
-  }
-
-  function rememberSeriesMedia(items) {
-    const pending = [...(items || [])];
-    const visited = new Set();
-
-    while (pending.length) {
-      const incoming = pending.pop();
-      if (!incoming || incoming.id == null || visited.has(incoming.id)) continue;
-      visited.add(incoming.id);
-
-      let stored = seriesLookupCache.get(incoming.id);
-      if (!stored) {
-        stored = incoming;
-        seriesLookupCache.set(incoming.id, stored);
-      } else if (stored !== incoming) {
-        for (const field of [
-          "type", "idMal", "episodes", "format", "seasonYear",
-          "averageScore", "description", "title", "synonyms", "coverImage"
-        ]) {
-          if (incoming[field] != null) stored[field] = incoming[field];
-        }
-
-        const mergedEdges = new Map();
-        for (const edge of [
-          ...(stored.relations?.edges || []),
-          ...(incoming.relations?.edges || [])
-        ]) {
-          const key = edge.node?.id == null
-            ? null
-            : edge.relationType + ":" + edge.node.id;
-          if (key) mergedEdges.set(key, edge);
-        }
-
-        stored.relations = {
-          ...(stored.relations || {}),
-          ...(incoming.relations || {}),
-          edges: [...mergedEdges.values()]
-        };
-      }
-
-      for (const edge of stored.relations?.edges || []) {
-        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
-        const node = edge.node;
-        if (!node || node.id == null) continue;
-
-        const canonical = seriesLookupCache.get(node.id);
-        if (canonical && canonical !== node) {
-          edge.node = canonical;
-          pending.push(canonical);
-        } else {
-          pending.push(node);
-        }
-      }
-    }
-  }
-
-  function buildSeriesGroups(items, supplementalMedia = []) {
-    const mediaById = new Map();
-    const links = new Map();
-
-    function isSeasonEntry(media) {
-      return Boolean(
-        media &&
-        (media.type == null || media.type === "ANIME") &&
-        ["TV", "TV_SHORT", "ONA"].includes(media.format)
-      );
-    }
-
-    // Keep the richest known object for each AniList ID. A search result may
-    // be shallower than the same season cached from a previous page, so never
-    // replace a full cached record with a partial current-page copy.
-    function registerMedia(incoming) {
-      if (!incoming || incoming.id == null) return null;
-
-      const existing = mediaById.get(incoming.id);
-      if (!existing) {
-        mediaById.set(incoming.id, incoming);
-        return incoming;
-      }
-      if (existing === incoming) return existing;
-
-      for (const field of [
-        "type", "idMal", "episodes", "format", "seasonYear",
-        "averageScore", "description", "title", "synonyms", "coverImage"
-      ]) {
-        if (existing[field] == null && incoming[field] != null) {
-          existing[field] = incoming[field];
-        }
-      }
-
-      const edges = new Map();
-      for (const edge of [
-        ...(existing.relations?.edges || []),
-        ...(incoming.relations?.edges || [])
-      ]) {
-        const key = edge.node?.id == null
-          ? null
-          : edge.relationType + ":" + edge.node.id;
-        if (key && !edges.has(key)) edges.set(key, edge);
-      }
-
-      if (edges.size) {
-        existing.relations = {
-          ...(existing.relations || {}),
-          ...(incoming.relations || {}),
-          edges: [...edges.values()]
-        };
-      }
-
-      return existing;
-    }
-
-    // Register the cached records first, then merge current-page results into
-    // them. Cached full relations therefore survive shallow search responses.
-    for (const media of supplementalMedia) registerMedia(media);
-    for (const item of items) registerMedia(item);
-
-    const visitedMedia = new Set();
-    const pendingMedia = [...items];
-
-    while (pendingMedia.length) {
-      const media = pendingMedia.pop();
-      if (!media || media.id == null) continue;
-
-      const storedMedia = mediaById.get(media.id) || media;
-      if (!mediaById.has(media.id)) mediaById.set(media.id, storedMedia);
-      if (visitedMedia.has(storedMedia.id)) continue;
-      visitedMedia.add(storedMedia.id);
-
-      if (!isSeasonEntry(storedMedia)) continue;
-
-      for (const edge of storedMedia.relations?.edges || []) {
-        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
-
-        const relationNode = edge.node;
-        if (!relationNode || relationNode.id == null) continue;
-
-        // Check the canonical full record, not the possibly shallow edge copy.
-        const related = mediaById.get(relationNode.id) || registerMedia(relationNode);
-        if (!isSeasonEntry(related)) continue;
-
-        edge.node = related;
-
-        if (!links.has(storedMedia.id)) links.set(storedMedia.id, new Set());
-        if (!links.has(related.id)) links.set(related.id, new Set());
-
-        links.get(storedMedia.id).add(related.id);
-        links.get(related.id).add(storedMedia.id);
-        if (!visitedMedia.has(related.id)) pendingMedia.push(related);
-      }
-    }
-
-    const visited = new Set();
-    const groups = [];
-
-    for (const item of items) {
-      if (visited.has(item.id)) continue;
-
-      const stack = [item.id];
-      const component = [];
-
-      while (stack.length) {
-        const id = stack.pop();
-        if (visited.has(id)) continue;
-        visited.add(id);
-
-        const media = mediaById.get(id);
-        if (media) component.push(media);
-
-        for (const neighbor of links.get(id) || []) {
-          if (!visited.has(neighbor)) stack.push(neighbor);
-        }
-      }
-
-      const unique = [...new Map(component.map(entry => [entry.id, entry])).values()];
-      unique.sort((a, b) =>
-        (a.seasonYear || 9999) - (b.seasonYear || 9999) ||
-        a.id - b.id
-      );
-
-      const roots = unique.filter(entry =>
-        !(entry.relations?.edges || []).some(edge =>
-          edge.relationType === "PREQUEL" &&
-          edge.node?.type === "ANIME" &&
-          unique.some(candidate => candidate.id === edge.node.id)
-        )
-      );
-
-      const root = roots[0] || unique[0] || item;
-      if (!root) continue;
-
-      const compactEntries = unique.map(entry => ({
-        id: entry.id,
-        title: entry.title,
-        synonyms: entry.synonyms || [],
-        episodes: entry.episodes,
-        format: entry.format,
-        seasonYear: entry.seasonYear,
-        coverImage: entry.coverImage,
-        description: entry.description,
-        averageScore: entry.averageScore
-      }));
-
-      const { relations, ...rootFields } = root;
-      const episodeCounts = compactEntries.map(entry => Number(entry.episodes));
-      const hasCompleteEpisodeCounts =
-        unique.length > 1 &&
-        episodeCounts.length === compactEntries.length &&
-        episodeCounts.every(count => Number.isFinite(count) && count > 0);
-
-      groups.push({
-        ...rootFields,
-        seriesEntries: compactEntries,
-        seriesEpisodeTotal: hasCompleteEpisodeCounts
-          ? episodeCounts.reduce((sum, count) => sum + count, 0)
-          : null
-      });
-    }
-
-    return groups;
-  }
-
-  function render(items, supplementalMedia = [], options = {}) {
+  function render(items) {
     results.replaceChildren();
 
     if (!items.length) {
@@ -2934,106 +1944,24 @@
       return;
     }
 
-    let groupedItems = buildSeriesGroups(items, supplementalMedia);
-
-    // Keep each connected franchise on the first page where it appeared.
-    if (options.suppressEarlierPages && mode === "discover") {
-      groupedItems = groupedItems.filter(group => {
-        const ids = (group.seriesEntries || [])
-          .map(entry => entry.id)
-          .filter(id => id != null);
-        if (group.id != null && !ids.includes(group.id)) ids.push(group.id);
-
-        const previouslySeen = ids
-          .map(id => seriesFirstSeenPage.get(id))
-          .filter(Number.isFinite);
-        const firstSeenPage = previouslySeen.length
-          ? Math.min(...previouslySeen)
-          : null;
-
-        for (const id of ids) {
-          if (!seriesFirstSeenPage.has(id)) {
-            seriesFirstSeenPage.set(id, page);
-          }
-        }
-
-        return firstSeenPage == null || firstSeenPage >= page;
-      });
-    }
-
-    const orderedItems = [...groupedItems].sort((a, b) =>
+    // Keep AniList's relevance order, but move titles with recorded G.O.T.
+    // episode reactions ahead of titles that do not have reaction links.
+    const orderedItems = [...items].sort((a, b) =>
       Number(hasRecordedReactionLinks(b)) -
       Number(hasRecordedReactionLinks(a))
     );
 
-    // Every season is its own card. Connected seasons remain adjacent in the
-    // results grid, and each card opens a focused view for that exact entry.
-    for (const series of orderedItems) {
-      const seasons = Array.isArray(series.seriesEntries) && series.seriesEntries.length
-        ? series.seriesEntries
-        : [series];
-
-      seasons.forEach((season, index) => {
-        results.append(makeSeasonCard(season, series, index));
-      });
-    }
-  }
-gth) {
-      const empty = document.createElement("div");
-      empty.className = "empty";
-
-      empty.textContent = mode === "favorites"
-        ? "No favorites yet. Browse anime and tap ♡ to save one here."
-        : "No anime found. Try a different title.";
-
-      results.append(empty);
-      return;
-    }
-
-    let groupedItems = buildSeriesGroups(items, supplementalMedia);
-
-    // When a connected franchise appeared on an earlier search page, keep its
-    // card on the first page where it appeared. New season records discovered
-    // later are still cached and will be included when that earlier page is revisited.
-    if (options.suppressEarlierPages && mode === "discover") {
-      groupedItems = groupedItems.filter(group => {
-        const ids = (group.seriesEntries || [])
-          .map(entry => entry.id)
-          .filter(id => id != null);
-        if (group.id != null && !ids.includes(group.id)) ids.push(group.id);
-
-        const previouslySeen = ids
-          .map(id => seriesFirstSeenPage.get(id))
-          .filter(Number.isFinite);
-        const firstSeenPage = previouslySeen.length
-          ? Math.min(...previouslySeen)
-          : null;
-
-        for (const id of ids) {
-          if (!seriesFirstSeenPage.has(id)) {
-            seriesFirstSeenPage.set(id, page);
-          }
-        }
-
-        return firstSeenPage == null || firstSeenPage >= page;
-      });
-    }
-
-    // Preserve AniList relevance while prioritizing series with reaction links.
-    const orderedItems = [...groupedItems].sort((a, b) =>
-      Number(hasRecordedReactionLinks(b)) -
-      Number(hasRecordedReactionLinks(a))
-    );
-
-    orderedItems.forEach(item => results.append(makeCard(item)));
+    orderedItems.forEach(item => {
+      results.append(makeCard(item));
+    });
   }
 
   function renderLastResults() {
-    if (mode === "favorites") {
-      render(getFilteredFavorites());
-    } else {
-      render(displayedItems, [...seriesLookupCache.values()]);
-    }
+    render(
+      mode === "favorites"
+        ? getFilteredFavorites()
+        : displayedItems
+    );
   }
 
   // =========================================================
@@ -3041,17 +1969,8 @@ gth) {
   // =========================================================
 
   function toggleFavorite(anime) {
-    const seriesIds = [
-      anime.id,
-      ...(Array.isArray(anime.seriesEntries)
-        ? anime.seriesEntries.map(entry => entry.id)
-        : [])
-    ];
-
-    const alreadySaved = seriesIds.some(id => favorites[id]);
-
-    if (alreadySaved) {
-      seriesIds.forEach(id => delete favorites[id]);
+    if (favorites[anime.id]) {
+      delete favorites[anime.id];
     } else {
       favorites[anime.id] = anime;
     }
@@ -3063,9 +1982,18 @@ gth) {
   function getFilteredFavorites() {
     const term = normalizeTitle(searchInput.value);
 
-    return Object.values(favorites).filter(anime =>
-      !term || getAnimeAliases(anime).some(title => title.includes(term))
-    );
+    return Object.values(favorites).filter(anime => {
+      const titles = [
+        anime.title?.english,
+        anime.title?.romaji,
+        anime.title?.native,
+        ...(Array.isArray(anime.synonyms) ? anime.synonyms : [])
+      ];
+
+      return !term || titles.some(title =>
+        normalizeTitle(title).includes(term)
+      );
+    });
   }
 
   // =========================================================
@@ -3091,13 +2019,6 @@ gth) {
       return;
     }
 
-    const activeQuery = normalizeTitle(searchInput.value.trim());
-    if (activeQuery !== seriesLookupQuery) {
-      seriesLookupQuery = activeQuery;
-      seriesLookupCache = new Map();
-      seriesFirstSeenPage = new Map();
-    }
-
     if (requestController) {
       requestController.abort();
     }
@@ -3109,8 +2030,6 @@ gth) {
     pagination.hidden = true;
 
     try {
-      // Keep the first search request small and reliable. Season relationships
-      // are fetched separately after the basic anime results are displayed.
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
@@ -3157,57 +2076,18 @@ gth) {
       displayedItems = pageData.media || [];
       hasNextPage = Boolean(pageData.pageInfo?.hasNextPage);
 
-      const resultLabel =
-        `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
-        `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}`;
-
-      // Display the search results before attempting any optional season lookups.
       render(displayedItems);
+
       pagination.hidden = false;
+
       previousButton.disabled = page <= 1;
       nextButton.disabled = !hasNextPage;
       pageLabel.textContent = `Page ${page}`;
 
-      if (!displayedItems.length) {
-        setStatus(resultLabel + ".");
-        return;
-      }
-
-      setStatus(resultLabel + ". Loading season details separately…");
-
-      const currentPageItems = [...displayedItems];
-
-      // A failed season lookup must never erase the anime results that already
-      // loaded successfully above.
-      try {
-        await loadFullSeriesRelations(currentPageItems, controller.signal);
-
-        if (controller.signal.aborted || requestController !== controller) {
-          return;
-        }
-
-        rememberSeriesMedia(currentPageItems);
-
-        render(
-          currentPageItems,
-          [...seriesLookupCache.values()],
-          { suppressEarlierPages: true }
-        );
-
-        setStatus(resultLabel + ".");
-      } catch (seasonError) {
-        if (
-          seasonError.name === "AbortError" ||
-          controller.signal.aborted ||
-          requestController !== controller
-        ) {
-          return;
-        }
-
-        console.warn("Season details could not be fully loaded:", seasonError);
-        // Keep the original AniList results visible when relation discovery fails.
-        setStatus(resultLabel + ". Some season details are temporarily unavailable.");
-      }
+      setStatus(
+        `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
+        `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}.`
+      );
 
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -3265,13 +2145,6 @@ gth) {
 
     ownerStatus.textContent = "Signing in…";
 
-    try {
-      await ensureSupabaseClient();
-    } catch (error) {
-      ownerStatus.textContent = "Authentication service unavailable. Please try again.";
-      return;
-    }
-
     const email = document.getElementById("ownerEmail").value.trim();
     const password = document.getElementById("ownerPassword").value;
 
@@ -3292,13 +2165,6 @@ gth) {
   });
 
   ownerLogout.addEventListener("click", async () => {
-    try {
-      await ensureSupabaseClient();
-    } catch (error) {
-      ownerStatus.textContent = "Authentication service unavailable. Please try again.";
-      return;
-    }
-
     await authClient.auth.signOut();
 
     ownerSession = null;
@@ -3314,16 +2180,6 @@ gth) {
     ownerCheckInProgress = true;
 
     try {
-      try {
-        await ensureSupabaseClient();
-      } catch (error) {
-        ownerStatus.textContent =
-          "Owner review could not connect to the authentication service. Please check your connection and try again.";
-        ownerLoginForm.hidden = true;
-        ownerLogout.hidden = true;
-        return;
-      }
-
       const { data, error } = await authClient.auth.getSession();
 
       if (error || !data.session) {
@@ -3569,6 +2425,26 @@ gth) {
   // =========================================================
   // AUTH STATE CHANGES
   // =========================================================
+
+  authClient.auth.onAuthStateChange((_event, session) => {
+    ownerSession = session;
+
+    if (!session) {
+      isSiteOwner = false;
+      pendingLinksContainer.replaceChildren();
+
+      if (!ownerPanel.hidden) {
+        ownerStatus.textContent =
+          "Log in with your existing G.O.T. Games owner account.";
+
+        ownerLoginForm.hidden = false;
+        ownerLogout.hidden = true;
+      }
+    } else if (!ownerPanel.hidden) {
+      // Defer the role check until after the auth event finishes.
+      setTimeout(() => checkOwnerAccess(), 0);
+    }
+  });
 
   // =========================================================
   // EVENTS
