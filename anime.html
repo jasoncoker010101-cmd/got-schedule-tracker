@@ -579,8 +579,7 @@
 
   const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 
-  // This must be the Publishable key from THIS Supabase project.
-  // Never put the Service Role key in this file.
+  // Public Publishable key. Never put the Service Role key here.
   const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
 
   const HISTORY_TABLE = "got_anime_watch_history";
@@ -767,9 +766,10 @@
         `${SUPABASE_URL}/rest/v1/${HISTORY_TABLE}`
       );
 
+      // FIX: The actual database column is anime_title.
       url.searchParams.set(
         "select",
-        "event_key,active_title,season_number,episode_num,episode_end,watched_at,platform"
+        "event_key,anime_title,season_number,episode_num,episode_end,watched_at,platform"
       );
 
       url.searchParams.set("order", "watched_at.desc");
@@ -778,8 +778,6 @@
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
-          // Publishable key belongs in the apikey header.
-          // It is not a user access token.
           "apikey": SUPABASE_KEY,
           "Accept": "application/json",
           "Range": `${offset}-${offset + HISTORY_PAGE_SIZE - 1}`
@@ -826,19 +824,17 @@
 
       offset += HISTORY_PAGE_SIZE;
 
-      // Safety limit against an unexpectedly large response.
       if (offset >= 50000) break;
     }
 
     // Remove duplicate database events using event_key.
-    // Fall back to a row identity if an older row has no event_key.
     const uniqueRows = new Map();
 
     for (const row of allRows) {
       const identity = row.event_key
         ? `event:${row.event_key}`
         : [
-            row.active_title,
+            row.anime_title,
             row.season_number,
             row.episode_num,
             row.episode_end,
@@ -881,8 +877,6 @@
     return { start, end };
   }
 
-  // Merge overlapping and consecutive ranges.
-  // This prevents repeated events from inflating episode counts.
   function mergeRanges(ranges) {
     if (!ranges.length) return [];
 
@@ -942,7 +936,8 @@
     historyByTitle = new Map();
 
     for (const row of watchHistory) {
-      const title = normalizeTitle(row.active_title);
+      // FIX: Read anime_title, not active_title.
+      const title = normalizeTitle(row.anime_title);
 
       if (!title) continue;
 
@@ -966,7 +961,7 @@
         const identity = row.event_key
           ? `event:${row.event_key}`
           : [
-              row.active_title,
+              row.anime_title,
               row.season_number,
               row.episode_num,
               row.episode_end,
@@ -1370,7 +1365,6 @@
   // =========================================================
 
   async function searchAnime() {
-    // Favorites are stored locally, so no AniList request is needed.
     if (mode === "favorites") {
       if (requestController) {
         requestController.abort();
@@ -1389,7 +1383,6 @@
       return;
     }
 
-    // Cancel the previous request before starting another.
     if (requestController) {
       requestController.abort();
     }
@@ -1427,7 +1420,6 @@
 
       const payload = await response.json();
 
-      // Ignore results from requests that are no longer current.
       if (controller.signal.aborted || requestController !== controller) {
         return;
       }
@@ -1546,4 +1538,4 @@
   initializeHistory();
 </script>
 </body>
-</html>    
+</html>
