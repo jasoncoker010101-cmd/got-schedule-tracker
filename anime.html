@@ -2046,7 +2046,7 @@
     function isSeasonEntry(media) {
       return Boolean(
         media &&
-        media.type === "ANIME" &&
+        (media.type == null || media.type === "ANIME") &&
         ["TV", "TV_SHORT", "ONA"].includes(media.format)
       );
     }
