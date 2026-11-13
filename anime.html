@@ -1160,6 +1160,12 @@
 
   let displayedItems = [];
 
+  // Keep only relation data discovered while the user visits pages for the
+  // current search. This is a grouping cache, not a background page crawler.
+  let seriesLookupQuery = null;
+  let seriesLookupCache = new Map();
+  let seriesFirstSeenPage = new Map();
+
   let watchHistory = [];
   let historyLoaded = false;
   let historyError = false;
@@ -2544,9 +2550,70 @@
     return items;
   }
 
-  function buildSeriesGroups(items) {
+  function rememberSeriesMedia(items) {
+    const pending = [...(items || [])];
+    const visited = new Set();
+
+    while (pending.length) {
+      const incoming = pending.pop();
+      if (!incoming || incoming.id == null || visited.has(incoming.id)) continue;
+      visited.add(incoming.id);
+
+      let stored = seriesLookupCache.get(incoming.id);
+      if (!stored) {
+        stored = incoming;
+        seriesLookupCache.set(incoming.id, stored);
+      } else if (stored !== incoming) {
+        for (const field of [
+          "type", "idMal", "episodes", "format", "seasonYear",
+          "title", "synonyms", "coverImage"
+        ]) {
+          if (incoming[field] != null) stored[field] = incoming[field];
+        }
+
+        const mergedEdges = new Map();
+        for (const edge of [
+          ...(stored.relations?.edges || []),
+          ...(incoming.relations?.edges || [])
+        ]) {
+          const key = edge.node?.id == null
+            ? null
+            : edge.relationType + ":" + edge.node.id;
+          if (key) mergedEdges.set(key, edge);
+        }
+
+        stored.relations = {
+          ...(stored.relations || {}),
+          ...(incoming.relations || {}),
+          edges: [...mergedEdges.values()]
+        };
+      }
+
+      for (const edge of stored.relations?.edges || []) {
+        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
+        const node = edge.node;
+        if (!node || node.id == null) continue;
+
+        const canonical = seriesLookupCache.get(node.id);
+        if (canonical && canonical !== node) {
+          edge.node = canonical;
+          pending.push(canonical);
+        } else {
+          pending.push(node);
+        }
+      }
+    }
+  }
+
+  function buildSeriesGroups(items, supplementalMedia = []) {
     const mediaById = new Map();
     const links = new Map();
+
+    // Previously visited pages can supply connected season records, but they
+    // do not trigger any additional AniList requests.
+    for (const media of supplementalMedia) {
+      if (media?.id != null) mediaById.set(media.id, media);
+    }
 
     function isSeasonEntry(media) {
       return Boolean(
@@ -2665,7 +2732,7 @@
     return groups;
   }
 
-  function render(items) {
+  function render(items, supplementalMedia = [], options = {}) {
     results.replaceChildren();
 
     if (!items.length) {
@@ -2680,7 +2747,34 @@
       return;
     }
 
-    const groupedItems = buildSeriesGroups(items);
+    let groupedItems = buildSeriesGroups(items, supplementalMedia);
+
+    // When a connected franchise appeared on an earlier search page, keep its
+    // card on the first page where it appeared. New season records discovered
+    // later are still cached and will be included when that earlier page is revisited.
+    if (options.suppressEarlierPages && mode === "discover") {
+      groupedItems = groupedItems.filter(group => {
+        const ids = (group.seriesEntries || [])
+          .map(entry => entry.id)
+          .filter(id => id != null);
+        if (group.id != null && !ids.includes(group.id)) ids.push(group.id);
+
+        const previouslySeen = ids
+          .map(id => seriesFirstSeenPage.get(id))
+          .filter(Number.isFinite);
+        const firstSeenPage = previouslySeen.length
+          ? Math.min(...previouslySeen)
+          : null;
+
+        for (const id of ids) {
+          if (!seriesFirstSeenPage.has(id)) {
+            seriesFirstSeenPage.set(id, page);
+          }
+        }
+
+        return firstSeenPage == null || firstSeenPage >= page;
+      });
+    }
 
     // Preserve AniList relevance while prioritizing series with reaction links.
     const orderedItems = [...groupedItems].sort((a, b) =>
@@ -2692,11 +2786,11 @@
   }
 
   function renderLastResults() {
-    render(
-      mode === "favorites"
-        ? getFilteredFavorites()
-        : displayedItems
-    );
+    if (mode === "favorites") {
+      render(getFilteredFavorites());
+    } else {
+      render(displayedItems, [...seriesLookupCache.values()]);
+    }
   }
 
   // =========================================================
@@ -2752,6 +2846,13 @@
       );
 
       return;
+    }
+
+    const activeQuery = normalizeTitle(searchInput.value.trim());
+    if (activeQuery !== seriesLookupQuery) {
+      seriesLookupQuery = activeQuery;
+      seriesLookupCache = new Map();
+      seriesFirstSeenPage = new Map();
     }
 
     if (requestController) {
@@ -2813,7 +2914,7 @@
 
       // Show AniList results immediately. Season discovery continues in the
       // background so a slow relationship lookup never leaves the page blank.
-      render(displayedItems);
+      render(displayedItems, [...seriesLookupCache.values()]);
       pagination.hidden = false;
       previousButton.disabled = page <= 1;
       nextButton.disabled = !hasNextPage;
@@ -2837,8 +2938,17 @@
         return;
       }
 
-      // Refresh the visible cards after AniList/Jikan season checks complete.
-      render(displayedItems);
+      // Remember only records reached from this page's search results. Future
+      // pages are untouched until the user navigates to them.
+      rememberSeriesMedia(currentPageItems);
+
+      // Merge connected seasons gathered on pages already visited and avoid
+      // showing the same franchise as a second search result on later pages.
+      render(
+        currentPageItems,
+        [...seriesLookupCache.values()],
+        { suppressEarlierPages: true }
+      );
       setStatus(resultLabel + ".");
 
     } catch (error) {
