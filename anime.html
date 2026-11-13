@@ -2389,7 +2389,10 @@
         }
       }
 
-      frontier = nextFrontier;
+      // Keep IDs that did not fit in this 40-entry batch. Previously,
+      // assigning only nextFrontier discarded the rest of a large queue.
+      const unprocessed = frontier.filter(id => !fetched.has(id));
+      frontier = [...new Set([...unprocessed, ...nextFrontier])];
     }
 
     // Jikan/MyAnimeList fallback: check a few disconnected results only.
