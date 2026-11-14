@@ -220,8 +220,8 @@ input,select,textarea{accent-color:var(--got-gold)}
    <button type="button" id="runFullDiagnostics">Run full diagnostics</button>
   </div>
  </div>
- <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 13</span></div>
- <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
+ <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 14</span></div>
+ <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="14" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
  <div class="diag-console" id="fullDiagTerminal" role="log" aria-live="polite" aria-relevant="additions text">
   <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v3.0</div>
   <div class="diag-console-line dim">Read-only mode · Findings will be grouped by severity.</div>
@@ -431,7 +431,7 @@ const FULL_DIAGNOSTIC_PAGE_PATHS = [
  "schedule.json","live.json","shows.json","games.json","manifest.json",
  "schedule/message.json","schedule/state.json","schedule/ocr_default.txt",
  "schedule/ocr_sparse.txt","favicon.png","got-mascot.svg","schedule/latest.png",
- "README.md","CNAME"
+ "README.md"
 ];
 const fullDiagSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let fullDiagRunning=false;
@@ -1014,6 +1014,40 @@ const fullDiagnosticSteps=[
    if(invalidWatchTimes||invalidLinkTimes)failures.push((invalidWatchTimes+invalidLinkTimes)+" records have missing or invalid timestamps");
    const detail=watch.length+" watch-history rows · "+links.length+" reaction-link rows · missing AniList IDs: "+missingWatchIds+" watch / "+missingLinkIds+" links · missing titles: "+missingWatchTitles+" watch / "+missingLinkTitles+" links · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link errors · "+missingWatchSeasons+" missing season assignments · "+wrongKnownIds+" known ID mismatches";
    return fullDiagResult("Anime IDs, seasons, episode ranges, and video links",failures.length?"fail":warnings.length?"warning":"pass",failures.length?failures.join(" · ")+" · "+detail:detail+(warnings.length?" · "+warnings.join(" · "):""));
+  }
+ },
+ {
+  name:"Jujutsu Kaisen reaction-link accuracy",
+  run:async()=>{
+   const result=await fullDiagReadAll("got_anime_episode_links","id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type,video_title",10000);
+   const rows=result.rows.filter(row=>String(row.anime_title||"").trim().toLowerCase()==="jujutsu kaisen");
+   const problems=[],warnings=[];
+   const occupied=new Map();
+   for(const row of rows){
+    if(Number(row.anilist_id)!==113415)problems.push("record "+row.id+" has an unexpected AniList ID");
+    const season=Number(row.season_number),start=Number(row.episode_start),end=Number(row.episode_end);
+    if(!Number.isInteger(season)||season<1||!Number.isInteger(start)||!Number.isInteger(end)||start<1||end<start)problems.push("record "+row.id+" has an invalid season or episode range");
+    if(row.link_type==="youtube"){
+     if(!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])||row.patreon_url)problems.push("record "+row.id+" has a mismatched YouTube destination");
+    }else if(row.link_type==="patreon"){
+     if(!fullDiagSafeUrl(row.patreon_url,["patreon.com"])||row.youtube_url)problems.push("record "+row.id+" has a mismatched Patreon destination");
+    }else problems.push("record "+row.id+" has an unknown reaction-link type");
+    if(!String(row.video_title||"").trim())warnings.push("record "+row.id+" has no saved video title");
+    for(let episode=start;episode<=end&&episode-start<100;episode++){
+     const key=season+"|"+episode;
+     if(occupied.has(key))problems.push("season "+season+" episode "+episode+" is linked more than once");
+     occupied.set(key,row.id);
+    }
+   }
+   const season3=[...occupied.keys()].filter(key=>key.startsWith("3|")).map(key=>Number(key.split("|")[1])).sort((a,b)=>a-b);
+   const missingSeason3=Array.from({length:12},(_,i)=>i+1).filter(ep=>!season3.includes(ep));
+   if(missingSeason3.length)warnings.push("no verified G.O.T reaction link currently recorded for Season 3 episode(s) "+missingSeason3.join(", "));
+   const season1Count=rows.filter(row=>Number(row.season_number)===1).length;
+   const season2Count=rows.filter(row=>Number(row.season_number)===2).length;
+   if(!season1Count&&!season2Count)warnings.push("no G.O.T episode-reaction links are currently verified for Seasons 1 or 2; episodes remain listed without invented destinations");
+   if(result.truncated)warnings.push("JJK reaction-link scan reached its row limit");
+   const detail=rows.length+" JJK reaction-link records · "+season3.length+"/12 Season 3 episodes covered · Season 1 links: "+season1Count+" · Season 2 links: "+season2Count+" · "+(problems.length?problems.join(" · "):warnings.length?warnings.join(" · "):"all JJK episode destinations and episode mappings passed");
+   return fullDiagResult("Jujutsu Kaisen reaction-link accuracy",problems.length?"fail":warnings.length?"warning":"pass",detail);
   }
  },
  {
