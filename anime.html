@@ -2220,6 +2220,7 @@
       }
 
       const seasonRows = series.seasons.slice().sort((a, b) =>
+        Number(a.number === 0) - Number(b.number === 0) ||
         Number(a.number) - Number(b.number)
       );
       const anilistIds = [...new Set(seasonRows
@@ -2304,6 +2305,19 @@
             console.warn("Could not retrieve AniList details for season:", fallbackTitle, error);
           }
         }
+
+        let parentMedia = null;
+        const parentTitle = series.title || franchise.name;
+        if (!media && parentTitle &&
+            normalizeTitle(parentTitle) !== normalizeTitle(fallbackTitle)) {
+          try {
+            parentMedia = await findAniListMediaForSeason(parentTitle, signal);
+          } catch (error) {
+            if (error.name === "AbortError") throw error;
+            console.warn("Could not retrieve parent-series artwork:", parentTitle, error);
+          }
+        }
+
         const fallbackYear = String(season.first_aired || series.first_aired || "").slice(0, 4);
 
         const anime = media || {
@@ -2314,12 +2328,12 @@
             native: series.title_native || null
           },
           synonyms: [],
-          coverImage: { large: null },
-          description: series.synopsis?.text || "",
+          coverImage: { large: parentMedia?.coverImage?.large || null },
+          description: series.synopsis?.text || parentMedia?.description || "",
           episodes: Number(season.episode_count) || null,
           seasonYear: /^\d{4}$/.test(fallbackYear) ? Number(fallbackYear) : null,
           format: series.type || "TV",
-          averageScore: null,
+          averageScore: parentMedia?.averageScore || null,
           genres: [],
           relations: { edges: [] }
         };
@@ -2388,7 +2402,8 @@
       entry.historyMapping = {
         seasonNumber: Number(season),
         episodeOffset: offset,
-        episodeCount: count
+        episodeCount: count,
+        partNumber: entry.parsedPart || null
       };
       offsets.set(key, offset + count);
     }
@@ -2442,11 +2457,12 @@
         Number(a.id) - Number(b.id)
       );
       ordered.forEach(item => claimed.add(Number(item.id)));
+      const fallbackEntries = ordered.map((item, index) => ({
+        anime: item,
+        seasonNumber: ordered.length > 1 ? index + 1 : null
+      }));
       groups.push({
-        items: ordered.map((item, index) => ({
-          anime: item,
-          seasonNumber: ordered.length > 1 ? index + 1 : null
-        })),
+        items: resolveHistoryMappings(fallbackEntries),
         source: "anilist"
       });
     }
@@ -2482,9 +2498,12 @@
       if (!unique.length) continue;
 
       const seasonLabel = (entry, index) => {
-        if (entry.seasonNumber === 0) return "Specials";
-        if (Number.isFinite(entry.seasonNumber)) {
-          return "Season " + entry.seasonNumber;
+        if (entry.isSpecial || entry.seasonNumber === 0) return "Specials";
+        const canonicalSeason = entry.historyMapping?.seasonNumber ?? entry.seasonNumber;
+        const partNumber = entry.historyMapping?.partNumber;
+        if (Number.isFinite(canonicalSeason)) {
+          return "Season " + canonicalSeason +
+            (partNumber ? " Part " + partNumber : "");
         }
         return unique.length > 1 ? "Season " + (index + 1) : "";
       };
