@@ -36,7 +36,9 @@ button.secondary{border-color:var(--line);background:rgba(255,255,255,.04);color
 .filters button{border-color:var(--line);background:transparent;color:var(--muted)}
 .filters button.active{border-color:var(--cyan);background:rgba(142,220,224,.12);color:#dffbfc}
 .notice-list{display:grid;gap:10px}
-.notice{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:start;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(7,14,20,.32)}
+.notice{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:start;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(7,14,20,.32);cursor:pointer;transition:border-color .18s,background .18s}
+.notice:hover{border-color:rgba(142,220,224,.42)}
+.notice:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .notice.unread{border-color:rgba(239,189,50,.38);background:linear-gradient(100deg,rgba(239,189,50,.09),rgba(7,14,20,.28))}
 .notice-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(142,220,224,.12);font-size:17px}
 .notice.unread .notice-icon{background:rgba(239,189,50,.15)}
@@ -126,8 +128,28 @@ function showInbox(){
   $("accountLine").textContent = currentUser?.email || "Signed in";
 }
 function safeHref(value){
-  const allowed = ["index.html","anime.html","profile.html","player-directory.html","notifications.html"];
-  return allowed.includes(value) ? value : "notifications.html";
+  try{
+    const url = new URL(String(value || "notifications.html"), window.location.href);
+    const allowed = ["/index.html","/anime.html","/profile.html","/player-directory.html","/notifications.html"];
+    if(url.origin !== window.location.origin || !allowed.includes(url.pathname)) return "notifications.html";
+    return url.pathname.replace(/^\\//,"") + url.search + url.hash;
+  }catch{
+    return "notifications.html";
+  }
+}
+function slugifyTitle(value){
+  return String(value || "").toLowerCase().normalize("NFKD")
+    .replace(/[\\u0300-\\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+function notificationHref(item){
+  const metadata = item && item.metadata && typeof item.metadata === "object" ? item.metadata : {};
+  const title = metadata.anime_title || metadata.title;
+  const season = Number(metadata.season_number);
+  if(item?.kind === "episode" && title && Number.isInteger(season) && season >= 0){
+    return "anime.html#anime-title-" + slugifyTitle(title) + "-season-" + season;
+  }
+  return safeHref(item?.href);
 }
 function formatDate(value){
   const date = new Date(value);
@@ -152,7 +174,20 @@ function renderNotices(){
   for(const item of visible){
     const isRead = readIds.has(item.id);
     const card = document.createElement("article");
+    const destination = notificationHref(item);
     card.className = "notice" + (isRead ? "" : " unread");
+    card.tabIndex = 0;
+    card.setAttribute("role","link");
+    card.setAttribute("aria-label","Open notification: " + (item.title || "New alert"));
+    card.addEventListener("click",event=>{
+      if(event.target.closest("button,a")) return;
+      window.location.href = destination;
+    });
+    card.addEventListener("keydown",event=>{
+      if(event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
+      event.preventDefault();
+      window.location.href = destination;
+    });
     const icon = document.createElement("div");
     icon.className = "notice-icon";
     icon.setAttribute("aria-hidden","true");
@@ -170,7 +205,7 @@ function renderNotices(){
     actions.className = "notice-actions";
     const open = document.createElement("a");
     open.className = "button";
-    open.href = safeHref(item.href);
+    open.href = destination;
     open.textContent = "Open";
     const toggle = document.createElement("button");
     toggle.type = "button";
@@ -182,8 +217,10 @@ function renderNotices(){
     list.append(card);
   }
 }
+let loadingNotices = false;
 async function loadNotices(){
-  if(!currentUser) return;
+  if(!currentUser || loadingNotices) return;
+  loadingNotices = true;
   $("inboxStatus").textContent = "Checking for new alerts…";
   $("inboxStatus").className = "status";
   $("refreshButton").disabled = true;
@@ -201,6 +238,14 @@ async function loadNotices(){
       if(readError) throw readError;
       for(const row of reads || []) readIds.add(row.notification_id);
     }
+    // Opening the inbox is the read action: persist every unread alert immediately.
+    const unreadNotices = notices.filter(item=>!readIds.has(item.id));
+    if(unreadNotices.length){
+      const rows = unreadNotices.map(item=>({user_id:currentUser.id,notification_id:item.id}));
+      const {error:markError} = await gotClient.from("got_notification_reads").insert(rows);
+      if(markError) throw markError;
+      for(const item of unreadNotices) readIds.add(item.id);
+    }
     const unread = notices.filter(item=>!readIds.has(item.id)).length;
     $("inboxStatus").textContent = unread ? unread + " unread · " + notices.length + " recent notifications" : notices.length + " recent notifications · all caught up";
     renderNotices();
@@ -210,6 +255,7 @@ async function loadNotices(){
     $("noticeList").replaceChildren();
   }finally{
     $("refreshButton").disabled = false;
+    loadingNotices = false;
   }
 }
 async function toggleRead(id,isRead,button){
