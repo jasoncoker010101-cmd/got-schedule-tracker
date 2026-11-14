@@ -274,50 +274,84 @@
 
     .results-stage {
       position: relative;
-      min-height: 180px;
+      min-height: 320px;
+    }
+    .results-stage.is-loading #results {
+      visibility: hidden;
     }
 
     .results-loading {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 180px;
+      inset: 0;
       box-sizing: border-box;
       z-index: 5;
-      display: grid;
-      place-items: start center;
-      padding: 28px 16px;
-      background: rgba(8,9,13,.76);
-      backdrop-filter: blur(3px);
-      border: 1px solid rgba(239,189,50,.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      min-height: 320px;
+      background: rgba(8,9,13,.94);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(239,189,50,.25);
       border-radius: 14px;
       pointer-events: none;
     }
     .results-loading[hidden] { display: none; }
     .results-loading-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 17px;
+      display: grid;
+      justify-items: center;
+      gap: 13px;
+      width: min(300px, 100%);
+      padding: 24px 20px;
       border: 1px solid rgba(239,189,50,.3);
-      border-radius: 12px;
-      background: rgba(19,21,29,.96);
+      border-radius: 16px;
+      background: rgba(19,21,29,.98);
       color: var(--text);
-      font-size: 13px;
-      font-weight: 700;
-      box-shadow: 0 8px 28px rgba(0,0,0,.3);
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
+      box-shadow: 0 8px 28px rgba(0,0,0,.38);
     }
-    .results-loading-spinner {
-      width: 19px;
-      height: 19px;
-      flex: 0 0 19px;
-      border: 2px solid rgba(239,189,50,.25);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: results-spin .75s linear infinite;
+    .results-loading-mascot {
+      display: block;
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,.35));
+      transform-origin: 50% 88%;
+      animation: anime-mascot-bounce .82s cubic-bezier(.36,.07,.19,.97) infinite;
     }
-    @keyframes results-spin { to { transform: rotate(360deg); } }
+    .results-loading-track {
+      width: min(190px, 90%);
+      height: 4px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255,255,255,.1);
+    }
+    .results-loading-track::after {
+      content: "";
+      display: block;
+      width: 38%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #efbd32, #fff0ad, #5c9cff);
+      animation: anime-loading-progress 1.35s ease-in-out infinite;
+    }
+    @keyframes anime-mascot-bounce {
+      0%,100% { transform: translateY(0) scale(1,1); }
+      38% { transform: translateY(-12px) scale(.97,1.04); }
+      58% { transform: translateY(0) scale(1.08,.91); }
+      72% { transform: translateY(-4px) scale(.99,1.02); }
+    }
+    @keyframes anime-loading-progress {
+      from { transform: translateX(-110%); }
+      to { transform: translateX(280%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .results-loading-mascot, .results-loading-track::after {
+        animation-duration: 8s;
+      }
+    }
 
     .grid {
       display: grid;
@@ -1254,10 +1288,14 @@ input,select,textarea{accent-color:var(--got-gold)}
         Loading popular anime…
       </p>
 
-      <div class="results-stage">
+      <div class="results-stage" id="resultsStage" aria-busy="false">
         <div class="grid" id="results" aria-live="polite"></div>
         <div class="results-loading" id="resultsLoading" role="status" aria-live="polite" hidden>
-          <div class="results-loading-card"><span class="results-loading-spinner" aria-hidden="true"></span><span>Searching anime…</span></div>
+          <div class="results-loading-card">
+            <img class="results-loading-mascot" src="got-mascot.svg" alt="">
+            <span id="resultsLoadingText">Gathering anime for you…</span>
+            <span class="results-loading-track" aria-hidden="true"></span>
+          </div>
         </div>
       </div>
 
@@ -1440,6 +1478,8 @@ input,select,textarea{accent-color:var(--got-gold)}
   const searchInput = document.getElementById("searchInput");
   const pageLoader = document.getElementById("pageLoader");
   const resultsLoading = document.getElementById("resultsLoading");
+  const resultsStage = document.getElementById("resultsStage");
+  const resultsLoadingText = document.getElementById("resultsLoadingText");
   const results = document.getElementById("results");
   const status = document.getElementById("status");
   const pagination = document.getElementById("pagination");
@@ -3378,6 +3418,9 @@ input,select,textarea{accent-color:var(--got-gold)}
   async function searchAnime() {
     if (mode === "favorites") {
       pageLoader.hidden = true;
+      resultsLoading.hidden = true;
+      resultsStage.classList.remove("is-loading");
+      resultsStage.setAttribute("aria-busy", "false");
       if (requestController) {
         requestController.abort();
         requestController = null;
@@ -3405,7 +3448,12 @@ input,select,textarea{accent-color:var(--got-gold)}
     // Keep every catalogue/search load inside the results area. Never cover
     // the whole page while the user is typing or browsing.
     pageLoader.hidden = true;
+    resultsStage.classList.add("is-loading");
+    resultsStage.setAttribute("aria-busy", "true");
     resultsLoading.hidden = false;
+    resultsLoadingText.textContent = searchInput.value.trim()
+      ? "Finding your anime…"
+      : "Gathering anime for you…";
     setStatus("Searching Taizen…");
     pagination.hidden = true;
 
@@ -3511,6 +3559,8 @@ input,select,textarea{accent-color:var(--got-gold)}
         requestController = null;
         pageLoader.hidden = true;
         resultsLoading.hidden = true;
+        resultsStage.classList.remove("is-loading");
+        resultsStage.setAttribute("aria-busy", "false");
         initialCatalogueLoad = false;
       }
     }
@@ -3884,6 +3934,8 @@ input,select,textarea{accent-color:var(--got-gold)}
     initialCatalogueLoad = false;
     pageLoader.hidden = true;
     resultsLoading.hidden = true;
+    resultsStage.classList.remove("is-loading");
+    resultsStage.setAttribute("aria-busy", "false");
     setMode("discover");
   });
 
@@ -3940,6 +3992,9 @@ input,select,textarea{accent-color:var(--got-gold)}
     // Search feedback stays local to the anime results, even on first load.
     initialCatalogueLoad = false;
     pageLoader.hidden = true;
+    resultsStage.classList.add("is-loading");
+    resultsStage.setAttribute("aria-busy", "true");
+    resultsLoadingText.textContent = "Finding your anime…";
     resultsLoading.hidden = false;
 
     clearTimeout(debounceTimer);
