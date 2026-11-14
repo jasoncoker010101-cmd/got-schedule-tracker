@@ -1485,7 +1485,7 @@ $("saveDiagWarnings").addEventListener("click",()=>fullDiagSaveText("warning"));
 // AniList title lookup: only auto-select an exact title/alias match. Similar results require owner confirmation.
 const anilistLookupState = new Map();
 function normalizeAniListTitle(value){
- return String(value||"").normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+ return String(value||"").normalize("NFKD").replace(/\p{M}/gu,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
 }
 async function resolveAniListTitle(title){
  const query=String.raw`query ($search: String) {
@@ -1571,7 +1571,9 @@ async function submitManualEpisodeLink(event){
  event.preventDefault();
  const button=$("manualLinkSubmit"),message=$("manualLinkMessage");
  if(!db||button.disabled)return;
- const animeTitle=$("manualLinkAnime").value.trim();\n if(!Number.isInteger(Number($("manualLinkAniList").value))||Number($("manualLinkAniList").value)<1){const resolved=await updateAniListLookup("manual",true);if(!resolved){message.textContent+=" Select a confirmed AniList match before saving.";return;}}\n const anilistId=Number($("manualLinkAniList").value);
+ const animeTitle=$("manualLinkAnime").value.trim();
+ if(!Number.isInteger(Number($("manualLinkAniList").value))||Number($("manualLinkAniList").value)<1){const resolved=await updateAniListLookup("manual",true);if(!resolved){message.textContent+=" Select a confirmed AniList match before saving.";return;}}
+ const anilistId=Number($("manualLinkAniList").value);
  const season=Number($("manualLinkSeason").value),episodeStart=Number($("manualLinkEpisode").value);
  const episodeEnd=$("manualLinkEpisodeEnd").value.trim()?Number($("manualLinkEpisodeEnd").value):episodeStart;
  const linkType=$("manualLinkType").value,linkUrl=$("manualLinkUrl").value.trim(),videoTitle=$("manualLinkTitle").value.trim();
