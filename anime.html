@@ -1077,6 +1077,9 @@
   const JUNBAN_API_URL = "https://junban.moe/api/v1";
   const junbanFullSeasonCache = new Map();
   const junbanTitleMediaCache = new Map();
+  // Serialize every AniList request so parallel season lookups cannot burst.
+  let aniListRequestQueue = Promise.resolve();
+  let lastAniListRequestAt = 0;
 
   const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 
@@ -1337,28 +1340,40 @@
   }
 
   async function waitForAniListSlot(signal) {
-    // Store the real request start time, not a future timestamp. Older code
-    // stored a moving future time, which made every rapid reload add more delay.
+    // AniList currently documents a 30-requests/minute degraded limit.
+    // Keep a little margin and serialize requests across all lookup paths.
+    const minimumInterval = 2200;
     const storageKey = "gotAnimeLastAniListRequest";
-    let waitMs = 0;
+    let savedTime = lastAniListRequestAt;
+
     try {
-      const now = Date.now();
-      const savedTime = Number(sessionStorage.getItem(storageKey)) || 0;
-      if (savedTime > now) {
-        // Honor one already-scheduled request from the previous version.
-        waitMs = Math.min(1800, savedTime - now);
-      } else if (savedTime > 0) {
-        waitMs = Math.max(0, 1800 - (now - savedTime));
-      }
-      if (waitMs) await waitForRetry(waitMs, signal);
-      if (signal?.aborted) {
-        throw new DOMException("Request was cancelled.", "AbortError");
-      }
-      sessionStorage.setItem(storageKey, String(Date.now()));
-    } catch (error) {
-      if (error?.name === "AbortError") throw error;
-      // Storage can be unavailable in private browsing; continue normally.
+      savedTime = Math.max(
+        savedTime,
+        Number(sessionStorage.getItem(storageKey)) || 0
+      );
+    } catch {
+      // The in-memory timestamp still protects this page if storage is blocked.
     }
+
+    const waitMs = Math.max(0, minimumInterval - (Date.now() - savedTime));
+    if (waitMs) await waitForRetry(waitMs, signal);
+
+    if (signal?.aborted) {
+      throw new DOMException("Request was cancelled.", "AbortError");
+    }
+
+    lastAniListRequestAt = Date.now();
+    try {
+      sessionStorage.setItem(storageKey, String(lastAniListRequestAt));
+    } catch {
+      // Storage is optional; the in-memory limiter remains active.
+    }
+  }
+
+  function scheduleAniListSlot(signal) {
+    const scheduled = aniListRequestQueue.then(() => waitForAniListSlot(signal));
+    aniListRequestQueue = scheduled.catch(() => {});
+    return scheduled;
   }
 
   async function fetchAniListWithRetry(url, options, maxAttempts = 2) {
@@ -1370,23 +1385,30 @@
       }
 
       try {
-        if (attempt === 0) await waitForAniListSlot(options.signal);
-        const response = await fetchWithTimeout(url, options, 9000);
+        // Every request and retry passes through the same serialized limiter.
+        await scheduleAniListSlot(options.signal);
+        const response = await fetchWithTimeout(url, options, 12000);
 
         if (response.ok) return response;
 
         const temporary = [408, 425, 429, 500, 502, 503, 504].includes(response.status);
         if (!temporary || attempt === maxAttempts - 1) {
           if (response.status === 429) {
-            throw new Error("AniList is busy. Please wait a moment and try again.");
+            throw new Error("AniList rate limit reached. Wait about a minute, then try Discover again.");
           }
           throw new Error(`AniList request failed (${response.status}).`);
         }
 
         const retryAfter = Number(response.headers.get("Retry-After"));
-        const delay = Number.isFinite(retryAfter) && retryAfter > 0
-          ? Math.min(retryAfter * 1000, 6000)
-          : Math.min(800 * (2 ** attempt), 4000);
+        const resetAt = Number(response.headers.get("X-RateLimit-Reset"));
+        const resetDelay = resetAt > Date.now() / 1000
+          ? (resetAt - Date.now() / 1000) * 1000
+          : 0;
+        const delay = response.status === 429
+          ? Math.min(Math.max(retryAfter * 1000, resetDelay, 6000), 65000)
+          : (Number.isFinite(retryAfter) && retryAfter > 0
+            ? Math.min(retryAfter * 1000, 12000)
+            : Math.min(1200 * (2 ** attempt), 6000));
 
         await waitForRetry(delay, options.signal);
       } catch (error) {
@@ -1401,7 +1423,7 @@
           throw error;
         }
 
-        await waitForRetry(Math.min(800 * (2 ** attempt), 4000), options.signal);
+        await waitForRetry(Math.min(1200 * (2 ** attempt), 6000), options.signal);
       }
     }
 
@@ -2516,7 +2538,7 @@
       }
     }`;
 
-    const response = await fetch(API_URL, {
+    const response = await fetchAniListWithRetry(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -2632,7 +2654,7 @@
             }
           }`;
 
-          const mediaResponse = await fetch(API_URL, {
+          const mediaResponse = await fetchAniListWithRetry(API_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
