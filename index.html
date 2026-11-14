@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+try {
+  if (!localStorage.getItem("gotWelcomeIntroSeenV1")) {
+    document.documentElement.classList.add("got-intro-pending");
+    localStorage.setItem("gotWelcomeIntroSeenV1", "1");
+  }
+} catch (e) {}
+</script>
 <title>G.O.T Games Schedule (Unofficial Fan Site)</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1361,6 +1369,20 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
 @media print{.activity-feed{display:none!important}}
 
 
+/* One-time first-visit welcome intro */
+.got-intro-screen{display:none;position:fixed;inset:0;z-index:5000;overflow:hidden;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:28px;text-align:center;color:#fff;background:radial-gradient(circle at 18% 22%,rgba(255,214,75,.95),transparent 27%),radial-gradient(circle at 82% 24%,rgba(0,224,255,.72),transparent 31%),radial-gradient(circle at 50% 88%,rgba(176,65,255,.78),transparent 42%),linear-gradient(135deg,#071c38 0%,#153c68 48%,#251342 100%);opacity:1;transition:opacity .75s ease,visibility .75s ease}
+.got-intro-pending .got-intro-screen{display:flex}
+.got-intro-screen::before,.got-intro-screen::after{content:"";position:absolute;width:min(76vw,560px);aspect-ratio:1;border:1px solid rgba(255,255,255,.2);border-radius:50%;box-shadow:0 0 70px rgba(0,221,255,.18),inset 0 0 70px rgba(255,211,74,.12);animation:introOrbit 8s linear infinite;pointer-events:none}
+.got-intro-screen::after{width:min(94vw,700px);animation-duration:12s;animation-direction:reverse}
+.got-intro-mascot{position:relative;z-index:1;width:clamp(150px,30vw,230px);height:auto;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(0,0,0,.38));animation:mascotAirTwist 1.35s cubic-bezier(.2,.8,.2,1) both}
+.got-intro-welcome{position:relative;z-index:1;margin:0;max-width:900px;font:800 clamp(1.8rem,6vw,3.6rem)/1.05 var(--font);letter-spacing:-.035em;text-shadow:0 4px 22px rgba(0,0,0,.35);opacity:0;transform:translateY(16px) scale(.97);animation:introWelcomeIn .7s ease 1.25s forwards}
+.got-intro-welcome span{display:block;margin-top:12px;font-size:.38em;letter-spacing:.22em;text-transform:uppercase;color:#ffe18a}
+.got-intro-screen.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes mascotAirTwist{0%{transform:translateY(90px) rotate(0deg) scale(.72);opacity:0}18%{opacity:1}48%{transform:translateY(-105px) rotate(190deg) scale(1.08)}72%{transform:translateY(-55px) rotate(310deg) scale(1.02)}88%{transform:translateY(8px) rotate(360deg) scale(.96)}100%{transform:translateY(0) rotate(360deg) scale(1);opacity:1}}
+@keyframes introWelcomeIn{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes introOrbit{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.got-intro-screen::before,.got-intro-screen::after{animation:none}.got-intro-mascot{animation:none;opacity:1;transform:none}.got-intro-welcome{animation:introWelcomeIn .01s linear .1s forwards}.got-intro-screen{transition:opacity .15s ease,visibility .15s ease}}
+
 /* G.O.T. mascot loading indicator */
 .got-mascot-loader{
   display:none;width:42px;height:42px;flex:0 0 42px;object-fit:contain;
@@ -1390,6 +1412,10 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
 </style>
 </head>
 <body>
+<div class="got-intro-screen" id="gotWelcomeIntro" role="status" aria-label="Welcome to G.O.T Games Schedule">
+  <img class="got-intro-mascot" src="got-mascot.svg" alt="">
+  <h1 class="got-intro-welcome">Welcome to G.O.T Games Schedule<span>The hub for every stream, upload and update</span></h1>
+</div>
 <div class="wrap">
   <header class="hero">
     <div class="hero-top">
@@ -2619,6 +2645,20 @@ liveStatus=function(ev,now,liveKeys){
 })();
 </script>
 
+<script>
+(() => {
+  const intro = document.getElementById("gotWelcomeIntro");
+  if (!intro || !document.documentElement.classList.contains("got-intro-pending")) return;
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.setTimeout(() => {
+    intro.classList.add("is-leaving");
+    window.setTimeout(() => {
+      intro.remove();
+      document.documentElement.classList.remove("got-intro-pending");
+    }, reduced ? 180 : 800);
+  }, reduced ? 1100 : 3100);
+})();
+</script>
 <script src="notifications.js"></script>
 </body>
 </html>
