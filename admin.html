@@ -57,6 +57,18 @@ const db=(window.supabase && typeof window.supabase.createClient==="function")
   : null;
 const $=id=>document.getElementById(id);let currentReports=[];
 function setHealth(name,ok,value,detail){$(name+"Dot").className="dot "+(ok?"ok":"bad");$(name+"Status").textContent=value;$(name+"Detail").textContent=detail;}
+async function fetchWithTimeout(url,options={},milliseconds=8000){
+ const controller=new AbortController();
+ const sourceSignal=options.signal;
+ let timedOut=false;
+ const abortSource=()=>controller.abort();
+ if(sourceSignal?.aborted)throw new DOMException("Request cancelled.","AbortError");
+ sourceSignal?.addEventListener("abort",abortSource,{once:true});
+ const timer=setTimeout(()=>{timedOut=true;controller.abort();},milliseconds);
+ try{return await fetch(url,{...options,signal:controller.signal});}
+ catch(error){if(timedOut)throw new Error("Request timed out after "+Math.round(milliseconds/1000)+" seconds.");throw error;}
+ finally{clearTimeout(timer);sourceSignal?.removeEventListener("abort",abortSource);}
+}
 async function verifyOwner(){
  if(!db){
   $("dashboard").hidden=true;
@@ -80,15 +92,25 @@ async function verifyOwner(){
 async function health(){
  setHealth("anilist",false,"Checking…","AniList catalogue API");
  try{
-  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),8000);
-  const r=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:"{ Page(page:1,perPage:1){ pageInfo { total } } }"}),signal:controller.signal});
-  clearTimeout(timer);if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("anilist",true,"Online","Catalogue query succeeded");
- }catch(e){setHealth("anilist",false,"Unavailable",e.name==="AbortError"?"Request timed out":e.message);}
+  // A Page query needs a data field as well as optional pageInfo.
+  const query="query AdminAniListHealth { Page(page:1,perPage:1) { pageInfo { hasNextPage } media(type:ANIME) { id } } }";
+  const r=await fetchWithTimeout("https://graphql.anilist.co",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","Accept":"application/json"},
+   body:JSON.stringify({query})
+  },8000);
+  const payload=await r.json().catch(()=>null);
+  if(!r.ok)throw Error("HTTP "+r.status+(payload?.errors?.[0]?.message?": "+payload.errors[0].message:""));
+  if(payload?.errors?.length)throw Error(payload.errors[0].message||"AniList returned a GraphQL error.");
+  if(!payload?.data?.Page)throw Error("AniList returned an unexpected response.");
+  setHealth("anilist",true,"Online","Catalogue query succeeded");
+ }catch(e){setHealth("anilist",false,"Unavailable",e.message||"AniList health check failed");}
  try{
-  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),8000);
-  const r=await fetch("https://junban.moe/api/v1/lookup?site=anilist&id=16498",{signal:controller.signal});
-  clearTimeout(timer);if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("junban",true,"Online","Lookup request succeeded");
- }catch(e){setHealth("junban",false,"Unavailable",e.name==="AbortError"?"Request timed out":e.message);}
+  const r=await fetchWithTimeout("https://junban.moe/api/v1/lookup?site=anilist&id=16498",{},8000);
+  if(!r.ok)throw Error("HTTP "+r.status);
+  await r.json();
+  setHealth("junban",true,"Online","Lookup request succeeded");
+ }catch(e){setHealth("junban",false,"Unavailable",e.message||"Junban health check failed");}
  if(!db){
   setHealth("supabase",false,"Unavailable","Authentication library did not load");
   setHealth("links",false,"Unavailable","Database client unavailable");
@@ -100,9 +122,15 @@ async function health(){
  const {count:links,error:lErr}=await db.from("got_anime_episode_links").select("id",{count:"exact",head:true});
  const {count:pending,error:pErr}=await db.from("got_anime_pending_episode_links").select("id",{count:"exact",head:true}).in("status",["pending","needs_checking"]);
  const dbOk=!wErr&&!lErr&&!pErr;
- setHealth("supabase",dbOk,dbOk?"Connected":"Issue",dbOk?"Database queries succeeded":[wErr,lErr,pErr].filter(Boolean).map(x=>x.message).join(" · "));
- setHealth("links",!lErr,links??"Error",lErr?.message||"Active reaction links");
- $("watchedCount").textContent=watched??"Error";$("pendingLinks").textContent=pending??"Error";
+ const dbProblems=[
+  wErr?("Watch history: "+(wErr.message||wErr.code||"query failed")):null,
+  lErr?("Reaction links: "+(lErr.message||lErr.code||"query failed")):null,
+  pErr?("Pending links: "+(pErr.message||pErr.code||"query failed")):null
+ ].filter(Boolean);
+ setHealth("supabase",dbOk,dbOk?"Connected":"Issue",dbOk?"Database queries succeeded":dbProblems.join(" | "));
+ setHealth("links",!lErr, lErr?"Issue":String(links??"—"), lErr?(lErr.message||lErr.code||"Could not count links"):"Active YouTube and Patreon links");
+ $("watchedCount").textContent=wErr?"Error":(watched??"0");
+ $("pendingLinks").textContent=pErr?"Error":(pending??"0");
 }
 function renderReports(){
  const filter=$("reportFilter").value;const rows=currentReports.filter(r=>filter==="all"||r.status===filter);$("reports").replaceChildren();
