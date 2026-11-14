@@ -1548,7 +1548,7 @@ const fullDiagnosticSteps=[
    const html=await response.text();
    const closed=html.includes('class="nexus-closed"')&&html.includes("Temporarily unavailable")&&html.includes("taking a break");
    const blocked=html.includes("body.nexus-closed .shell")&&html.includes("display:none!important");
-   const chatScriptDisabled=!html.includes('<script src="nexus.js"></script>');
+   const chatScriptDisabled=!html.includes("nexus.js");
    const supabaseClientDisabled=!html.includes('cdn.jsdelivr.net/npm/@supabase/supabase-js');
    const issues=[];
    if(!closed)issues.push("temporary closure page is missing");
