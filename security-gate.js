@@ -88,13 +88,13 @@
     const name = parts[0];
     return (name.length < 3 ? name[0] + "…" : name.slice(0, 2) + "…" + name.slice(-1)) + "@" + parts[1];
   }
-  function renderEmailCode(email, enrollment) {
+  function renderEmailCode(email, enrollment, challengeId) {
     show(
       enrollment ? "Confirm your email" : "Email verification",
       enrollment
         ? "Before setting your security question, confirm you own this account."
         : "The security answer wasn't accepted or you chose email verification. We'll send a one-time code to:",
-      '<div class="got-security-email">' + maskedEmail(email) + '</div><label for="gotSecurityOtp">6-digit email code</label><input id="gotSecurityOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"><button id="gotSecuritySend">Send code</button><button id="gotSecurityVerify">Verify code</button>'
+      '<div class="got-security-email">' + escapeText(maskedEmail(email)) + '</div><label for="gotSecurityOtp">6-digit email code</label><input id="gotSecurityOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"><button id="gotSecuritySend">Send code</button><button id="gotSecurityVerify">Verify code</button>'
     );
     const sendButton = overlay.querySelector("#gotSecuritySend");
     const verifyButton = overlay.querySelector("#gotSecurityVerify");
@@ -118,7 +118,7 @@
         const {data, error} = await db.auth.verifyOtp({email, token, type:"email"});
         if (error) throw error;
         if (!data.session) throw new Error("Email verification did not create a session.");
-        const result = await securityCall("complete_email");
+        const result = await securityCall("complete_email", {challenge_id: challengeId});
         if (result.status === "enrollment_verified") {
           renderQuestionSetup();
         } else if (result.status === "verified") {
@@ -157,7 +157,7 @@
       } finally { setBusy(false); }
     });
   }
-  function renderQuestion(question, country) {
+  function renderQuestion(question, country, challengeId) {
     show(
       "Unusual sign-in detected",
       "This sign-in appears to be from " + (country || "an unfamiliar location") + ". Answer your security question to continue.",
@@ -174,7 +174,7 @@
           window.location.reload();
         } else if (result.status === "email_required") {
           const email = await emailForSession();
-          renderEmailCode(email, false);
+          renderEmailCode(email, false, challengeId);
           setMessage("Use the code sent to your account email.");
         } else if (result.status === "wrong_answer") {
           setMessage("That answer wasn't correct. " + result.remaining + " attempt(s) before email verification.");
@@ -216,7 +216,7 @@
         if (result.newlyVerified) window.location.reload();
       } else if (result.status === "enrollment_required") {
         const email = result.email || session.user?.email || "";
-        renderEmailCode(email, true);
+        renderEmailCode(email, true, result.challengeId);
         try {
           await sendEmailCode();
           setMessage("A verification code was sent to " + maskedEmail(email) + ".");
@@ -224,7 +224,7 @@
           setMessage("Couldn't send the email code: " + (error.message || "Please retry using Send code."));
         }
       } else if (result.status === "question_required") {
-        renderQuestion(result.question, result.country);
+        renderQuestion(result.question, result.country, result.challengeId);
       } else if (result.status === "temporarily_blocked") {
         show("Verification temporarily paused", "Too many incorrect attempts. Try again after " + new Date(result.retry_at).toLocaleTimeString() + ".", '<button id="gotSecurityReload">Check again</button>');
         overlay.querySelector("#gotSecurityReload").addEventListener("click", () => window.location.reload());
