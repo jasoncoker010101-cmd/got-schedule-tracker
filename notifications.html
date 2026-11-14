@@ -132,15 +132,16 @@ function safeHref(value){
     const url = new URL(String(value || "notifications.html"), window.location.href);
     const allowed = ["/index.html","/anime.html","/profile.html","/player-directory.html","/notifications.html"];
     if(url.origin !== window.location.origin || !allowed.includes(url.pathname)) return "notifications.html";
-    return url.pathname.replace(/^\\//,"") + url.search + url.hash;
+    return url.pathname.slice(1) + url.search + url.hash;
   }catch{
     return "notifications.html";
   }
 }
 function slugifyTitle(value){
-  return String(value || "").toLowerCase().normalize("NFKD")
-    .replace(/[\\u0300-\\u036f]/g,"")
-    .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  return String(value || "").normalize("NFKC").toLocaleLowerCase()
+    .replace(/&/g," and ")
+    .replace(/[’']/g,"")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g,"-");
 }
 function notificationHref(item){
   const metadata = item && item.metadata && typeof item.metadata === "object" ? item.metadata : {};
