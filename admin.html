@@ -1342,16 +1342,16 @@ const fullDiagnosticSteps=[
       const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY},body:JSON.stringify({action:"scan",playlist_url:"",anime_title:"",anilist_id:0})},10000);
       const allow=response.headers.get("access-control-allow-origin");
       const payload=await response.json().catch(()=>null);
-      return {slug,ok:!!allow,status:response.status,allow,detail:payload?.error||""};
+      return {slug,ok:!!allow||!!payload,status:response.status,allow,detail:payload?.error||(!allow?"Browser could read the function response; CORS header was not exposed by the wrapper.":"")};
      }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
     })(),
     (async()=>{
      const slug="thegamesdb-game-cover";
      try{
-      const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:"Super Mario Bros."})},10000);
+      const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},body:JSON.stringify({title:"Super Mario Bros."})},10000);
       const allow=response.headers.get("access-control-allow-origin");
       const payload=await response.json().catch(()=>null);
-      return {slug,ok:!!allow,status:response.status,allow,detail:payload?.error||""};
+      return {slug,ok:!!allow,status:response.status,allow,detail:payload?.error||(!payload?"Response was not readable JSON.":"")};
      }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
     })()
    ]);
