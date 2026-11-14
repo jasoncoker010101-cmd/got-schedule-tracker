@@ -1296,6 +1296,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
         <div class="schedule-tool-actions">
           <button type="button" class="schedule-utility" id="todayJump">↳ Today</button>
           <button type="button" class="schedule-utility" id="resetScheduleFilters">Reset</button>
+          <button type="button" class="schedule-utility" id="exportCalendar" title="Download schedule events for your calendar">↓ Calendar</button>
         </div>
         <span class="schedule-result-count" id="scheduleResultCount" role="status" aria-live="polite">All scheduled events</span>
       </div>
@@ -2003,6 +2004,62 @@ function applyScheduleFilters(){
       : ("Showing " + visible + " of " + total + " events");
 }
 
+
+function icsEscape(value){
+  return String(value||"").replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
+}
+function icsDate(date){
+  return date.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");
+}
+function calendarUid(value){
+  let hash=2166136261;
+  for(let i=0;i<value.length;i++){hash^=value.charCodeAt(i);hash=Math.imul(hash,16777619);}
+  return (hash>>>0).toString(16)+"@got-games-schedule";
+}
+function exportScheduleCalendar(){
+  if(!data||!Array.isArray(data.events)||!data.events.length){
+    document.getElementById("scheduleResultCount").textContent="No schedule events are loaded yet";
+    return;
+  }
+  const now=new Date();
+  const events=data.events.filter(ev=>ev&&ev.title&&(ev.start||/^\\d{4}-\\d{2}-\\d{2}$/.test(ev.date||"")));
+  if(!events.length){
+    document.getElementById("scheduleResultCount").textContent="No dated events are available to export";
+    return;
+  }
+  const lines=[
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GOT Games//Schedule//EN",
+    "CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:G.O.T Games Schedule"
+  ];
+  for(const ev of events){
+    const key=eventKey(ev);
+    const title=icsEscape(ev.title);
+    const platform=(PLATFORMS[ev.platform]||PLATFORMS.other).label;
+    const description=icsEscape([platform,(ev.labels||[]).join(" · "),ev.url||""].filter(Boolean).join(" | "));
+    const start=eventDate(ev);
+    lines.push("BEGIN:VEVENT","UID:"+calendarUid(key),"DTSTAMP:"+icsDate(now));
+    if(start&&!Number.isNaN(start.getTime())){
+      const end=new Date(start.getTime()+60*60*1000);
+      lines.push("DTSTART:"+icsDate(start),"DTEND:"+icsDate(end));
+    }else{
+      const day=String(ev.date).replace(/-/g,"");
+      const next=new Date(Date.UTC(Number(ev.date.slice(0,4)),Number(ev.date.slice(5,7))-1,Number(ev.date.slice(8,10))+1)).toISOString().slice(0,10).replace(/-/g,"");
+      lines.push("DTSTART;VALUE=DATE:"+day,"DTEND;VALUE=DATE:"+next);
+    }
+    lines.push("SUMMARY:"+title,"DESCRIPTION:"+description);
+    if(/^https:\/\//i.test(ev.url||""))lines.push("URL:"+ev.url);
+    lines.push("END:VEVENT");
+  }
+  lines.push("END:VCALENDAR");
+  const blob=new Blob([lines.join("\r\n")],{type:"text/calendar;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;link.download="got-games-schedule.ics";
+  document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  document.getElementById("scheduleResultCount").textContent="Calendar exported · "+events.length+" events";
+}
+
 async function load(){
   if(scheduleLoading)return;
   scheduleLoading=true;
@@ -2045,6 +2102,7 @@ async function load(){
 }
 
 refreshScheduleButton.addEventListener("click",()=>load());
+document.getElementById("exportCalendar").addEventListener("click",exportScheduleCalendar);
 
 document.getElementById("scheduleSearch").addEventListener("input",applyScheduleFilters);
 document.getElementById("schedulePlatformFilter").addEventListener("change",applyScheduleFilters);
