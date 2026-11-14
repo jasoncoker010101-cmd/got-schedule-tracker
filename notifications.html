@@ -342,7 +342,7 @@ gotClient.auth.onAuthStateChange((_event,session)=>{
   setTimeout(async()=>{
     currentUser = session?.user || null;
     if(currentUser){showInbox();await loadNotices();}
-    else showLogin();
+    else {inboxAutoReadUserId = null; showLogin();}
   },0);
 });
 initializeInbox();
