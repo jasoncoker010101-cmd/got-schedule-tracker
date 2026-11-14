@@ -215,7 +215,7 @@ input,select,textarea{accent-color:var(--got-gold)}
  </section>
  <section class="panel playlist-auditor-panel" aria-labelledby="playlistAuditorTitle">
   <h2 id="playlistAuditorTitle">YouTube Playlist Auditor</h2>
-  <p class="muted">Scan a public playlist, compare every video against saved reaction links, detect missing episode links, and flag ordering or assignment problems. This audit is read-only; it never changes reaction links.</p>
+  <p class="muted">Scan any anime playlist, compare videos against saved reaction links, detect missing episodes, and save uncertain matches to the shared manual review queue. Uncertain videos are never added automatically.</p>
   <form id="playlistAuditForm">
    <label for="playlistAuditUrl">YouTube playlist URL</label>
    <input id="playlistAuditUrl" type="url" value="https://www.youtube.com/playlist?list=PL3EHLDlY5GPy5Q7dwxHTR0O3T1XEqafzW" placeholder="https://www.youtube.com/playlist?list=..." required>
@@ -226,7 +226,7 @@ input,select,textarea{accent-color:var(--got-gold)}
    <div class="row"><button type="submit" id="playlistAuditRun">Scan playlist</button><span class="muted" id="playlistAuditMessage" role="status" aria-live="polite">Ready to scan. Only owner accounts can run this audit.</span></div>
   </form>
   <div id="playlistAuditSummary" class="playlist-audit-summary" hidden></div>
-  <div class="row playlist-audit-apply-row"><button type="button" id="playlistAuditApply" hidden>ADD EXPLICITLY VERIFIED MISSING LINKS</button><span class="muted" id="playlistAuditApplyNote">Only videos whose season and episode are explicitly stated in the YouTube title can be added. Inferred seasons and uncertain matches are always excluded.</span></div>
+  <div class="row playlist-audit-apply-row"><button type="button" id="playlistAuditApply" hidden>ADD EXPLICITLY VERIFIED MISSING LINKS</button><span class="muted" id="playlistAuditApplyNote">Explicit season labels and high-confidence season matches can be added automatically. Uncertain matches are saved for manual review.</span></div>
    <div id="playlistAuditApplyResult" role="status" aria-live="polite"></div>
   <div id="playlistAuditResults" class="playlist-audit-results" aria-live="polite"></div>
  </section>
@@ -1502,6 +1502,7 @@ async function runPlaylistAudit(event){
   }
   table.append(tbody);wrap.append(table);results.append(wrap);
   message.textContent="Audit complete for "+(data.anime_title||"the selected anime")+". "+eligibleMissing.length+" verified match(es) are eligible to add, including high-confidence season matches inferred from nearby playlist episodes. "+uncertainInferred+" uncertain match(es) remain for manual review.";
+  await loadPlaylistReviewQueue();
  }catch(error){
   $("playlistAuditApply").hidden=true;
   message.textContent="Audit failed: "+(error?.message||String(error));
