@@ -138,6 +138,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 @media(prefers-reduced-motion:reduce){.diag-console-cursor,.diag-run-state[data-state="running"] .diag-pulse{animation:none}.diag-progress-fill{transition:none}}
 
 
+.playlist-auditor-panel{margin:22px 0}.playlist-auditor-panel h2{margin:0 0 7px}.playlist-auditor-panel form{margin-top:15px}.playlist-audit-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin:16px 0}.playlist-audit-stat{padding:11px;border:1px solid var(--line);border-radius:9px;background:var(--raised)}.playlist-audit-stat strong{display:block;font-size:21px;color:var(--accent);margin-top:4px}.playlist-audit-table-wrap{overflow-x:auto;margin-top:12px}.playlist-audit-table{width:100%;border-collapse:collapse;min-width:760px;font-size:12px}.playlist-audit-table th,.playlist-audit-table td{padding:9px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}.playlist-audit-table th{color:var(--accent);font-weight:800}.playlist-audit-table td:nth-child(3){max-width:340px;overflow-wrap:anywhere}.playlist-audit-status{display:inline-block;padding:3px 7px;border-radius:5px;background:var(--raised);font-weight:800;white-space:nowrap}.playlist-audit-status.missing_episode_link{color:#f2bd55}.playlist-audit-status.already_matched{color:var(--green)}.playlist-audit-status.episode_already_catalogued,.playlist-audit-status.title_database_mismatch,.playlist-audit-status.playlist_order_warning{color:#ffb18b}.playlist-audit-status.needs_review{color:var(--muted)}.playlist-audit-note{display:block;color:var(--muted);margin-top:4px;line-height:1.4}.playlist-audit-empty{padding:14px;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}@media(max-width:600px){.playlist-auditor-panel .row>*{flex:1 1 100%}} 
 /* Keep diagnostic export button labels readable against the gold button theme. */
 .diag-filter-bar button.diag-filter-btn.copy{
  display:inline-flex!important;align-items:center!important;justify-content:center!important;
@@ -199,6 +200,21 @@ input,select,textarea{accent-color:var(--got-gold)}
    <select id="announcementLink"><option value="notifications.html">Notification center</option><option value="index.html">Weekly schedule</option><option value="anime.html">Anime catalogue</option><option value="player-directory.html">Fanbase</option></select>
    <div class="row"><button type="submit" id="announcementSubmit">Publish alert</button><span class="muted" id="announcementMessage" role="status" aria-live="polite"></span></div>
   </form>
+ </section>
+ <section class="panel playlist-auditor-panel" aria-labelledby="playlistAuditorTitle">
+  <h2 id="playlistAuditorTitle">YouTube Playlist Auditor</h2>
+  <p class="muted">Scan a public playlist, compare every video against saved reaction links, detect missing episode links, and flag ordering or assignment problems. This audit is read-only; it never changes reaction links.</p>
+  <form id="playlistAuditForm">
+   <label for="playlistAuditUrl">YouTube playlist URL</label>
+   <input id="playlistAuditUrl" type="url" value="https://www.youtube.com/playlist?list=PL3EHLDlY5GPy5Q7dwxHTR0O3T1XEqafzW" placeholder="https://www.youtube.com/playlist?list=..." required>
+   <div class="row">
+    <div style="flex:2;min-width:210px"><label for="playlistAuditAnime">Anime title</label><input id="playlistAuditAnime" value="Jujutsu Kaisen" required></div>
+    <div style="flex:1;min-width:130px"><label for="playlistAuditAniList">AniList ID</label><input id="playlistAuditAniList" type="number" min="1" step="1" value="113415" required></div>
+   </div>
+   <div class="row"><button type="submit" id="playlistAuditRun">Scan playlist</button><span class="muted" id="playlistAuditMessage" role="status" aria-live="polite">Ready to scan. Only owner accounts can run this audit.</span></div>
+  </form>
+  <div id="playlistAuditSummary" class="playlist-audit-summary" hidden></div>
+  <div id="playlistAuditResults" class="playlist-audit-results" aria-live="polite"></div>
  </section>
 <div class="section-head"><h2>System status</h2><div><button class="secondary" id="refresh">Refresh status</button><button class="secondary" id="logout">Log out</button></div></div>
 <div class="grid">
@@ -1253,6 +1269,51 @@ $("copyDiagErrors").addEventListener("click",()=>fullDiagCopyText(fullDiagReport
 $("saveDiagErrors").addEventListener("click",()=>fullDiagSaveText("fail"));
 $("copyDiagWarnings").addEventListener("click",()=>fullDiagCopyText(fullDiagReportText("warning"),$("copyDiagWarnings"),"Copy warnings"));
 $("saveDiagWarnings").addEventListener("click",()=>fullDiagSaveText("warning"));
+
+async function runPlaylistAudit(event){
+ event.preventDefault();
+ if(!db)return;
+ const button=$("playlistAuditRun"),message=$("playlistAuditMessage"),summary=$("playlistAuditSummary"),results=$("playlistAuditResults");
+ button.disabled=true;button.textContent="Scanning playlist…";message.textContent="Checking owner session and retrieving playlist videos…";summary.hidden=true;results.replaceChildren();
+ try{
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!session?.access_token)throw new Error("Your owner session expired. Please sign in again.");
+  const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{
+   playlist_url:$("playlistAuditUrl").value.trim(),
+   anime_title:$("playlistAuditAnime").value.trim(),
+   anilist_id:Number($("playlistAuditAniList").value)
+  }});
+  if(error)throw new Error(error.message||"The playlist audit request failed.");
+  if(!data?.success)throw new Error(data?.error||"The playlist audit could not be completed.");
+  const counts=data.counts||{};
+  const statItems=[
+   ["Videos",counts.videos||0],["Already matched",counts.already_matched||0],
+   ["Missing links",counts.missing_episode_link||0],["Already catalogued",counts.episode_already_catalogued||0],
+   ["Order warnings",counts.playlist_order_warning||0],["Needs review",counts.needs_review||0]
+  ];
+  summary.replaceChildren();summary.hidden=false;
+  for(const [label,value] of statItems){const card=document.createElement("div");card.className="playlist-audit-stat";const name=document.createElement("span");name.className="muted";name.textContent=label;const number=document.createElement("strong");number.textContent=String(value);card.append(name,number);summary.append(card);}
+  const wrap=document.createElement("div");wrap.className="playlist-audit-table-wrap";
+  const table=document.createElement("table");table.className="playlist-audit-table";
+  const thead=document.createElement("thead"),headRow=document.createElement("tr");
+  for(const label of ["Position","Season / episode","Video title","Audit result"]){const th=document.createElement("th");th.textContent=label;headRow.append(th);}thead.append(headRow);table.append(thead);
+  const tbody=document.createElement("tbody");
+  for(const item of data.items||[]){
+   const tr=document.createElement("tr");
+   const pos=document.createElement("td");pos.textContent=String(item.position);
+   const ep=document.createElement("td");ep.textContent=item.season_number==null?"Season unknown":("S"+item.season_number+" · E"+(item.episode_start??"?")+(item.episode_end&&item.episode_end!==item.episode_start?"–"+item.episode_end:"")+(item.season_inferred?" *":""));
+   const title=document.createElement("td");title.textContent=item.title||"Untitled video";
+   const statusCell=document.createElement("td");const badge=document.createElement("span");badge.className="playlist-audit-status "+item.status;badge.textContent=String(item.status||"needs_review").replaceAll("_"," ");const note=document.createElement("span");note.className="playlist-audit-note";note.textContent=item.note||"";statusCell.append(badge,note);
+   tr.append(pos,ep,title,statusCell);tbody.append(tr);
+  }
+  table.append(tbody);wrap.append(table);results.append(wrap);
+  message.textContent="Audit complete for "+(data.anime_title||"the selected anime")+". No database records were changed.";
+ }catch(error){
+  message.textContent="Audit failed: "+(error?.message||String(error));
+ }finally{button.disabled=false;button.textContent="Scan playlist";}
+}
+$("playlistAuditForm").addEventListener("submit",runPlaylistAudit);
 
 function renderReports(){
  const filter=$("reportFilter").value;
