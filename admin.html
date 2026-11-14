@@ -1428,6 +1428,163 @@ const fullDiagnosticSteps=[
    return fullDiagResult("Edge Function availability and browser CORS contracts",failed.length?"warning":"pass",details);
   }
  }
+ ,
+ {
+  name:"Patreon, YouTube, and multi-platform episode-link integrity",
+  run:async()=>{
+   const [linkResult,watchResult]=await Promise.all([
+    fullDiagReadAll("got_anime_episode_links","id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type"),
+    fullDiagReadAll("got_anime_watch_history","id,anime_title,platform")
+   ]);
+   const links=linkResult.rows,watch=watchResult.rows;
+   const providerCounts={youtube:0,patreon:0};
+   const problems=[],warnings=[],slotOwners=new Map();
+   let malformedRanges=0,invalidYoutube=0,invalidPatreon=0,providerFieldMismatches=0,unknownTypes=0,duplicateProviderSlots=0;
+   for(const row of links){
+    const type=String(row.link_type||"").trim().toLowerCase();
+    const start=Number(row.episode_start),end=Number(row.episode_end),season=Number(row.season_number),id=Number(row.anilist_id);
+    if(!Number.isInteger(start)||start<1||!Number.isInteger(end)||end<start||!Number.isInteger(season)||season<1||!Number.isInteger(id)||id<1)malformedRanges++;
+    if(type==="youtube"){
+     providerCounts.youtube++;
+     if(!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"]))invalidYoutube++;
+     if(row.patreon_url)providerFieldMismatches++;
+    }else if(type==="patreon"){
+     providerCounts.patreon++;
+     if(!fullDiagSafeUrl(row.patreon_url,["patreon.com"]))invalidPatreon++;
+     if(row.youtube_url)providerFieldMismatches++;
+    }else unknownTypes++;
+    if((type==="youtube"||type==="patreon")&&Number.isInteger(id)&&id>0&&Number.isInteger(season)&&season>0&&Number.isInteger(start)&&start>0&&Number.isInteger(end)&&end>=start){
+     for(let ep=start;ep<=end&&ep-start<100;ep++){
+      const key=type+"|"+id+"|"+season+"|"+ep;
+      if(slotOwners.has(key)&&slotOwners.get(key)!==row.id)duplicateProviderSlots++;
+      else slotOwners.set(key,row.id);
+     }
+    }
+   }
+   const platformCounts={youtube:0,rumble:0,patreon:0,other:0};
+   for(const row of watch){
+    const platform=String(row.platform||"").trim().toLowerCase();
+    if(platform==="youtube")platformCounts.youtube++;
+    else if(platform==="rumble")platformCounts.rumble++;
+    else if(platform==="patreon")platformCounts.patreon++;
+    else platformCounts.other++;
+   }
+   if(malformedRanges)problems.push(malformedRanges+" episode-link rows have invalid AniList/season/episode ranges");
+   if(invalidYoutube)problems.push(invalidYoutube+" YouTube link rows have invalid or non-HTTPS destinations");
+   if(invalidPatreon)problems.push(invalidPatreon+" Patreon link rows have invalid or non-HTTPS destinations");
+   if(providerFieldMismatches)problems.push(providerFieldMismatches+" rows contain a URL in the wrong provider field");
+   if(unknownTypes)problems.push(unknownTypes+" rows use an unsupported link type");
+   if(duplicateProviderSlots)problems.push(duplicateProviderSlots+" episode slots have duplicate links from the same provider");
+   if(!providerCounts.youtube)warnings.push("no YouTube episode links are configured");
+   if(!providerCounts.patreon)warnings.push("no Patreon episode links are configured");
+   if(platformCounts.other)warnings.push(platformCounts.other+" watch-history rows use an unrecognized platform label");
+   if(linkResult.truncated||watchResult.truncated)warnings.push("one or more provider tables reached the scan limit");
+   const detail=links.length+" episode links · "+providerCounts.youtube+" YouTube links · "+providerCounts.patreon+" Patreon links · watch history: "+platformCounts.youtube+" YouTube / "+platformCounts.rumble+" Rumble / "+platformCounts.patreon+" Patreon · "+(problems.length?problems.join(" · "):"provider destinations and episode mappings are valid")+(warnings.length?" · "+warnings.join(" · "):"");
+   return fullDiagResult("Patreon, YouTube, and multi-platform episode-link integrity",problems.length?"fail":warnings.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"Watch-history provenance, event keys, and timestamps",
+  run:async()=>{
+   const result=await fullDiagReadAll("got_anime_watch_history","id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,platform,watched_at");
+   const rows=result.rows,keys=new Set(),duplicateKeys=new Set(),issues=[];
+   let missingKeys=0,missingTitles=0,missingTimes=0,invalidTimes=0,invalidRanges=0,invalidPlatforms=0,missingIds=0;
+   const platforms={youtube:0,rumble:0,patreon:0};
+   for(const row of rows){
+    const key=String(row.event_key||"").trim();
+    if(!key)missingKeys++;else if(keys.has(key))duplicateKeys.add(key);else keys.add(key);
+    if(!String(row.anime_title||"").trim())missingTitles++;
+    if(row.anilist_id==null||!Number.isInteger(Number(row.anilist_id))||Number(row.anilist_id)<1)missingIds++;
+    const season=Number(row.season_number),start=Number(row.episode_start),end=Number(row.episode_end);
+    if(!Number.isInteger(season)||season<1||!Number.isInteger(start)||start<1||!Number.isInteger(end)||end<start)invalidRanges++;
+    if(!row.watched_at)missingTimes++;
+    else if(Number.isNaN(Date.parse(row.watched_at)))invalidTimes++;
+    const platform=String(row.platform||"").trim().toLowerCase();
+    if(platform==="youtube")platforms.youtube++;
+    else if(platform==="rumble")platforms.rumble++;
+    else if(platform==="patreon")platforms.patreon++;
+    else invalidPlatforms++;
+   }
+   if(missingKeys)issues.push(missingKeys+" records have no event key");
+   if(duplicateKeys.size)issues.push(duplicateKeys.size+" duplicate event keys");
+   if(missingTitles)issues.push(missingTitles+" records have no anime title");
+   if(missingIds)issues.push(missingIds+" records have no valid AniList ID");
+   if(invalidRanges)issues.push(invalidRanges+" records have invalid season/episode ranges");
+   if(missingTimes||invalidTimes)issues.push((missingTimes+invalidTimes)+" records have missing or invalid watch timestamps");
+   if(invalidPlatforms)issues.push(invalidPlatforms+" records have unsupported platform labels");
+   if(result.truncated)issues.push("watch-history scan reached the row limit");
+   const detail=rows.length+" watch-history records · "+platforms.youtube+" YouTube · "+platforms.rumble+" Rumble · "+platforms.patreon+" Patreon · "+(issues.length?issues.join(" · "):"event keys, watch dates, platform labels, and source metadata are consistent");
+   return fullDiagResult("Watch-history provenance, event keys, and timestamps",issues.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"G.O.T. mascot welcome, loading animation, and owner replay",
+  run:async()=>{
+   const [pageResponse,mascotResponse]=await Promise.all([fullDiagFetch("index.html"),fullDiagFetch("got-mascot.svg")]);
+   if(!pageResponse.ok)throw new Error("Homepage returned HTTP "+pageResponse.status);
+   if(!mascotResponse.ok)throw new Error("Mascot SVG returned HTTP "+mascotResponse.status);
+   const html=await pageResponse.text(),svg=await mascotResponse.text();
+   const doc=new DOMParser().parseFromString(html,"text/html");
+   const svgDoc=new DOMParser().parseFromString(svg,"image/svg+xml");
+   const issues=[];
+   const requiredIds=["gotWelcomeIntro","mascotReplayButton","scheduleIndicator"];
+   const missingIds=requiredIds.filter(id=>!doc.getElementById(id));
+   if(missingIds.length)issues.push("missing homepage element(s): "+missingIds.join(", "));
+   if(!doc.querySelector('.got-intro-mascot[src="got-mascot.svg"]'))issues.push("welcome intro does not reference the mascot artwork");
+   if(!/gotWelcomeIntroSeenV1/.test(html)||!html.includes("localStorage.getItem")||!html.includes("localStorage.setItem"))issues.push("one-time welcome display guard is missing");
+   if(!html.includes("gotMascotBounce")||!html.includes("@keyframes gotMascotBounce"))issues.push("mascot bounce animation is missing");
+   if(!html.includes("prefers-reduced-motion"))issues.push("reduced-motion accessibility handling is missing");
+   if(!html.includes("replayWelcomeMascot")||!html.includes("canReplayMascot")||!html.includes("mascotReplayButton.addEventListener"))issues.push("owner-only mascot replay wiring is incomplete");
+   if(svgDoc.querySelector("parsererror")||!svgDoc.querySelector("svg"))issues.push("mascot SVG is invalid or cannot be parsed");
+   const detail="Welcome intro · one-time first-visit guard · loading bounce · reduced-motion support · owner replay · "+(issues.length?issues.join(" · "):"homepage mascot experience and SVG asset are present");
+   return fullDiagResult("G.O.T. mascot welcome, loading animation, and owner replay",issues.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"Nexus community chat frontend and realtime contract",
+  run:async()=>{
+   const [htmlResponse,jsResponse]=await Promise.all([fullDiagFetch("nexus.html"),fullDiagFetch("nexus.js")]);
+   if(!htmlResponse.ok)throw new Error("Nexus page returned HTTP "+htmlResponse.status);
+   if(!jsResponse.ok)throw new Error("Nexus script returned HTTP "+jsResponse.status);
+   const html=await htmlResponse.text(),js=await jsResponse.text();
+   const doc=new DOMParser().parseFromString(html,"text/html");
+   const requiredIds=["authPanel","hub","authForm","authMessage","roomList","messages","composer","messageInput","reportBackdrop","reportForm","liveDot","liveText","loginTab","signupTab","authSubmit"];
+   const missing=requiredIds.filter(id=>!doc.getElementById(id));
+   const missingInScript=requiredIds.filter(id=>!js.includes('"'+id+'"'));
+   const realtime=js.includes('postgres_changes')&&js.includes('.subscribe(')&&js.includes('removeChannel');
+   const safeTextRendering=js.includes("textContent")&&!/\.innerHTML\s*=/.test(js);
+   const reportWorkflow=js.includes("got_chat_reports")&&js.includes("reportForm");
+   const authWorkflow=js.includes("auth.signInWithPassword")&&js.includes("auth.signUp");
+   const issues=[];
+   if(missing.length)issues.push("Nexus page is missing required UI element(s): "+missing.join(", "));
+   if(missingInScript.length)issues.push("Nexus script does not wire required element(s): "+missingInScript.join(", "));
+   if(!realtime)issues.push("chat realtime subscribe/cleanup wiring is incomplete");
+   if(!safeTextRendering)issues.push("message rendering may not be safely text-only");
+   if(!reportWorkflow)issues.push("chat report workflow wiring is missing");
+   if(!authWorkflow)issues.push("login/signup authentication wiring is missing");
+   return fullDiagResult("Nexus community chat frontend and realtime contract",issues.length?"warning":"pass","Nexus UI controls · login/signup · realtime room updates · channel cleanup · chat reporting · safe text rendering · "+(issues.length?issues.join(" · "):"frontend contracts are present"));
+  }
+ },
+ {
+  name:"Notification badge, unread counts, and realtime alert delivery",
+  run:async()=>{
+   const [scriptResponse,homeResponse,alertsResponse]=await Promise.all([fullDiagFetch("notifications.js"),fullDiagFetch("index.html"),fullDiagFetch("notifications.html")]);
+   if(!scriptResponse.ok)throw new Error("notifications.js returned HTTP "+scriptResponse.status);
+   if(!homeResponse.ok)throw new Error("Homepage returned HTTP "+homeResponse.status);
+   if(!alertsResponse.ok)throw new Error("Notifications page returned HTTP "+alertsResponse.status);
+   const js=await scriptResponse.text(),home=await homeResponse.text(),alerts=await alertsResponse.text();
+   const issues=[];
+   if(!js.includes("got-alert-count")||!js.includes("data-got-alert-link"))issues.push("global alert badge/link creation is missing");
+   if(!js.includes('from("got_notifications")')||!js.includes('from("got_notification_reads")'))issues.push("unread notification count does not query both notification and read-receipt tables");
+   if(!js.includes('table:"got_notifications"')||!js.includes('postgres_changes')||!js.includes(".subscribe("))issues.push("realtime notification subscription is missing");
+   if(!js.includes("removeChannel"))issues.push("realtime channel cleanup is missing");
+   if(!home.includes("notifications.js"))issues.push("homepage does not load the notification client");
+   if(!alerts.includes("notifications.js"))issues.push("notification center does not load the notification client");
+   if(!alerts.includes("got_notifications")||!alerts.includes("got_notification_reads"))issues.push("notification center is missing its data/read-state integration");
+   const detail="Global badge · unread/read-receipt counts · realtime insert alerts · channel cleanup · notification center · "+(issues.length?issues.join(" · "):"notification frontend integration is present");
+   return fullDiagResult("Notification badge, unread counts, and realtime alert delivery",issues.length?"warning":"pass",detail);
+  }
+ }
 ];
 
 async function runFullDiagnostics(){
