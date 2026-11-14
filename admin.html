@@ -137,6 +137,21 @@ input,select,textarea{accent-color:var(--got-gold)}
 @media(max-width:700px){.diag-result{grid-template-columns:minmax(0,1fr) auto}.diag-result-detail{grid-column:1/-1;grid-row:2}.diag-result-status{grid-column:2;grid-row:1}.full-diagnostics-head{align-items:flex-start}.full-diagnostics-actions{width:100%}.full-diagnostics-actions button{flex:1}.diag-filter-label{width:100%}.diag-filter-btn{flex:1;justify-content:center}.diag-filter-btn.copy{margin-left:0;flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.diag-console-cursor,.diag-run-state[data-state="running"] .diag-pulse{animation:none}.diag-progress-fill{transition:none}}
 
+
+/* DIAGNOSTICS V3 // easier issue triage */
+#fullDiagSearch{flex:1 1 230px;min-width:180px;max-width:420px;margin:0;padding:9px 11px;font-size:12px}
+.diag-filter-bar{padding:10px;border:1px solid rgba(142,220,224,.1);border-radius:9px;background:rgba(4,10,16,.4)}
+.diag-filter-btn{min-height:38px}
+.diag-result{grid-template-columns:minmax(160px,.65fr) minmax(0,2fr) auto}
+.diag-result-detail ul{margin:0;padding-left:17px;display:grid;gap:5px}
+.diag-result-detail li{padding-left:2px}
+.diag-result[data-status="fail"]{border-color:rgba(255,120,104,.42);background:rgba(74,23,23,.2)}
+.diag-result[data-status="warning"]{border-color:rgba(242,189,85,.34);background:rgba(73,53,17,.16)}
+.diag-result[data-status="fail"] .diag-result-name::before{content:"! ";color:#ff887e}
+.diag-result[data-status="warning"] .diag-result-name::before{content:"△ ";color:#f2bd55}
+.diag-summary{padding:12px 14px;border:1px solid rgba(142,220,224,.15);border-radius:8px;background:rgba(5,12,19,.45);line-height:1.6}
+@media(max-width:700px){#fullDiagSearch{order:2;flex-basis:100%;max-width:none}.diag-result{grid-template-columns:minmax(0,1fr) auto}.diag-result-detail{grid-column:1/-1;grid-row:2}.diag-result-status{grid-column:2;grid-row:1}}
+
 </style></head>
 <body>
 <header class="site-header">
@@ -205,14 +220,15 @@ input,select,textarea{accent-color:var(--got-gold)}
    <button type="button" id="runFullDiagnostics">Run full diagnostics</button>
   </div>
  </div>
- <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 9</span></div>
- <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
+ <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 11</span></div>
+ <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="11" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
  <div class="diag-console" id="fullDiagTerminal" role="log" aria-live="polite" aria-relevant="additions text">
-  <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v2.0</div>
+  <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v3.0</div>
   <div class="diag-console-line dim">Read-only mode · Findings will be grouped by severity.</div>
  </div>
  <div class="diag-filter-bar" id="fullDiagFilters" hidden aria-label="Filter diagnostic results">
   <span class="diag-filter-label">Show results</span>
+  <input id="fullDiagSearch" type="search" placeholder="Search warnings, errors, pages, or features…" aria-label="Search diagnostic results">
   <button type="button" class="diag-filter-btn" data-diag-filter="all" aria-pressed="true">All <b id="fullDiagFilterAllCount">0</b></button>
   <button type="button" class="diag-filter-btn" data-diag-filter="warning" aria-pressed="false">Warnings <b id="fullDiagFilterWarningCount">0</b></button>
   <button type="button" class="diag-filter-btn" data-diag-filter="fail" aria-pressed="false">Errors <b id="fullDiagFilterErrorCount">0</b></button>
@@ -221,7 +237,7 @@ input,select,textarea{accent-color:var(--got-gold)}
  </div>
  <div class="diag-results" id="fullDiagResults" aria-live="polite"></div>
  <div class="diag-summary" id="fullDiagSummary" role="status">No scan has been run yet.</div>
- <p class="diag-footnote">A green result means the tested request or data check succeeded. Warnings identify stale, incomplete, or review-worthy data. This checks service and data integrity; it does not simulate every possible visitor click or device.</p>
+ <p class="diag-footnote">Errors mean a tested check found a broken or invalid condition. Warnings mean something is incomplete, stale, inaccessible, or needs human review. Select a severity to focus the list, or search for a page or feature. This is a broad audit, not a simulation of every visitor action or every device.</p>
 </section>
 <div class="section-head"><h2>Visitor reports</h2><div class="report-tools"><input id="reportSearch" type="search" placeholder="Search reports by anime, type or details…" aria-label="Search visitor reports"><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div></div>
 <p class="muted" id="reportMessage">Loading reports…</p><div id="reports"></div>
@@ -413,7 +429,8 @@ const FULL_DIAGNOSTIC_PAGE_PATHS = [
  "index.html","anime.html","notifications.html","profile.html",
  "player-directory.html","nexus.html","admin.html",
  "notifications.js","nexus.js","patreon-links.js","mascot.js",
- "schedule.json","live.json","shows.json","games.json","favicon.png","schedule/latest.png"
+ "schedule.json","live.json","shows.json","games.json","manifest.json",
+ "schedule/message.json","schedule/state.json","favicon.png","got-mascot.svg","schedule/latest.png"
 ];
 const fullDiagSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let fullDiagRunning=false;
@@ -470,7 +487,12 @@ function fullDiagRenderResults(){
  $("fullDiagFilterErrorCount").textContent=String(failed);
  $("fullDiagFilterPassCount").textContent=String(passed);
  $("fullDiagFilters").hidden=fullDiagRows.length===0;
- const visible=fullDiagRows.filter(result=>fullDiagActiveFilter==="all"||result.status===fullDiagActiveFilter);
+ const search=String($("fullDiagSearch")?.value||"").trim().toLowerCase();
+ const visible=fullDiagRows.filter(result=>{
+  const statusMatch=fullDiagActiveFilter==="all"||result.status===fullDiagActiveFilter;
+  const textMatch=!search||(result.name+" "+result.detail).toLowerCase().includes(search);
+  return statusMatch&&textMatch;
+ });
  for(const result of visible){
   const row=document.createElement("article");
   row.className="diag-result";
@@ -480,7 +502,12 @@ function fullDiagRenderResults(){
   name.textContent=result.name;
   const detail=document.createElement("div");
   detail.className="diag-result-detail";
-  detail.textContent=result.detail;
+  const pieces=String(result.detail||"No additional detail.").split(" · ").filter(Boolean);
+  if(pieces.length>1){
+   const list=document.createElement("ul");
+   pieces.forEach(piece=>{const item=document.createElement("li");item.textContent=piece;list.append(item);});
+   detail.append(list);
+  }else detail.textContent=pieces[0]||"No additional detail.";
   const status=document.createElement("div");
   status.className="diag-result-status "+result.status;
   status.textContent=result.status==="pass"?"PASS":result.status==="warning"?"WARNING":"ERROR";
@@ -490,13 +517,13 @@ function fullDiagRenderResults(){
  if(!visible.length){
   const empty=document.createElement("div");
   empty.className="diag-no-results";
-  empty.textContent=fullDiagActiveFilter==="warning"?"No warnings were found in this scan.":fullDiagActiveFilter==="fail"?"No errors were found in this scan.":fullDiagActiveFilter==="pass"?"No passed checks to show yet.":"No diagnostic results yet.";
+  empty.textContent=search?"No results match that search.":fullDiagActiveFilter==="warning"?"No warnings were found in this scan.":fullDiagActiveFilter==="fail"?"No errors were found in this scan.":fullDiagActiveFilter==="pass"?"No passed checks to show yet.":"No diagnostic results yet.";
   target.append(empty);
  }
  document.querySelectorAll("[data-diag-filter]").forEach(button=>{
   button.setAttribute("aria-pressed",String(button.dataset.diagFilter===fullDiagActiveFilter));
  });
- $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failed+" errors";
+ $("fullDiagSummary").textContent=passed+" checks passed · "+warnings+" checks with warnings · "+failed+" checks with errors";
 }
 function fullDiagCopyFallback(value){
  const field=document.createElement("textarea");
@@ -601,7 +628,13 @@ const fullDiagnosticSteps=[
        if(seenIds.has(node.id))duplicateIds.add(node.id);
        seenIds.add(node.id);
       });
-      if(duplicateIds.size)warnings.push(duplicateIds.size+" duplicate element ID(s)");
+      if(duplicateIds.size)warnings.push(duplicateIds.size+" duplicate element ID(s) (these can break scripts and in-page navigation)");
+      const brokenFragments=[];
+      parsed.querySelectorAll('a[href^="#"]').forEach(link=>{
+       const fragment=decodeURIComponent(link.getAttribute("href").slice(1));
+       if(fragment&&!parsed.getElementById(fragment))brokenFragments.push(fragment);
+      });
+      if(brokenFragments.length)warnings.push(brokenFragments.length+" in-page link(s) point to missing sections");
       const missingAlt=parsed.querySelectorAll("img:not([alt])").length;
       if(missingAlt)warnings.push(missingAlt+" image(s) missing alt text");
       let unlabeled=0;
@@ -610,8 +643,9 @@ const fullDiagnosticSteps=[
       });
       if(unlabeled)warnings.push(unlabeled+" form control(s) without an accessible label");
       const targets=new Set();
-      parsed.querySelectorAll("a[href],script[src],img[src],link[href]").forEach(node=>{
-       const raw=node.getAttribute(node.hasAttribute("href")?"href":"src");
+      parsed.querySelectorAll("a[href],script[src],img[src],link[href],source[src],video[poster],audio[src],iframe[src],form[action],object[data]").forEach(node=>{
+       const attr=node.hasAttribute("href")?"href":node.hasAttribute("src")?"src":node.hasAttribute("poster")?"poster":node.hasAttribute("action")?"action":"data";
+       const raw=node.getAttribute(attr);
        if(!raw||raw.startsWith("#")||/^(mailto:|tel:|javascript:|data:|blob:)/i.test(raw))return;
        try{
         const base=new URL(path,location.href);
@@ -645,6 +679,34 @@ const fullDiagnosticSteps=[
    const warningDetail=warnings.slice(0,8).join(" · ")+(warnings.length>8?" · +"+(warnings.length-8)+" more markup warning(s)":"");
    const detail=checks.length+" page/feed/asset files reachable · "+targetChecks.length+" discovered internal targets checked · "+(warnings.length?warningDetail:"no duplicate IDs or basic markup issues found");
    return fullDiagResult("Website pages, scripts, links, and accessibility",warnings.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"PWA manifest and app icon configuration",
+  run:async()=>{
+   const response=await fullDiagFetch("manifest.json");
+   if(!response.ok)throw new Error("manifest.json returned HTTP "+response.status);
+   const manifest=await response.json();
+   const issues=[];
+   if(!String(manifest.name||"").trim())issues.push("app name is missing");
+   if(!String(manifest.short_name||"").trim())issues.push("short app name is missing");
+   if(!manifest.start_url)issues.push("start_url is missing");
+   if(!["standalone","fullscreen","minimal-ui","browser"].includes(manifest.display))issues.push("display mode is missing or invalid");
+   if(!Array.isArray(manifest.icons)||!manifest.icons.length)issues.push("no app icons are configured");
+   const iconResults=await Promise.all((manifest.icons||[]).map(async icon=>{
+    if(!icon?.src)return {ok:false,detail:"an icon has no source path"};
+    try{
+     const url=new URL(icon.src,new URL("manifest.json",location.href));
+     if(url.origin!==location.origin)return {ok:false,detail:"icon points outside this website: "+icon.src};
+     const iconResponse=await fullDiagFetch(url.pathname);
+     if(!iconResponse.ok)return {ok:false,detail:icon.src+" returned HTTP "+iconResponse.status};
+     const type=iconResponse.headers.get("content-type")||"";
+     if(type&&!type.includes("image/"))return {ok:false,detail:icon.src+" returned non-image content"};
+     return {ok:true};
+    }catch(error){return {ok:false,detail:icon.src+": "+(error.message||"could not be checked")};}
+   }));
+   iconResults.filter(item=>!item.ok).forEach(item=>issues.push(item.detail));
+   return fullDiagResult("PWA manifest and app icon configuration",issues.length?"warning":"pass",issues.length?issues.join(" · "):"Manifest fields are present · "+iconResults.length+" app icon(s) load successfully");
   }
  },
  {
@@ -999,11 +1061,14 @@ async function runFullDiagnostics(){
  else if(warnings){fullDiagSetState("done","WARNINGS FOUND");fullDiagLogLine("AUDIT COMPLETE · "+passed+" PASSED · "+warnings+" WARNING GROUP(S)","warn");}
  else{fullDiagSetState("done","ALL CLEAR");fullDiagLogLine("AUDIT COMPLETE · ALL "+passed+" CHECK GROUPS PASSED","good");}
  $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failures+" errors · "+(failures?"Use the Errors filter to see what needs fixing.":warnings?"Use the Warnings filter to review incomplete or risky items.":"No issues found in the tested systems.");
+ fullDiagActiveFilter=failures?"fail":warnings?"warning":"all";
+ fullDiagRenderResults();
  button.disabled=false;
  button.textContent="Run diagnostics again";
  fullDiagRunning=false;
 }
 $("runFullDiagnostics").addEventListener("click",runFullDiagnostics);
+$("fullDiagSearch").addEventListener("input",fullDiagRenderResults);
 document.querySelectorAll("[data-diag-filter]").forEach(button=>button.addEventListener("click",()=>{
  fullDiagActiveFilter=button.dataset.diagFilter||"all";
  fullDiagRenderResults();
