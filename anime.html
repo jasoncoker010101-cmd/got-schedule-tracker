@@ -1940,10 +1940,17 @@ input,select,textarea{accent-color:var(--got-gold)}
       const end = Number(row.episode_end);
       const linkType = row.link_type || "youtube";
 
-      const validYoutubeUrl =
-        /^https:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/i.test(
-          String(row.youtube_url || "")
-        );
+      const validYoutubeUrl = (() => {
+        try {
+          const parsed = new URL(String(row.youtube_url || ""));
+          if (parsed.protocol !== "https:" || parsed.username || parsed.password) return false;
+          const host = parsed.hostname.toLowerCase();
+          if (host === "youtu.be") return parsed.pathname.split("/").filter(Boolean).length > 0;
+          if (host !== "youtube.com" && !host.endsWith(".youtube.com")) return false;
+          if (parsed.pathname === "/watch") return !!parsed.searchParams.get("v");
+          return /^\/(shorts|embed|live)\/[^/]+/.test(parsed.pathname);
+        } catch (_) { return false; }
+      })();
 
       const validPatreonUrl =
         /^https:\/\/(www\.)?patreon\.com\//i.test(
