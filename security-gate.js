@@ -72,9 +72,49 @@
   function emailForSession() {
     return db.auth.getSession().then(({data}) => data.session?.user?.email || "");
   }
-  async function sendEmailCode() {
+  function sessionIdFromClientSession(session) {
+    try {
+      const part = session.access_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(atob(part.padEnd(Math.ceil(part.length / 4) * 4, "=")));
+      return String(payload.session_id || "");
+    } catch (_) { return ""; }
+  }
+  function savePendingEmail(challengeId, enrollment) {
+    try {
+      const session = db.auth.getSession();
+      session.then(({data}) => {
+        if (!data.session) return;
+        localStorage.setItem("gotSecurityPendingEmailV1", JSON.stringify({
+          challengeId, enrollment: !!enrollment,
+          originalSessionId: sessionIdFromClientSession(data.session),
+          savedAt: Date.now()
+        }));
+      });
+    } catch (_) {}
+  }
+  function readPendingEmail() {
+    try {
+      const value = JSON.parse(localStorage.getItem("gotSecurityPendingEmailV1") || "null");
+      if (!value || Date.now() - Number(value.savedAt || 0) > 10 * 60 * 1000) {
+        localStorage.removeItem("gotSecurityPendingEmailV1");
+        return null;
+      }
+      return value;
+    } catch (_) { return null; }
+  }
+  function clearPendingEmail() {
+    try { localStorage.removeItem("gotSecurityPendingEmailV1"); } catch (_) {}
+  }
+  async function sendEmailCode(challengeId, enrollment) {
     const email = await emailForSession();
     if (!email) throw new Error("This account has no email address for verification.");
+    const {data} = await db.auth.getSession();
+    if (!data.session) throw new Error("Your sign-in session ended. Please log in again.");
+    localStorage.setItem("gotSecurityPendingEmailV1", JSON.stringify({
+      challengeId, enrollment: !!enrollment,
+      originalSessionId: sessionIdFromClientSession(data.session),
+      savedAt: Date.now()
+    }));
     const { error } = await db.auth.signInWithOtp({
       email,
       options: { shouldCreateUser: false }
@@ -102,7 +142,7 @@
       if (busy) return;
       setBusy(true);
       try {
-        await sendEmailCode();
+        await sendEmailCode(challengeId, enrollment);
         setMessage("Code sent. Check your inbox and spam folder.");
       } catch (error) {
         setMessage("Email could not be sent: " + (error.message || "Please retry."));
@@ -118,7 +158,7 @@
         const {data, error} = await db.auth.verifyOtp({email, token, type:"email"});
         if (error) throw error;
         if (!data.session) throw new Error("Email verification did not create a session.");
-        const result = await securityCall("complete_email", {challenge_id: challengeId});
+        const result = await securityCall("complete_email", {challenge_id: challengeId});\n        clearPendingEmail();
         if (result.status === "enrollment_verified") {
           renderQuestionSetup();
         } else if (result.status === "verified") {
@@ -191,7 +231,7 @@
       if (busy) return;
       setBusy(true);
       try {
-        const email = await sendEmailCode();
+        const email = await sendEmailCode(challengeId, false);
         renderEmailCode(email, false);
         setMessage("Code sent. Check your inbox and spam folder.");
       } catch (error) { setMessage("Email could not be sent: " + (error.message || "Please retry.")); }
@@ -203,8 +243,32 @@
       "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
     })[ch]);
   }
+  async function completeEmailFromLink(session, pending) {
+    const currentSessionId = sessionIdFromClientSession(session);
+    if (!currentSessionId || currentSessionId === pending.originalSessionId) return false;
+    suppressAuthEvents = true;
+    try {
+      const result = await securityCall("complete_email", {challenge_id: pending.challengeId});
+      clearPendingEmail();
+      if (result.status === "enrollment_verified") {
+        renderQuestionSetup();
+      } else if (result.status === "verified") {
+        window.location.reload();
+      } else {
+        throw new Error(result.error || "Email verification could not be completed.");
+      }
+      return true;
+    } catch (error) {
+      setMessage(error.message || "Email verification could not be completed.");
+      return true;
+    } finally {
+      suppressAuthEvents = false;
+    }
+  }
   async function inspectSession(session) {
     if (!session?.access_token || busy) return;
+    const pendingEmail = readPendingEmail();
+    if (pendingEmail && await completeEmailFromLink(session, pendingEmail)) return;
     const id = session.access_token.split(".")[1] || "";
     if (activeSessionId === id) return;
     activeSessionId = id;
