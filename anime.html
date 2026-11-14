@@ -2771,8 +2771,13 @@
         `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}.`
       );
 
-      // Enrich the already-rendered results with Junban season numbers.
-      // If Junban is unavailable, the page keeps using AniList relations.
+      // Show AniList results immediately. Junban is enrichment only, so a
+      // slow season lookup must never keep the whole page behind its loader.
+      render(displayedItems);
+      pageLoader.hidden = true;
+
+      // Enrich in the background, then refresh the cards if this search is
+      // still current. If Junban is unavailable, keep the AniList results.
       try {
         await loadJunbanFullSeasonGroups(displayedItems, controller.signal);
 
