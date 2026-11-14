@@ -1424,6 +1424,34 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
   .activity-feed-state[data-state="loading"]::before{animation:none}
 }
 
+
+/* Homepage navigation and account-menu layout fix */
+nav.main-nav{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  flex-wrap:wrap!important;gap:7px!important;
+}
+nav.main-nav>a{flex:1 1 105px!important;min-width:0}
+nav.main-nav .account-area{
+  position:relative!important;display:flex!important;flex:0 0 auto!important;
+  align-items:center!important;justify-content:flex-end!important;gap:8px!important;margin-left:auto!important;
+}
+nav.main-nav .account-button,nav.main-nav .mascot-replay-button{min-height:42px;white-space:nowrap}
+nav.main-nav .account-menu{
+  position:absolute!important;top:calc(100% + 9px)!important;right:0!important;left:auto!important;
+  z-index:1200!important;min-width:190px;max-width:min(260px,calc(100vw - 32px));
+  box-shadow:0 14px 34px rgba(0,0,0,.28);
+}
+nav.main-nav .account-menu button{min-height:42px}
+@media(max-width:620px){
+  nav.main-nav{gap:5px!important}
+  nav.main-nav>a{flex:1 1 29%!important;min-height:42px}
+  nav.main-nav .account-area{
+    flex:1 0 100%!important;margin-left:0!important;justify-content:flex-end!important;padding:3px 2px 1px;
+  }
+  nav.main-nav .account-menu{top:calc(100% + 6px)!important}
+}
+@media(prefers-reduced-motion:reduce){nav.main-nav a,nav.main-nav button{transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -1455,7 +1483,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
         <a href="notifications.html" data-got-alert-link>Alerts <span class="got-alert-count" hidden></span></a>
       <div class="account-area">
         <button class="mascot-replay-button" id="mascotReplayButton" type="button" hidden title="Replay the welcome mascot animation">✦ Replay Mascot</button>
-        <button class="account-button" id="accountButton" type="button">
+        <button class="account-button" id="accountButton" type="button" aria-haspopup="true" aria-expanded="false">
           <img class="account-avatar" id="accountAvatar" alt="">
           <span id="accountButtonText">Log In / Sign Up</span>
         </button>
@@ -1758,12 +1786,23 @@ async function refreshAuthState(){
   await loadMyProfile();
 }
 
+function setAccountMenuOpen(open){
+  accountMenu.hidden = !open;
+  accountButton.setAttribute("aria-expanded",String(!!open));
+}
+
 accountButton.addEventListener("click", ()=>{
   if(currentUser){
-    accountMenu.hidden = !accountMenu.hidden;
+    setAccountMenuOpen(accountMenu.hidden);
   }else{
+    setAccountMenuOpen(false);
     openAuth("login");
   }
+});
+
+const accountArea = accountButton.closest(".account-area");
+document.addEventListener("pointerdown", event=>{
+  if(accountArea && !accountArea.contains(event.target)) setAccountMenuOpen(false);
 });
 
 document.getElementById("closeAuth").addEventListener("click", closeAuth);
@@ -1777,7 +1816,7 @@ authBackdrop.addEventListener("click", event=>{
 document.addEventListener("keydown", event=>{
   if(event.key === "Escape"){
     closeAuth();
-    accountMenu.hidden = true;
+    setAccountMenuOpen(false);
   }
 });
 
@@ -1789,7 +1828,7 @@ document.getElementById("logoutButton").addEventListener("click", async ()=>{
     return;
   }
 
-  accountMenu.hidden = true;
+  setAccountMenuOpen(false);
   currentUser = null;
   currentProfile = null;
   canReplayMascot = false;
@@ -1799,7 +1838,7 @@ document.getElementById("logoutButton").addEventListener("click", async ()=>{
 
 /* Open the signed-in user's public profile */
 document.getElementById("viewProfileButton").addEventListener("click", ()=>{
-  accountMenu.hidden = true;
+  setAccountMenuOpen(false);
 
   if(currentProfile && currentProfile.username){
     window.location.href =
