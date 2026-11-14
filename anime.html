@@ -3773,6 +3773,14 @@
   searchInput.addEventListener("input", () => {
     page = 1;
 
+    // If the user starts typing during the first catalogue load, switch away
+    // from the full-page startup screen immediately.
+    if (initialCatalogueLoad) {
+      initialCatalogueLoad = false;
+      pageLoader.hidden = true;
+      resultsLoading.hidden = false;
+    }
+
     clearTimeout(debounceTimer);
 
     debounceTimer = setTimeout(searchAnime, 350);
