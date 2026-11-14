@@ -126,7 +126,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 .diag-result{display:grid;grid-template-columns:minmax(180px,.75fr) minmax(0,2fr) auto;align-items:start;gap:12px;padding:11px 12px;border:1px solid rgba(142,220,224,.13);border-radius:8px;background:rgba(5,12,19,.42)}
 .diag-result-name{font-size:13px;font-weight:800;color:#eef5f3}
 .diag-result-detail{min-width:0;color:#9fb1bc;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
-.diag-evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:12px}.diag-evidence-card{display:grid;grid-template-columns:112px minmax(0,1fr);gap:9px;align-items:start;padding:8px;border:1px solid rgba(142,220,224,.16);border-radius:7px;background:rgba(2,8,14,.55)}.diag-evidence-thumb-link{display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:#101923}.diag-evidence-thumb-link img{display:block;width:100%;height:100%;object-fit:cover}.diag-evidence-caption{display:grid;gap:5px;min-width:0;font-size:11px;line-height:1.4}.diag-evidence-caption strong{color:#eaf2f2;overflow-wrap:anywhere}.diag-evidence-caption span{color:#91a7b1;overflow-wrap:anywhere}.diag-result-status{justify-self:end;padding:3px 7px;border-radius:4px;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.diag-evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:12px}.diag-evidence-card{display:grid;grid-template-columns:112px minmax(0,1fr);gap:9px;align-items:start;padding:8px;border:1px solid rgba(142,220,224,.16);border-radius:7px;background:rgba(2,8,14,.55)}.diag-evidence-thumb-link{display:block;aspect-ratio:16/9;overflow:hidden;border-radius:4px;background:#101923}.diag-evidence-thumb-link img{display:block;width:100%;height:100%;object-fit:cover}.diag-evidence-caption{display:grid;gap:5px;min-width:0;font-size:11px;line-height:1.4}.diag-evidence-caption strong{color:#eaf2f2;overflow-wrap:anywhere}.diag-evidence-caption span{color:#91a7b1;overflow-wrap:anywhere}.diag-evidence-ocr{display:block;padding-top:5px;border-top:1px solid rgba(142,220,224,.12);color:#b7d4d6!important;font-size:10px;line-height:1.45}.diag-result-status{justify-self:end;padding:3px 7px;border-radius:4px;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
 .diag-result-status.pass{background:rgba(142,220,224,.12);color:#8edce0}
 .diag-result-status.warning{background:rgba(242,189,85,.13);color:#f2bd55}
 .diag-result-status.fail{background:rgba(255,120,104,.13);color:#ff887e}
@@ -594,8 +594,8 @@ function fullDiagRenderResults(){
     if(!/^[A-Za-z0-9_-]{6,}$/.test(String(item.videoId||"")))return;
     const card=document.createElement("div");card.className="diag-evidence-card";
     const link=document.createElement("a");link.href="https://www.youtube.com/watch?v="+item.videoId;link.target="_blank";link.rel="noopener noreferrer";link.className="diag-evidence-thumb-link";link.setAttribute("aria-label","Open YouTube video "+item.videoId);
-    const img=document.createElement("img");img.src="https://i.ytimg.com/vi/"+item.videoId+"/hqdefault.jpg";img.alt="YouTube thumbnail for "+(item.title||item.videoId);img.loading="lazy";img.referrerPolicy="no-referrer";link.append(img);
-    const caption=document.createElement("div");caption.className="diag-evidence-caption";const heading=document.createElement("strong");heading.textContent=item.title||("Video "+item.videoId);const mapping=document.createElement("span");mapping.textContent=item.mapping||"Saved mapping requires visual review.";caption.append(heading,mapping);card.append(link,caption);evidenceWrap.append(card);
+    const img=document.createElement("img");img.crossOrigin="anonymous";img.src="https://i.ytimg.com/vi/"+item.videoId+"/hqdefault.jpg";img.alt="YouTube thumbnail for "+(item.title||item.videoId);img.loading="lazy";img.referrerPolicy="no-referrer";link.append(img);
+    const caption=document.createElement("div");caption.className="diag-evidence-caption";const heading=document.createElement("strong");heading.textContent=item.title||("Video "+item.videoId);const mapping=document.createElement("span");mapping.textContent=item.mapping||"Saved mapping requires visual review.";const ocr=document.createElement("span");ocr.className="diag-evidence-ocr";ocr.textContent="Thumbnail OCR queued…";caption.append(heading,mapping,ocr);card.append(link,caption);evidenceWrap.append(card);fullDiagAnalyzeThumbnail(item,ocr);
    });
    if(evidenceWrap.childElementCount)detail.append(evidenceWrap);
   }
@@ -716,6 +716,71 @@ function fullDiagYouTubeId(value){
   if(!id){const parts=url.pathname.split("/").filter(Boolean);if(["shorts","embed"].includes(parts[0]))id=parts[1];}
   return /^[A-Za-z0-9_-]{6,}$/.test(id||"")?id:null;
  }catch(_){return null;}
+}
+let fullDiagOcrScriptPromise=null;
+let fullDiagOcrWorkerPromise=null;
+async function fullDiagLoadOcr(){
+ if(!fullDiagOcrScriptPromise){
+  fullDiagOcrScriptPromise=new Promise((resolve,reject)=>{
+   if(window.Tesseract){resolve(window.Tesseract);return;}
+   const script=document.createElement("script");
+   script.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+   script.async=true;
+   script.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(new Error("OCR library did not initialize"));
+   script.onerror=()=>reject(new Error("Could not load the thumbnail OCR library"));
+   document.head.append(script);
+  });
+ }
+ return fullDiagOcrScriptPromise;
+}
+async function fullDiagGetOcrWorker(){
+ if(!fullDiagOcrWorkerPromise){
+  fullDiagOcrWorkerPromise=(async()=>{
+   const api=await fullDiagLoadOcr();
+   return api.createWorker("eng");
+  })();
+ }
+ return fullDiagOcrWorkerPromise;
+}
+function fullDiagWaitForImage(url){
+ return new Promise((resolve,reject)=>{
+  const image=new Image();
+  image.crossOrigin="anonymous";
+  image.referrerPolicy="no-referrer";
+  image.onload=()=>resolve(image);
+  image.onerror=()=>reject(new Error("Thumbnail could not be read (image/CORS restriction)"));
+  image.src=url;
+ });
+}
+async function fullDiagAnalyzeThumbnail(item,output){
+ if(output.dataset.ocrStarted==="1")return;
+ output.dataset.ocrStarted="1";
+ output.textContent="Reading thumbnail text…";
+ try{
+  const image=await fullDiagWaitForImage("https://i.ytimg.com/vi/"+item.videoId+"/hqdefault.jpg?diag-ocr=1");
+  const canvas=document.createElement("canvas");
+  const scale=Math.min(2,Math.max(1,1280/image.naturalWidth));
+  canvas.width=Math.round(image.naturalWidth*scale);
+  canvas.height=Math.round(image.naturalHeight*scale);
+  const context=canvas.getContext("2d",{willReadFrequently:true});
+  if(!context)throw new Error("Could not prepare thumbnail pixels");
+  context.drawImage(image,0,0,canvas.width,canvas.height);
+  const worker=await fullDiagGetOcrWorker();
+  const result=await worker.recognize(canvas);
+  const raw=String(result?.data?.text||"").replace(/\\s+/g," ").trim();
+  const numbers=[...new Set((raw.match(/\\b\\d{1,3}\\b/g)||[]).map(Number))];
+  const expected=Array.isArray(item.expectedEpisodes)?item.expectedEpisodes.map(Number):[];
+  const found=expected.filter(number=>numbers.includes(number));
+  const summary=expected.length
+   ?(found.length===expected.length?"Possible episode-number match: ":"Some expected episode numbers found: ")+found.join(", ")+(numbers.length?" · Other numbers: "+numbers.join(", "):"")
+   :(numbers.length?"Numbers detected: "+numbers.join(", "):"No clear episode numbers detected");
+  output.textContent=summary+" · OCR: "+(raw||"No readable text");
+  output.title=raw||"No readable text found";
+  output.dataset.ocrResult=found.length===expected.length&&expected.length?"possible-match":"inconclusive";
+ }catch(error){
+  output.textContent="OCR unavailable: "+String(error?.message||error);
+  output.dataset.ocrResult="unavailable";
+ }
 }
 function fullDiagSafeUrl(value,hosts){
  try{
@@ -1201,7 +1266,7 @@ const fullDiagnosticSteps=[
    }
    if(result.truncated)warnings.push("JJK reaction-link scan reached its row limit");
    const coveredEpisodeSlots=Object.values(coverage).reduce((sum,item)=>sum+item.covered.length,0);
-   const evidence=[...videoEvidence.values()].map(item=>({videoId:item.videoId,title:item.title||("YouTube video "+item.videoId),mapping:item.mappings.join(" · ")})).slice(0,12);
+   const evidence=[...videoEvidence.values()].map(item=>({videoId:item.videoId,title:item.title||("YouTube video "+item.videoId),mapping:item.mappings.join(" · "),expectedEpisodes:[...new Set(rows.filter(row=>fullDiagYouTubeId(row.youtube_url)===item.videoId).flatMap(row=>{const start=Number(row.episode_start),end=Number(row.episode_end)||start;return Number.isInteger(start)&&Number.isInteger(end)&&end>=start&&end-start<=30?Array.from({length:end-start+1},(_,index)=>start+index):[start];}).filter(Number.isInteger))]})).slice(0,12);
    const detail=rows.length+" JJK reaction-link records · "+coveredEpisodeSlots+" verified episode slots · S1 "+coverage[1].covered.length+"/24 · S2 "+coverage[2].covered.length+"/23 · S3 "+coverage[3].covered.length+"/12 · "+(problems.length?problems.join(" · "):warnings.length?warnings.join(" · "):"episode destinations and mappings passed; thumbnails available for visual review");
    return fullDiagResult("Jujutsu Kaisen reaction-link accuracy",problems.length?"fail":warnings.length?"warning":"pass",detail,evidence);
   }
@@ -1345,7 +1410,7 @@ const fullDiagnosticSteps=[
    if(unassignableWatch)warnings.push(unassignableWatch+" watch-history row(s) could not be reconciled because season/episode/ID data is incomplete");
    if(watchResult.truncated||linkResult.truncated)warnings.push("one or more anime tables reached the 25,000-row scan limit");
    const sharedVideos=[...videoOwners.entries()].filter(([,owners])=>owners.length>1);
-   const evidence=sharedVideos.slice(0,12).map(([videoId,owners])=>({videoId,title:String(owners.find(row=>row.video_title)?.video_title||"").trim()||("YouTube video "+videoId),mapping:owners.map(row=>String(row.anime_title||"Unknown anime")+" · S"+row.season_number+" E"+row.episode_start+(Number(row.episode_end)!==Number(row.episode_start)?"–"+row.episode_end:"")+" · #"+row.id).join("  |  ")}));
+   const evidence=sharedVideos.slice(0,12).map(([videoId,owners])=>({videoId,title:String(owners.find(row=>row.video_title)?.video_title||"").trim()||("YouTube video "+videoId),mapping:owners.map(row=>String(row.anime_title||"Unknown anime")+" · S"+row.season_number+" E"+row.episode_start+(Number(row.episode_end)!==Number(row.episode_start)?"–"+row.episode_end:"")+" · #"+row.id).join("  |  "),expectedEpisodes:[...new Set(owners.flatMap(row=>{const start=Number(row.episode_start),end=Number(row.episode_end)||start;return Number.isInteger(start)&&Number.isInteger(end)&&end>=start&&end-start<=30?Array.from({length:end-start+1},(_,index)=>start+index):[start];}).filter(Number.isInteger))]}));
    if(sharedVideos.length)warnings.push(sharedVideos.length+" shared YouTube video(s) found · titles and thumbnails shown below for visual verification; reuse alone is not an error");
    const detail=watch.length+" watch rows · "+links.length+" reaction links · "+videoOwners.size+" unique YouTube videos · "+episodeOwners.size+" mapped episode slots · "+uncoveredWatched+" watched slots without links · "+problems.length+" duplicate episode-slot conflicts";
    return fullDiagResult("Anime catalogue identity, duplicate links, and watch coverage",problems.length?"fail":warnings.length?"warning":"pass",detail+(problems.length?" · "+problems.slice(0,6).join(" · "):"")+(warnings.length?" · "+warnings.join(" · "):""),evidence);
