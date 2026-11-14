@@ -23,7 +23,7 @@
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = "EP " + episode;
-    link.title = "Patreon Exclusive. Visit G.O.T. Games on Patreon.";
+    link.title = "Patreon Exclusive. Visit G.O.T Games on Patreon.";
     link.setAttribute(
       "aria-label",
       "Episode " + episode + ". Patreon-exclusive reaction. Opens Patreon in a new tab."
@@ -42,14 +42,14 @@
     const description = document.createElement("p");
     description.className = "patreon-exclusive-description";
     description.textContent =
-      "This reaction is available exclusively to G.O.T. Games Patreon supporters.";
+      "This reaction is available exclusively to G.O.T Games Patreon supporters.";
 
     const link = document.createElement("a");
     link.className = "patreon-exclusive-link";
     link.href = safePatreonUrl(rows[0] && rows[0].patreon_url);
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = "Visit G.O.T. Games on Patreon ↗";
+    link.textContent = "Visit G.O.T Games on Patreon ↗";
 
     notice.append(badge, description, link);
     return notice;
