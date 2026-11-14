@@ -390,6 +390,81 @@ main{width:min(1120px,calc(100% - 36px));margin:34px auto 64px}
 @media(max-width:760px){.profile-content{padding:0 24px 28px}.profile-stats{gap:8px}.profile-stat{padding:13px 12px;column-gap:8px}.profile-stat strong{font-size:14px}.detail-section,.detail-section.about-section{padding:19px}}
 @media(max-width:600px){main{width:calc(100% - 20px);margin:18px auto 42px}.banner{height:190px}.profile-content{padding:0 15px 20px}.profile-top{margin-top:-53px}.profile-identity{gap:12px;align-items:flex-end}.avatar-frame,.avatar{width:100px;height:100px}.username{font-size:clamp(25px,8vw,35px)}.profile-info{padding-bottom:5px}.profile-stats{grid-template-columns:1fr;gap:8px;margin:18px 0 13px}.profile-stat{min-height:67px;grid-template-columns:36px minmax(0,1fr);padding:10px 13px}.stat-icon{width:34px;height:34px}.profile-details{grid-template-columns:1fr;gap:10px}.detail-section,.detail-section.about-section{min-height:0;padding:17px}.profile-actions{width:100%;justify-content:flex-start}.profile-actions .button{flex:1}.share-status{text-align:left}}
 
+  
+/* G.O.T PLAYER IDENTITY — structural redesign */
+main{width:min(1180px,calc(100% - 42px));margin:36px auto 72px}
+.profile-page{display:block;overflow:hidden;border:1px solid rgba(142,220,224,.16);border-radius:7px 25px 7px 25px;background:#0b141d;box-shadow:0 34px 100px rgba(0,0,0,.46)}
+.profile-hero{position:relative;min-height:420px;overflow:hidden;background:#111e29}
+.profile-cover{position:absolute;inset:0 0 0;height:100%;background-image:radial-gradient(ellipse at 77% 15%,rgba(243,190,91,.55),transparent 24%),radial-gradient(ellipse at 17% 65%,rgba(64,172,194,.35),transparent 34%),linear-gradient(115deg,#253f4b,#101d29 55%,#111923);background-size:cover;background-position:center;transform:scale(1.015)}
+.profile-cover::before,.profile-cover::after{content:"";position:absolute;border:1px solid rgba(255,226,160,.25);border-radius:50%;pointer-events:none}
+.profile-cover::before{width:560px;height:560px;right:7%;top:-390px;box-shadow:0 0 0 45px rgba(142,220,224,.045),0 0 0 105px rgba(142,220,224,.025),0 0 90px rgba(242,189,85,.17)}
+.profile-cover::after{width:320px;height:320px;right:23%;top:-205px}
+.cover-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,10,15,.08) 0%,rgba(5,12,18,.14) 38%,rgba(7,15,22,.95) 100%),linear-gradient(90deg,rgba(4,10,15,.35),transparent 70%)}
+.cover-meta{position:absolute;top:25px;left:34px;right:34px;display:flex;justify-content:space-between;gap:15px;color:rgba(232,245,242,.75);font-size:9px;font-weight:900;letter-spacing:.2em}
+.cover-index{color:#f2c978}
+.hero-identity{position:absolute;left:48px;right:48px;bottom:32px;display:flex;align-items:flex-end;gap:24px}
+.avatar-frame{width:156px;height:156px;flex:0 0 156px;filter:drop-shadow(0 16px 34px rgba(0,0,0,.55))}
+.avatar{width:156px;height:156px;border:5px solid #101c27;border-radius:16px 34px 16px 34px;background:#1b2c38;object-fit:cover;box-shadow:0 0 0 1px rgba(142,220,224,.38),0 0 0 8px rgba(142,220,224,.07)}
+.avatar-frame.owner .avatar{border:4px solid #f6d28a;box-shadow:0 0 0 5px rgba(246,210,138,.15),0 0 34px rgba(242,189,85,.34)}
+.avatar-orbit{position:absolute;inset:-11px;border:1px solid rgba(142,220,224,.32);border-radius:20px 40px 20px 40px;pointer-events:none;transform:rotate(-4deg)}
+.owner-crown{top:-32px;left:12px;transform:none;font-size:33px}
+.hero-nameplate{min-width:0;flex:1;padding-bottom:8px}
+.identity-eyebrow,.module-kicker{display:block;color:#8edce0;font-size:9px;font-weight:900;letter-spacing:.22em}
+.username{margin:8px 0 0;font-size:clamp(35px,5.6vw,62px);line-height:.98;letter-spacing:-.065em;text-shadow:0 8px 35px rgba(0,0,0,.6)}
+.profile-label{margin-top:10px;color:#c1d0d4;font-size:13px;letter-spacing:.035em}
+.role-list{margin-top:13px}
+.role-badge{border-radius:3px 9px 3px 9px}
+.profile-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end;padding-bottom:7px}
+.button{min-height:45px;border-radius:4px 12px 4px 12px;padding:12px 17px}
+.edit-button{background:linear-gradient(120deg,#ffe0a0,#eab34a);color:#21180a}
+.share-button{background:rgba(10,24,33,.72)!important;border:1px solid rgba(142,220,224,.4)!important;color:#c2f2ef!important;backdrop-filter:blur(10px)}
+.profile-workspace{padding:0 42px 30px;background:linear-gradient(180deg,#0d1923,#09121a)}
+.share-status{min-height:18px;margin:12px 0 4px;color:#9bdfe0;font-size:12px}
+.identity-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:8px 0 25px}
+.metric-card{position:relative;display:grid;grid-template-columns:48px 1fr;grid-template-rows:auto auto auto;align-items:center;column-gap:13px;min-height:104px;padding:17px 18px;overflow:hidden;border:1px solid rgba(142,220,224,.16);border-radius:5px 16px 5px 16px;background:linear-gradient(135deg,rgba(25,44,55,.96),rgba(13,25,35,.96))}
+.metric-card::after{content:"";position:absolute;width:125px;height:125px;right:-64px;bottom:-78px;border:1px solid rgba(242,189,85,.18);border-radius:50%;box-shadow:0 0 0 16px rgba(142,220,224,.025),0 0 0 34px rgba(142,220,224,.02)}
+.metric-symbol{grid-row:1/4;display:grid;place-items:center;width:46px;height:46px;border:1px solid rgba(242,189,85,.35);border-radius:4px 13px 4px 13px;background:rgba(242,189,85,.09);color:#f2bd55;font-size:21px}
+.metric-label{color:#8edce0;font-size:9px;font-weight:900;letter-spacing:.16em}
+.metric-card strong{min-width:0;color:#f8f2e7;font:800 17px var(--display);overflow-wrap:anywhere}
+.metric-foot{color:#8497a2;font-size:10px}
+.profile-tabs{display:flex;gap:5px;padding:6px;border:1px solid rgba(142,220,224,.15);border-radius:5px 13px 5px 13px;background:#0a131c}
+.profile-tab{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;flex:1;min-height:48px;padding:10px 14px;border:1px solid transparent;border-radius:4px 9px 4px 9px;background:transparent;color:#91a4ae;font-size:12px;font-weight:800;cursor:pointer;transition:.2s}
+.profile-tab span{color:#8edce0;font-size:17px}
+.profile-tab:hover{background:rgba(142,220,224,.07);color:#f5f1e7}
+.profile-tab.active{border-color:rgba(242,189,85,.4);background:linear-gradient(120deg,rgba(242,189,85,.17),rgba(142,220,224,.06));color:#ffe0a0}
+.profile-tab.active span{color:#f2bd55}
+.profile-tab.active::after{content:"";position:absolute;left:20%;right:20%;bottom:-7px;height:2px;background:#f2bd55;box-shadow:0 0 12px rgba(242,189,85,.65)}
+.profile-panel{padding-top:18px;animation:profilePanelIn .32s ease both}
+.profile-panel[hidden]{display:none!important}
+.overview-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.profile-module{position:relative;min-height:230px;padding:25px 26px;overflow:hidden;border:1px solid rgba(142,220,224,.14);border-radius:5px 17px 5px 17px;background:linear-gradient(145deg,rgba(20,37,48,.95),rgba(10,21,30,.96))}
+.profile-module::after{content:"";position:absolute;right:-70px;bottom:-100px;width:210px;height:210px;border:1px solid rgba(142,220,224,.08);border-radius:50%;box-shadow:0 0 0 25px rgba(142,220,224,.018),0 0 0 55px rgba(142,220,224,.014);pointer-events:none}
+.module-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:21px}
+.module-heading h2,.empty-copy h2{margin:6px 0 0;color:#f5f1e7;font:800 25px var(--display);letter-spacing:-.04em}
+.module-mark{color:rgba(242,189,85,.55);font:700 12px var(--display)}
+.profile-bio{position:relative;z-index:1;margin:0;color:#c2cdd1;font-size:14px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
+.about-signoff{position:absolute;left:26px;right:26px;bottom:22px;display:flex;align-items:center;gap:10px;color:#82959f;font-size:8px;font-weight:900;letter-spacing:.18em}
+.signoff-line{width:28px;height:1px;background:#f2bd55}
+.social-list{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px}
+.social-link{border-radius:4px 10px 4px 10px;background:#0c1821;border-color:rgba(142,220,224,.18)}
+.social-link:hover{border-color:#f2bd55;background:#172b36}
+.empty-social{padding:12px 13px;border:1px dashed rgba(142,220,224,.2);border-radius:4px 10px 4px 10px;color:#9aabb4;font-size:12px}
+.profile-lower-strip{display:flex;align-items:center;gap:10px;margin-top:15px;padding:13px 2px;color:#82949e;font-size:8px;font-weight:900;letter-spacing:.17em}
+.strip-dot{width:6px;height:6px;border-radius:50%;background:#f2bd55;box-shadow:0 0 10px #f2bd55}
+.strip-divider{color:#f2bd55}.strip-spacer{flex:1}
+.empty-feature{position:relative;display:flex;align-items:center;gap:28px;min-height:240px;padding:34px;border:1px solid rgba(142,220,224,.15);border-radius:5px 18px 5px 18px;background:radial-gradient(ellipse at 12% 50%,rgba(65,153,174,.12),transparent 35%),linear-gradient(135deg,#142631,#0c1721);overflow:hidden}
+.empty-art{position:relative;display:grid;place-items:center;flex:0 0 142px;width:142px;height:142px;border:1px solid rgba(142,220,224,.25);border-radius:50%;background:radial-gradient(circle,rgba(142,220,224,.14),rgba(142,220,224,.025) 65%,transparent 66%)}
+.empty-art span{z-index:1;color:#f2bd55;font-size:58px;text-shadow:0 0 28px rgba(242,189,85,.35)}
+.empty-art i,.empty-art b{position:absolute;inset:12px;border:1px solid rgba(142,220,224,.18);border-radius:50%;transform:rotate(35deg) scaleX(.55)}
+.empty-art b{inset:-9px;transform:rotate(-35deg) scaleX(.7);border-color:rgba(242,189,85,.18)}
+.favorites-art span{font-size:64px}.achievements-art span{font-size:70px}
+.empty-copy{max-width:560px}.empty-copy h2{font-size:30px}.empty-copy p{margin:12px 0 0;color:#a9bac2;font-size:13px;line-height:1.8}
+.empty-number{position:absolute;right:24px;top:22px;color:rgba(142,220,224,.35);font:800 12px var(--display)}
+.editor{margin-top:25px;border-radius:5px 18px 5px 18px}
+@keyframes profilePanelIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){main{width:calc(100% - 24px);margin:22px auto 48px}.profile-hero{min-height:390px}.hero-identity{left:26px;right:26px;gap:17px}.avatar-frame,.avatar{width:126px;height:126px}.avatar-frame{flex-basis:126px}.profile-workspace{padding:0 24px 24px}.metric-card{padding:14px 12px;column-gap:9px}.metric-symbol{width:39px;height:39px}.metric-card strong{font-size:14px}.overview-grid{grid-template-columns:1fr}.profile-module{min-height:190px}}
+@media(max-width:560px){main{width:calc(100% - 16px);margin:14px auto 35px}.profile-page{border-radius:5px 17px 5px 17px}.profile-hero{min-height:435px}.cover-meta{left:17px;right:17px;top:17px;font-size:8px}.hero-identity{left:18px;right:18px;bottom:20px;display:grid;grid-template-columns:94px minmax(0,1fr);gap:12px;align-items:end}.avatar-frame,.avatar{width:94px;height:94px}.avatar-frame{grid-row:1;grid-column:1}.hero-nameplate{grid-row:1;grid-column:2;padding-bottom:2px}.username{font-size:clamp(27px,8vw,39px)}.profile-label{font-size:11px}.identity-eyebrow{font-size:8px}.role-list{gap:5px;margin-top:8px}.role-badge{font-size:8px;padding:4px 6px}.owner-crown{top:-27px;font-size:29px}.profile-actions{grid-column:1/-1;justify-content:flex-start;padding:4px 0 0}.profile-actions .button{flex:1;padding:11px 9px;font-size:12px}.profile-workspace{padding:0 13px 18px}.identity-metrics{grid-template-columns:1fr;gap:8px;margin:7px 0 18px}.metric-card{min-height:72px;grid-template-columns:38px 1fr;grid-template-rows:auto auto;column-gap:11px;padding:10px 12px}.metric-symbol{grid-row:1/3;width:36px;height:36px;font-size:17px}.metric-label{font-size:8px}.metric-card strong{font-size:14px}.metric-foot{display:none}.profile-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:5px}.profile-tab{min-height:42px;font-size:11px;padding:8px 6px}.profile-tab.active::after{left:25%;right:25%}.profile-panel{padding-top:12px}.profile-module{min-height:185px;padding:18px}.module-heading h2{font-size:22px}.about-signoff{left:18px;right:18px;bottom:16px}.empty-feature{display:block;min-height:0;padding:25px 19px}.empty-art{width:105px;height:105px;margin:0 auto 24px}.empty-art span{font-size:45px}.empty-copy h2{font-size:25px}.empty-number{right:17px;top:15px}.profile-lower-strip{font-size:7px;letter-spacing:.1em;gap:7px}}
+
   </style>
 </head>
 <body>
@@ -407,45 +482,78 @@ main{width:min(1120px,calc(100% - 36px));margin:34px auto 64px}
 <main>
   <div id="loading" class="profile-card message"><h1>Loading profile...</h1><p>Just a moment while we find your place in the community.</p></div>
   <div id="notFound" class="profile-card message hidden"><h1>Profile not found</h1><p>We couldn't find a player with that username.</p></div>
-  <div id="profileCard" class="profile-card hidden">
-    <div id="banner" class="banner" aria-hidden="true"></div>
-    <div class="profile-content">
-      <div class="profile-top">
-        <div class="profile-identity">
-          <div id="avatarFrame" class="avatar-frame">
-            <span id="ownerCrown" class="owner-crown hidden" aria-label="Owner crown">♛</span>
-            <img id="avatar" class="avatar" src="" alt="Profile picture">
-          </div>
-          <div class="profile-info">
-            <h1 id="username" class="username"></h1>
-            <div id="profileLabel" class="profile-label">G.O.T Games Player</div>
-            <div id="roleList" class="role-list"></div>
-            <div id="founderLabel" class="founder-label hidden">♛ &nbsp;Top Fan of G.O.T Games</div>
-          </div>
+  <div id="profileCard" class="profile-page hidden">
+    <section class="profile-hero">
+      <div id="banner" class="profile-cover" aria-hidden="true"></div>
+      <div class="cover-shade"></div>
+      <div class="cover-meta"><span class="cover-kicker">G.O.T / PLAYER IDENTITY</span><span class="cover-index">COMMUNITY MEMBER</span></div>
+      <div class="hero-identity">
+        <div id="avatarFrame" class="avatar-frame">
+          <span id="ownerCrown" class="owner-crown hidden" aria-label="Owner crown">♛</span>
+          <img id="avatar" class="avatar" src="" alt="Profile picture">
+          <span class="avatar-orbit" aria-hidden="true"></span>
+        </div>
+        <div class="hero-nameplate">
+          <div class="identity-eyebrow">PLAYER PROFILE</div>
+          <h1 id="username" class="username"></h1>
+          <div id="profileLabel" class="profile-label">G.O.T Games Player</div>
+          <div id="roleList" class="role-list"></div>
+          <div id="founderLabel" class="founder-label hidden">♛ &nbsp;Top Fan of G.O.T Games</div>
         </div>
         <div class="profile-actions">
-          <button id="shareButton" class="button share-button" type="button">↗ Share Profile</button>
-          <button id="editButton" class="button edit-button hidden" type="button">Edit Profile</button>
+          <button id="shareButton" class="button share-button" type="button"><span aria-hidden="true">↗</span> Share Profile</button>
+          <button id="editButton" class="button edit-button hidden" type="button">✎ Edit Profile</button>
         </div>
       </div>
+    </section>
+    <div class="profile-workspace">
       <div id="shareStatus" class="share-status" role="status" aria-live="polite"></div>
-      <section class="profile-stats" aria-label="Player profile highlights">
-        <div class="profile-stat"><span class="stat-icon" aria-hidden="true">◷</span><span class="stat-label">MEMBER SINCE</span><strong id="profileJoinedStat">Loading...</strong></div>
-        <div class="profile-stat"><span class="stat-icon" aria-hidden="true">◈</span><span class="stat-label">FAVORITE PLATFORM</span><strong id="profilePlatformStat">Not set</strong></div>
-        <div class="profile-stat"><span class="stat-icon" aria-hidden="true">↗</span><span class="stat-label">CONNECTED LINKS</span><strong id="profileLinksStat">0</strong></div>
+      <section class="identity-metrics" aria-label="Player stats">
+        <article class="metric-card metric-member"><span class="metric-symbol">✦</span><span class="metric-label">MEMBER SINCE</span><strong id="profileJoinedStat">Loading...</strong><span class="metric-foot">Part of the community</span></article>
+        <article class="metric-card metric-platform"><span class="metric-symbol">◈</span><span class="metric-label">FAVOURITE PLATFORM</span><strong id="profilePlatformStat">Not set</strong><span class="metric-foot">Where they create</span></article>
+        <article class="metric-card metric-links"><span class="metric-symbol">↗</span><span class="metric-label">SOCIAL CONNECTIONS</span><strong id="profileLinksStat">0</strong><span class="metric-foot">Public links</span></article>
       </section>
-      <div class="profile-details">
-        <section class="detail-section about-section">
-          <div class="section-kicker">PLAYER INTRODUCTION</div>
-          <h2><span class="section-icon" aria-hidden="true">✦</span> About Me</h2>
-          <p id="bio">This player hasn't added a bio yet.</p>
-        </section>
-        <section class="detail-section social-section">
-          <div class="section-kicker">FIND THIS PLAYER</div>
-          <h2><span class="section-icon" aria-hidden="true">↗</span> Around the web</h2>
-          <div id="socialLinks" class="social-list"><span class="empty-social">No social links added yet.</span></div>
-        </section>
-      </div>
+      <nav class="profile-tabs" aria-label="Profile sections" role="tablist">
+        <button class="profile-tab active" type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-profile-tab="overview"><span>◫</span> Overview</button>
+        <button class="profile-tab" type="button" role="tab" id="tab-activity" aria-controls="panel-activity" aria-selected="false" data-profile-tab="activity"><span>◷</span> Activity</button>
+        <button class="profile-tab" type="button" role="tab" id="tab-favorites" aria-controls="panel-favorites" aria-selected="false" data-profile-tab="favorites"><span>♡</span> Favorites</button>
+        <button class="profile-tab" type="button" role="tab" id="tab-achievements" aria-controls="panel-achievements" aria-selected="false" data-profile-tab="achievements"><span>✧</span> Achievements</button>
+      </nav>
+      <section class="profile-panel active" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-profile-panel="overview">
+        <div class="overview-grid">
+          <article class="profile-module about-module">
+            <div class="module-heading"><div><span class="module-kicker">THE PLAYER</span><h2>About me</h2></div><span class="module-mark">01</span></div>
+            <p id="bio" class="profile-bio">This player hasn't added a bio yet.</p>
+            <div class="about-signoff"><span class="signoff-line"></span><span>G.O.T COMMUNITY</span></div>
+          </article>
+          <article class="profile-module links-module">
+            <div class="module-heading"><div><span class="module-kicker">ELSEWHERE ONLINE</span><h2>Find this player</h2></div><span class="module-mark">02</span></div>
+            <div id="socialLinks" class="social-list"><span class="empty-social">No social links added yet.</span></div>
+          </article>
+        </div>
+        <div class="profile-lower-strip"><span class="strip-dot"></span><span>PLAYER CARD</span><span class="strip-divider">/</span><span>G.O.T GAMES COMMUNITY</span><span class="strip-spacer"></span><span>PROFILE OVERVIEW</span></div>
+      </section>
+      <section class="profile-panel" id="panel-activity" role="tabpanel" aria-labelledby="tab-activity" data-profile-panel="activity" hidden>
+        <article class="empty-feature">
+          <div class="empty-art activity-art"><span>◷</span><i></i><b></b></div>
+          <div class="empty-copy"><span class="module-kicker">PLAYER TIMELINE</span><h2>Activity feed</h2><p>Recent watches, game sessions, and community activity will have a home here. No activity entries are connected to this profile yet.</p></div>
+          <span class="empty-number">03</span>
+        </article>
+      </section>
+      <section class="profile-panel" id="panel-favorites" role="tabpanel" aria-labelledby="tab-favorites" data-profile-panel="favorites" hidden>
+        <article class="empty-feature">
+          <div class="empty-art favorites-art"><span>♡</span><i></i><b></b></div>
+          <div class="empty-copy"><span class="module-kicker">PERSONAL COLLECTION</span><h2>Favourite games & anime</h2><p>This space is ready for favourite games, anime, and characters. Nothing has been added to this collection yet.</p></div>
+          <span class="empty-number">04</span>
+        </article>
+      </section>
+      <section class="profile-panel" id="panel-achievements" role="tabpanel" aria-labelledby="tab-achievements" data-profile-panel="achievements" hidden>
+        <article class="empty-feature">
+          <div class="empty-art achievements-art"><span>✧</span><i></i><b></b></div>
+          <div class="empty-copy"><span class="module-kicker">MILESTONES</span><h2>Achievements</h2><p>Community milestones and earned badges will be showcased here when an achievement system is connected.</p></div>
+          <span class="empty-number">05</span>
+        </article>
+      </section>
     </div>
   </div>
   <section id="editor" class="editor hidden">
@@ -777,6 +885,23 @@ main{width:min(1120px,calc(100% - 36px));margin:34px auto 64px}
       status.textContent = copied ? "Profile link copied to clipboard." : "Copy this link: " + value;
       status.dataset.state = copied ? "success" : "manual";
     }
+  });
+  document.querySelectorAll("[data-profile-tab]").forEach(tab=>{
+    tab.addEventListener("click",()=>{
+      const target=tab.dataset.profileTab;
+      document.querySelectorAll("[data-profile-tab]").forEach(item=>{
+        const selected=item===tab;
+        item.classList.toggle("active",selected);
+        item.setAttribute("aria-selected",String(selected));
+        item.tabIndex=selected?0:-1;
+      });
+      document.querySelectorAll("[data-profile-panel]").forEach(panel=>{
+        const selected=panel.dataset.profilePanel===target;
+        panel.hidden=!selected;
+        panel.classList.toggle("active",selected);
+      });
+    });
+    tab.tabIndex=tab.classList.contains("active")?0:-1;
   });
   editButton.addEventListener("click",openEditor);
   cancelButton.addEventListener("click",closeEditor);
