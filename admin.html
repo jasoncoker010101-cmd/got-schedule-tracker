@@ -26,9 +26,54 @@ button.secondary{background:var(--raised);color:var(--text);border:1px solid var
   .status-card strong{overflow-wrap:anywhere}.status-card:focus-within{outline:2px solid rgba(239,189,50,.4);outline-offset:2px}
   #refresh:disabled{opacity:.6;cursor:wait}
   @media(prefers-reduced-motion:no-preference){.status-card{transition:border-color .18s ease,transform .18s ease}.status-card:hover{border-color:rgba(239,189,50,.4);transform:translateY(-2px)}}
+
+/* SIGNAL ROOM skin — matching the main schedule's broadcast console. */
+:root{--bg:#080e15;--surface:#111923;--raised:#17232d;--text:#f5f1e7;--muted:#98a5b3;--accent:#f2bd55;--line:rgba(142,220,224,.14);--green:#8edce0;--red:#ff7868}
+body{background:radial-gradient(ellipse at 8% 0%,rgba(242,189,85,.12),transparent 31rem),radial-gradient(ellipse at 95% 18%,rgba(75,153,175,.12),transparent 34rem),#080e15}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(151,203,214,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(151,203,214,.05) 1px,transparent 1px);background-size:42px 42px}
+.site-header{position:sticky;top:0;z-index:20;gap:20px;min-height:72px;padding:12px max(4%,calc((100% - 1450px)/2));border-bottom:1px solid rgba(142,220,224,.15);background:rgba(7,13,20,.9);backdrop-filter:blur(18px)}
+.logo{display:flex;align-items:center;gap:9px;color:#f5f1e7;text-decoration:none;white-space:nowrap}
+.logo span{color:#f2bd55}
+.logo small{padding:4px 6px;border:1px solid rgba(142,220,224,.25);border-radius:3px;color:#8edce0;font-size:.55rem;letter-spacing:.17em}
+.site-nav{display:flex;gap:5px;padding:5px;border:1px solid rgba(142,220,224,.14);border-radius:5px 13px 5px 13px;background:rgba(5,10,16,.78)}
+.site-nav a{display:flex;align-items:center;gap:6px;padding:9px 11px;border:1px solid transparent;border-radius:3px 9px 3px 9px;color:#a9b8c2;text-decoration:none;font-size:.75rem;font-weight:800}
+.site-nav a::before{color:#8edce0;font-size:.55rem}
+.site-nav a:nth-child(1)::before{content:"01"}.site-nav a:nth-child(2)::before{content:"02"}.site-nav a:nth-child(3)::before{content:"03"}.site-nav a:nth-child(4)::before{content:"04"}.site-nav a:nth-child(5)::before{content:"05"}
+.site-nav a:hover{border-color:rgba(142,220,224,.28);background:rgba(142,220,224,.06);color:white}
+.site-nav a.active{background:linear-gradient(120deg,#f7d995,#eab44b);color:#20170b;border-color:#f2bd55}
+main{max-width:1450px;margin:32px auto 70px}
+main>h1{font-size:clamp(2.5rem,6vw,4.5rem);letter-spacing:-.07em}
+main>.muted:first-child{color:#8edce0;font-size:.65rem;font-weight:900;letter-spacing:.2em}
+.panel,.status-card,.report{border:1px solid rgba(142,220,224,.14);border-radius:5px 15px 5px 15px;background:linear-gradient(145deg,#16232d,#0e1720);box-shadow:0 15px 36px rgba(0,0,0,.2)}
+.status-card{position:relative;overflow:hidden;min-height:115px}
+.status-card::after{content:"";position:absolute;right:-30px;bottom:-45px;width:105px;height:105px;border:1px solid rgba(142,220,224,.12);border-radius:50%;box-shadow:0 0 0 16px rgba(142,220,224,.025);pointer-events:none}
+.status-card strong{color:#f6d28a}
+.dot.ok{background:#8edce0;box-shadow:0 0 9px rgba(142,220,224,.5)}
+.dot.bad{background:#ff7868;box-shadow:0 0 9px rgba(255,120,104,.4)}
+input,select,textarea{border-radius:4px 10px 4px 10px!important;background:#0b141d!important;color:#f5f1e7!important}
+button{border-radius:4px 9px 4px 9px!important}
+button:not(.secondary){background:#f2bd55;color:#20170b}
+button.secondary{background:#14232d;color:#c6d8dc;border:1px solid rgba(142,220,224,.18)}
+.section-head{margin:15px 0}
+.report{background:linear-gradient(135deg,#17242e,#101923)}
+.report-tools{display:flex;align-items:center;gap:9px;min-width:min(520px,100%)}
+.report-tools input{flex:1;min-width:160px;margin:0}
+.report-tools select{width:auto;min-width:140px;margin:0}
+#login{border-left:3px solid #f2bd55}
+@media(max-width:820px){.site-header{align-items:flex-start;flex-direction:column}.site-nav{width:100%;overflow-x:auto}.site-nav a{flex:1;justify-content:center;padding:8px 5px}.site-nav a::before{display:none}}
+@media(max-width:600px){main{width:calc(100% - 24px);margin:23px auto 45px}.report-tools{width:100%;min-width:0;flex-direction:column;align-items:stretch}.report-tools select{width:100%}.section-head{align-items:stretch}}
 </style></head>
 <body>
-<header><div class="logo">G.O.T <span>Games</span> · Admin</div><a href="anime.html">Back to Anime</a></header>
+<header class="site-header">
+  <a class="logo" href="index.html">G.O.T <span>Games</span><small>ADMIN</small></a>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="index.html">Schedule</a>
+    <a href="profile.html">Profile</a>
+    <a href="player-directory.html">Fanbase</a>
+    <a href="anime.html">Anime</a>
+    <a href="admin.html" class="active" aria-current="page">Admin</a>
+  </nav>
+</header>
 <main>
 <div class="muted">PRIVATE CONTROL CENTER</div><h1>Admin dashboard</h1>
 <p class="muted">Service health, site activity, and visitor reports. Only the G.O.T Games owner account can access this dashboard.</p>
@@ -58,7 +103,7 @@ button.secondary{background:var(--raised);color:var(--text);border:1px solid var
   <article class="status-card"><span class="dot" id="animeActivityDot"></span>Recent anime data<strong id="animeActivityStatus">Checking…</strong><span class="status-detail" id="animeActivityDetail">Checking latest saved reaction and watch records</span></article>
  </div>
 </section>
-<h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube and Patreon URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div><div class="section-head"><h2>Visitor reports</h2><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div>
+<h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube and Patreon URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div><div class="section-head"><h2>Visitor reports</h2><div class="report-tools"><input id="reportSearch" type="search" placeholder="Search reports by anime, type or details…" aria-label="Search visitor reports"><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div></div>
 <p class="muted" id="reportMessage">Loading reports…</p><div id="reports"></div>
 </section>
 </main>
@@ -240,7 +285,14 @@ async function health(){
  $("watchDataDetail").textContent=watchRows.error?watchRows.error.message:("Latest recorded watch: "+(latest?new Date(latest).toLocaleString():"No watch records"));
 }
 function renderReports(){
- const filter=$("reportFilter").value;const rows=currentReports.filter(r=>filter==="all"||r.status===filter);$("reports").replaceChildren();
+ const filter=$("reportFilter").value;
+ const query=$("reportSearch").value.trim().toLowerCase();
+ const rows=currentReports.filter(r=>{
+  const statusMatch=filter==="all"||r.status===filter;
+  const searchText=[r.id,r.category,r.anime_title,r.season_label,r.episode_label,r.details].filter(Boolean).join(" ").toLowerCase();
+  return statusMatch&&(!query||searchText.includes(query));
+ });
+ $("reports").replaceChildren();
  if(!rows.length){$("reports").textContent="No reports in this view.";return;}
  for(const r of rows){
   const card=document.createElement("article");card.className="report";
@@ -264,6 +316,6 @@ async function loadReports(){
 async function refreshAll(){if(!await verifyOwner())return;await Promise.all([health(),loadReports()]);}
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){$("authMessage").textContent="Sign-in is unavailable because the authentication library did not load.";return;}$("authMessage").textContent="Signing in…";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("password").value="";if(error){$("authMessage").textContent="Sign-in failed: "+error.message;return;}await refreshAll();});
 $("logout").onclick=async()=>{if(!db)return;await db.auth.signOut();await verifyOwner();};
-$("refresh").onclick=refreshAll;$("reportFilter").onchange=renderReports;
+$("refresh").onclick=refreshAll;$("reportFilter").onchange=renderReports;$("reportSearch").addEventListener("input",renderReports);
 refreshAll();
 </script></body></html>
