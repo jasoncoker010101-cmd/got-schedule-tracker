@@ -234,6 +234,10 @@ input,select,textarea{accent-color:var(--got-gold)}
     <div style="flex:2;min-width:210px"><label for="playlistAuditAnime">Anime title</label><input id="playlistAuditAnime" value="Jujutsu Kaisen" required></div>
     <div style="flex:1;min-width:130px"><label for="playlistAuditAniList">AniList ID</label><input id="playlistAuditAniList" type="number" min="1" step="1" value="113415" required><span class="muted" id="auditAniListLookup" role="status" aria-live="polite">AniList ID is prefilled. Change the title to look up another anime.</span><select id="auditAniListChoices" hidden aria-label="Choose matching anime"></select></div>
    </div>
+   <div class="row" style="align-items:center;margin:12px 0">
+    <span class="muted" id="playlistOrderStatus" role="status" aria-live="polite">Playlist order: top to bottom (Episode 1 first).</span>
+    <button type="button" class="secondary" id="playlistOrderToggle" aria-pressed="false">Flip playlist order</button>
+   </div>
    <fieldset class="playlist-season-question" style="margin:14px 0;padding:13px 15px;border:1px solid var(--line);border-radius:9px">
     <legend style="padding:0 7px;font-weight:800;color:var(--accent)">Season information <span aria-hidden="true">*</span></legend>
     <p style="margin:4px 0 10px;color:var(--muted);font-size:13px;line-height:1.5">Do the videos explicitly say “Season 1,” or do they only show the episode numbers?</p>
@@ -1603,6 +1607,26 @@ async function submitManualEpisodeLink(event){
 }
 $("manualEpisodeLinkForm").addEventListener("submit",submitManualEpisodeLink);
 
+let playlistNewestFirst=false;
+const playlistOrderToggle=$("playlistOrderToggle");
+const playlistOrderStatus=$("playlistOrderStatus");
+function updatePlaylistOrderLabel(){
+ playlistOrderToggle.setAttribute("aria-pressed",String(playlistNewestFirst));
+ playlistOrderStatus.textContent=playlistNewestFirst
+  ?"Playlist order: newest video is at the top (reverse for episode matching)."
+  :"Playlist order: oldest video is at the top (Episode 1 first).";
+}
+playlistOrderToggle.addEventListener("click",()=>{
+ playlistNewestFirst=!playlistNewestFirst;
+ updatePlaylistOrderLabel();
+ const apply=$("playlistAuditApply");
+ if(!apply.hidden){
+  apply.hidden=true;
+  $("playlistAuditMessage").textContent="Playlist order changed. Scan again before adding links so episode matching uses the selected order.";
+ }
+});
+updatePlaylistOrderLabel();
+
 async function runPlaylistAudit(event){
  event.preventDefault();
  if(!db)return;
@@ -1617,7 +1641,8 @@ async function runPlaylistAudit(event){
    playlist_url:$("playlistAuditUrl").value.trim(),
    anime_title:$("playlistAuditAnime").value.trim(),
    anilist_id:Number($("playlistAuditAniList").value),
-   season_one_confirmed:$('input[name="playlistSeasonLabel"]:checked')?.value === "yes"
+   season_one_confirmed:$('input[name="playlistSeasonLabel"]:checked')?.value === "yes",
+    playlist_newest_first:playlistNewestFirst
   }});
   if(error)throw new Error(error.message||"The playlist audit request failed.");
   if(!data?.success)throw new Error(data?.error||"The playlist audit could not be completed.");
@@ -1627,6 +1652,7 @@ async function runPlaylistAudit(event){
   const applyButton=$("playlistAuditApply");
   applyButton.hidden=eligibleMissing.length===0;
   applyButton.dataset.eligibleCount=String(eligibleMissing.length);
+   applyButton.dataset.playlistNewestFirst=String(playlistNewestFirst);
   applyButton.textContent="ADD "+eligibleMissing.length+" VERIFIED MISSING LINK"+(eligibleMissing.length===1?"":"S");
   $("playlistAuditApplyNote").textContent="Includes explicit season labels and high-confidence season matches confirmed by nearby playlist episode order. "+uncertainInferred+" uncertain inferred-season match(es) will remain for manual review.";
   const statItems=[
@@ -1675,7 +1701,8 @@ $("playlistAuditApply").addEventListener("click",async()=>{
    playlist_url:$("playlistAuditUrl").value.trim(),
    anime_title:$("playlistAuditAnime").value.trim(),
    anilist_id:Number($("playlistAuditAniList").value),
-   season_one_confirmed:$('input[name="playlistSeasonLabel"]:checked')?.value === "yes"
+   season_one_confirmed:$('input[name="playlistSeasonLabel"]:checked')?.value === "yes",
+    playlist_newest_first:button.dataset.playlistNewestFirst==="true"
   }});
   if(error)throw new Error(error.message||"The links could not be added.");
   if(!data?.success)throw new Error(data?.error||"The links could not be added.");
