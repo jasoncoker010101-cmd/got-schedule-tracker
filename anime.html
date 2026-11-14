@@ -1956,6 +1956,12 @@
       image.referrerPolicy = "no-referrer";
 
       image.onerror = () => {
+        const backup = anime.fallbackCoverImage;
+        if (backup && image.dataset.triedBackup !== "yes" && backup !== image.src) {
+          image.dataset.triedBackup = "yes";
+          image.src = backup;
+          return;
+        }
         image.remove();
         const fallback = document.createElement("div");
         fallback.className = "cover-placeholder";
@@ -2308,7 +2314,10 @@
 
         let parentMedia = null;
         const parentTitle = series.title || franchise.name;
-        if (!media && parentTitle &&
+
+        // A season may have a valid AniList record but no cover of its own.
+        // In that case, still look up the parent series for usable artwork.
+        if ((!media || !media.coverImage?.large) && parentTitle &&
             normalizeTitle(parentTitle) !== normalizeTitle(fallbackTitle)) {
           try {
             parentMedia = await findAniListMediaForSeason(parentTitle, signal);
@@ -2316,6 +2325,15 @@
             if (error.name === "AbortError") throw error;
             console.warn("Could not retrieve parent-series artwork:", parentTitle, error);
           }
+        }
+
+        const parentCover = parentMedia?.coverImage?.large || null;
+        if (media && !media.coverImage?.large && parentCover) {
+          media = {
+            ...media,
+            coverImage: { ...(media.coverImage || {}), large: parentCover },
+            description: media.description || parentMedia?.description || ""
+          };
         }
 
         const fallbackYear = String(season.first_aired || series.first_aired || "").slice(0, 4);
@@ -2328,7 +2346,8 @@
             native: series.title_native || null
           },
           synonyms: [],
-          coverImage: { large: parentMedia?.coverImage?.large || null },
+          coverImage: { large: parentCover },
+          fallbackCoverImage: null,
           description: series.synopsis?.text || parentMedia?.description || "",
           episodes: Number(season.episode_count) || null,
           seasonYear: /^\d{4}$/.test(fallbackYear) ? Number(fallbackYear) : null,
@@ -2337,6 +2356,9 @@
           genres: [],
           relations: { edges: [] }
         };
+        if (media && parentCover && media.coverImage?.large !== parentCover) {
+          anime.fallbackCoverImage = parentCover;
+        }
 
         // Every season card also needs the parent series/franchise titles.
         // G.O.T. watch-history rows are commonly stored under the main series
