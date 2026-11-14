@@ -234,6 +234,12 @@ input,select,textarea{accent-color:var(--got-gold)}
     <div style="flex:2;min-width:210px"><label for="playlistAuditAnime">Anime title</label><input id="playlistAuditAnime" value="Jujutsu Kaisen" required></div>
     <div style="flex:1;min-width:130px"><label for="playlistAuditAniList">AniList ID</label><input id="playlistAuditAniList" type="number" min="1" step="1" value="113415" required><span class="muted" id="auditAniListLookup" role="status" aria-live="polite">AniList ID is prefilled. Change the title to look up another anime.</span><select id="auditAniListChoices" hidden aria-label="Choose matching anime"></select></div>
    </div>
+   <fieldset class="playlist-season-question" style="margin:14px 0;padding:13px 15px;border:1px solid var(--line);border-radius:9px">
+    <legend style="padding:0 7px;font-weight:800;color:var(--accent)">Season information <span aria-hidden="true">*</span></legend>
+    <p style="margin:4px 0 10px;color:var(--muted);font-size:13px;line-height:1.5">Do the videos explicitly say “Season 1,” or do they only show the episode numbers?</p>
+    <label style="display:flex;align-items:center;gap:9px;margin:8px 0"><input type="radio" name="playlistSeasonLabel" value="yes" required style="width:auto;margin:0"> Yes, the videos say Season 1.</label>
+    <label style="display:flex;align-items:center;gap:9px;margin:8px 0"><input type="radio" name="playlistSeasonLabel" value="no" required style="width:auto;margin:0"> No, they only show episode numbers.</label>
+   </fieldset>
    <div class="row"><button type="submit" id="playlistAuditRun">Scan playlist</button><span class="muted" id="playlistAuditMessage" role="status" aria-live="polite">Ready to scan. Only owner accounts can run this audit.</span></div>
   </form>
   <div id="playlistAuditSummary" class="playlist-audit-summary" hidden></div>
@@ -1610,7 +1616,8 @@ async function runPlaylistAudit(event){
   const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{
    playlist_url:$("playlistAuditUrl").value.trim(),
    anime_title:$("playlistAuditAnime").value.trim(),
-   anilist_id:Number($("playlistAuditAniList").value)
+   anilist_id:Number($("playlistAuditAniList").value),
+   season_one_confirmed:$('input[name="playlistSeasonLabel"]:checked')?.value === "yes"
   }});
   if(error)throw new Error(error.message||"The playlist audit request failed.");
   if(!data?.success)throw new Error(data?.error||"The playlist audit could not be completed.");
@@ -1667,7 +1674,8 @@ $("playlistAuditApply").addEventListener("click",async()=>{
    action:"apply",
    playlist_url:$("playlistAuditUrl").value.trim(),
    anime_title:$("playlistAuditAnime").value.trim(),
-   anilist_id:Number($("playlistAuditAniList").value)
+   anilist_id:Number($("playlistAuditAniList").value),
+   season_one_confirmed:$('input[name="playlistSeasonLabel"]:checked')?.value === "yes"
   }});
   if(error)throw new Error(error.message||"The links could not be added.");
   if(!data?.success)throw new Error(data?.error||"The links could not be added.");
