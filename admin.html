@@ -233,7 +233,11 @@ input,select,textarea{accent-color:var(--got-gold)}
   <button type="button" class="diag-filter-btn" data-diag-filter="warning" aria-pressed="false">Warnings <b id="fullDiagFilterWarningCount">0</b></button>
   <button type="button" class="diag-filter-btn" data-diag-filter="fail" aria-pressed="false">Errors <b id="fullDiagFilterErrorCount">0</b></button>
   <button type="button" class="diag-filter-btn" data-diag-filter="pass" aria-pressed="false">Passed <b id="fullDiagFilterPassCount">0</b></button>
-  <button type="button" class="diag-filter-btn copy" id="copyFullDiagReport">Copy report</button>
+  <button type="button" class="diag-filter-btn copy" id="copyFullDiagReport">Copy full report</button>
+  <button type="button" class="diag-filter-btn copy" id="copyDiagErrors">Copy errors</button>
+  <button type="button" class="diag-filter-btn copy" id="saveDiagErrors">Save errors .txt</button>
+  <button type="button" class="diag-filter-btn copy" id="copyDiagWarnings">Copy warnings</button>
+  <button type="button" class="diag-filter-btn copy" id="saveDiagWarnings">Save warnings .txt</button>
  </div>
  <div class="diag-results" id="fullDiagResults" aria-live="polite"></div>
  <div class="diag-summary" id="fullDiagSummary" role="status">No scan has been run yet.</div>
@@ -523,7 +527,19 @@ function fullDiagRenderResults(){
  });
  $("fullDiagSummary").textContent=passed+" checks passed · "+warnings+" checks with warnings · "+failed+" checks with errors";
 }
-function fullDiagCopyFallback(value){
+function fullDiagReportText(status){
+ const label=status==="fail"?"ERRORS":"WARNINGS";
+ const rows=fullDiagRows.filter(result=>result.status===status);
+ const lines=["G.O.T GAMES FULL DIAGNOSTICS — "+label,new Date().toLocaleString(),rows.length+" "+label.toLowerCase()+" check group(s)",""];
+ if(!rows.length)lines.push("No "+label.toLowerCase()+" were found in the latest completed scan.");
+ rows.forEach((result,index)=>{
+  lines.push((index+1)+". ["+label.slice(0,-1)+"] "+result.name);
+  lines.push("   "+String(result.detail||"No additional details."));
+  lines.push("");
+ });
+ return lines.join("\\n");
+}
+function fullDiagCopyFallback(value,button,resetText){
  const field=document.createElement("textarea");
  field.value=value;
  field.style.position="fixed";
@@ -533,21 +549,34 @@ function fullDiagCopyFallback(value){
  let copied=false;
  try{copied=document.execCommand("copy");}catch(_){}
  field.remove();
- const button=$("copyFullDiagReport");
- button.textContent=copied?"Copied":"Copy unavailable";
- setTimeout(()=>button.textContent="Copy report",1800);
+ button.textContent=copied?"Copied": "Copy unavailable";
+ setTimeout(()=>button.textContent=resetText,1800);
+}
+async function fullDiagCopyText(value,button,resetText){
+ if(navigator.clipboard&&window.isSecureContext){
+  try{
+   await navigator.clipboard.writeText(value);
+   button.textContent="Copied";
+   setTimeout(()=>button.textContent=resetText,1800);
+  }catch(_){fullDiagCopyFallback(value,button,resetText);}
+ }else fullDiagCopyFallback(value,button,resetText);
 }
 function fullDiagCopyReport(){
  const lines=["G.O.T GAMES FULL DIAGNOSTICS",new Date().toLocaleString(),$("fullDiagSummary").textContent,""];
  fullDiagRows.forEach(result=>lines.push("["+result.status.toUpperCase()+"] "+result.name+" — "+result.detail));
- const value=lines.join("\n");
- const button=$("copyFullDiagReport");
- if(navigator.clipboard&&window.isSecureContext){
-  navigator.clipboard.writeText(value).then(()=>{
-   button.textContent="Copied";
-   setTimeout(()=>button.textContent="Copy report",1800);
-  }).catch(()=>fullDiagCopyFallback(value));
- }else fullDiagCopyFallback(value);
+ fullDiagCopyText(lines.join("\\n"),$("copyFullDiagReport"),"Copy full report");
+}
+function fullDiagSaveText(status){
+ const value=fullDiagReportText(status);
+ const blob=new Blob([value],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const anchor=document.createElement("a");
+ anchor.href=url;
+ anchor.download="got-diagnostics-"+(status==="fail"?"errors":"warnings")+"-"+new Date().toISOString().replace(/[:.]/g,"-")+".txt";
+ document.body.append(anchor);
+ anchor.click();
+ anchor.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function fullDiagWithTimeout(promise,label,milliseconds=9000){
  let timer;
@@ -1205,6 +1234,10 @@ document.querySelectorAll("[data-diag-filter]").forEach(button=>button.addEventL
  fullDiagRenderResults();
 }));
 $("copyFullDiagReport").addEventListener("click",fullDiagCopyReport);
+$("copyDiagErrors").addEventListener("click",()=>fullDiagCopyText(fullDiagReportText("fail"),$("copyDiagErrors"),"Copy errors"));
+$("saveDiagErrors").addEventListener("click",()=>fullDiagSaveText("fail"));
+$("copyDiagWarnings").addEventListener("click",()=>fullDiagCopyText(fullDiagReportText("warning"),$("copyDiagWarnings"),"Copy warnings"));
+$("saveDiagWarnings").addEventListener("click",()=>fullDiagSaveText("warning"));
 
 function renderReports(){
  const filter=$("reportFilter").value;
