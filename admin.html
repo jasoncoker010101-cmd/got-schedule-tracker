@@ -515,7 +515,7 @@ const fullDiagnosticSteps=[
      const response=await fullDiagFetch(path);
      if(!response.ok)return {path,ok:false,detail:"HTTP "+response.status};
      const body=await response.text();
-     if(path.endsWith(".html")&&!/<html[\\s>]/i.test(body))return {path,ok:false,detail:"Response did not look like an HTML page"};
+     if(path.endsWith(".html")&&!body.toLowerCase().includes("<html"))return {path,ok:false,detail:"Response did not look like an HTML page"};
      if(path.endsWith(".js")&&body.trim().length<40)return {path,ok:false,detail:"Script response was unexpectedly short"};
      return {path,ok:true,detail:"HTTP "+response.status+" · "+body.length.toLocaleString()+" characters"};
     }catch(error){return {path,ok:false,detail:error.message||"Request failed"};}
@@ -653,7 +653,11 @@ const fullDiagnosticSteps=[
    ]);
    const notifications=notificationResult.rows,reports=reportResult.rows,pending=pendingResult.rows;
    const badNotifications=notifications.filter(row=>!row.title||!["episode","announcement","system"].includes(row.kind)).length;
-   const badTargets=notifications.filter(row=>row.href&&!/^(index|anime|notifications|profile|player-directory|nexus)\\.html(?:[?#].*)?$/.test(row.href)).length;
+   const allowedTargets=new Set(["index.html","anime.html","notifications.html","profile.html","player-directory.html","nexus.html"]);
+   const badTargets=notifications.filter(row=>{
+    const target=String(row.href||"").split("?")[0].split("#")[0];
+    return Boolean(row.href)&&!allowedTargets.has(target);
+   }).length;
    const badReportStatuses=reports.filter(row=>!["new","reviewing","fixed","dismissed"].includes(row.status)).length;
    const badQueueStatuses=pending.filter(row=>!["pending","needs_checking","approved","ignored"].includes(row.status)).length;
    const problems=[];
