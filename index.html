@@ -1717,6 +1717,8 @@ function updateAccountButton(){
 async function loadMyProfile(){
   if(!currentUser){
     currentProfile = null;
+    canReplayMascot = false;
+    if(mascotReplayButton) mascotReplayButton.hidden = true;
     updateAccountButton();
     return;
   }
