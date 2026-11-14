@@ -279,7 +279,11 @@
 
     .results-loading {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 180px;
+      box-sizing: border-box;
       z-index: 5;
       display: grid;
       place-items: start center;
@@ -909,7 +913,7 @@
 </head>
 
 <body>
-  <div class="page-loader" id="pageLoader" role="status" aria-live="polite">
+  <div class="page-loader" id="pageLoader" role="status" aria-live="polite" hidden>
     <div class="page-loader-content">
       <div class="page-loader-emblem" aria-hidden="true">
         <span class="page-loader-ring"></span>
@@ -3233,11 +3237,10 @@
     const controller = new AbortController();
     requestController = controller;
 
-    if (initialCatalogueLoad) {
-      pageLoader.hidden = false;
-    } else {
-      resultsLoading.hidden = false;
-    }
+    // Keep every catalogue/search load inside the results area. Never cover
+    // the whole page while the user is typing or browsing.
+    pageLoader.hidden = true;
+    resultsLoading.hidden = false;
     setStatus("Searching AniList…");
     pagination.hidden = true;
 
@@ -3773,13 +3776,10 @@
   searchInput.addEventListener("input", () => {
     page = 1;
 
-    // If the user starts typing during the first catalogue load, switch away
-    // from the full-page startup screen immediately.
-    if (initialCatalogueLoad) {
-      initialCatalogueLoad = false;
-      pageLoader.hidden = true;
-      resultsLoading.hidden = false;
-    }
+    // Search feedback stays local to the anime results, even on first load.
+    initialCatalogueLoad = false;
+    pageLoader.hidden = true;
+    resultsLoading.hidden = false;
 
     clearTimeout(debounceTimer);
 
