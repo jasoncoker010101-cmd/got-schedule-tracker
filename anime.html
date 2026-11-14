@@ -820,6 +820,7 @@
     <a href="https://anilist.co/" target="_blank" rel="noopener noreferrer">AniList</a>.
     Favorites are stored locally in your browser.
     Watch history is provided by G.O.T. Games.
+    Season grouping data is provided by <a href="https://junban.moe/api" target="_blank" rel="noopener noreferrer">Junban</a> and manami-project (ODbL).
   </footer>
 
 <script src="patreon-links.js"></script>
@@ -829,6 +830,7 @@
   // =========================================================
 
   const API_URL = "https://graphql.anilist.co";
+  const JUNBAN_API_URL = "https://junban.moe/api/v1";
 
   const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 
@@ -957,6 +959,7 @@
   let episodeLinks = [];
   let episodeLinksLoaded = false;
   let episodeLinksBySeason = new Map();
+  const junbanLookupCache = new Map();
 
   // Owner review state
   let ownerSession = null;
@@ -1955,29 +1958,137 @@
     );
   }
 
-  function getRelatedSeasonGroups(items) {
+  function getJunbanLookupRows(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (!payload || typeof payload !== "object") return [];
+
+    for (const key of ["results", "lookups", "items", "data"]) {
+      const value = payload[key];
+      if (Array.isArray(value)) return value;
+      if (value && typeof value === "object") {
+        const rows = Object.values(value).filter(entry =>
+          entry && typeof entry === "object" && entry.id != null
+        );
+        if (rows.length) return rows;
+      }
+    }
+
+    if (payload.type && payload.id != null) return [payload];
+
+    return Object.values(payload).filter(entry =>
+      entry && typeof entry === "object" && entry.type && entry.id != null
+    );
+  }
+
+  async function loadJunbanLookups(items, signal) {
+    const ids = [...new Set(items.map(item => String(item.id)))];
+    const missingIds = ids.filter(id => !junbanLookupCache.has(id));
+    if (!missingIds.length) return;
+
+    const url = new URL(JUNBAN_API_URL + "/lookup");
+    url.searchParams.set("site", "anilist");
+    url.searchParams.set("ids", missingIds.join(","));
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+      signal
+    });
+
+    if (!response.ok) {
+      throw new Error("Junban lookup failed (" + response.status + ").");
+    }
+
+    const payload = await response.json();
+    const rows = getJunbanLookupRows(payload);
+
+    for (const row of rows) {
+      const id = String(row.id ?? row.anilist_id ?? "");
+      if (id && missingIds.includes(id)) {
+        junbanLookupCache.set(id, row);
+      }
+    }
+
+    // Cache misses too, so a title not listed in Junban is not requested
+    // again every time the user changes pages or searches.
+    for (const id of missingIds) {
+      if (!junbanLookupCache.has(id)) junbanLookupCache.set(id, null);
+    }
+  }
+
+  function getSeasonGroups(items) {
     const groups = [];
     const claimed = new Set();
     const byId = new Map(items.map(item => [Number(item.id), item]));
+    const junbanGroups = new Map();
 
     for (const anime of items) {
-      if (claimed.has(Number(anime.id))) continue;
-      const seasons = new Map([[Number(anime.id), anime]]);
+      const lookup = junbanLookupCache.get(String(anime.id));
+      if (
+        lookup?.type !== "season" ||
+        lookup.series?.id == null ||
+        lookup.season?.number == null
+      ) continue;
+
+      const franchiseId = lookup.franchise?.id ?? "no-franchise";
+      const key = String(franchiseId) + "|" + String(lookup.series.id);
+      if (!junbanGroups.has(key)) junbanGroups.set(key, []);
+      junbanGroups.get(key).push({
+        anime,
+        seasonNumber: Number(lookup.season.number)
+      });
+    }
+
+    for (const anime of items) {
+      const id = Number(anime.id);
+      if (claimed.has(id)) continue;
+
+      const lookup = junbanLookupCache.get(String(anime.id));
+      if (
+        lookup?.type === "season" &&
+        lookup.series?.id != null &&
+        lookup.season?.number != null
+      ) {
+        const key = String(lookup.franchise?.id ?? "no-franchise") +
+          "|" + String(lookup.series.id);
+        const ordered = (junbanGroups.get(key) || []).slice().sort((a, b) =>
+          a.seasonNumber - b.seasonNumber ||
+          Number(a.anime.id) - Number(b.anime.id)
+        );
+        ordered.forEach(entry => claimed.add(Number(entry.anime.id)));
+        groups.push({ items: ordered, source: "junban" });
+        continue;
+      }
+
+      // Keep the previous AniList relation grouping as a fallback whenever
+      // Junban has no verified mapping for a result.
+      const seasons = new Map([[id, anime]]);
       for (const edge of anime.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
         const related = edge.node;
         if (!related || !Number.isFinite(Number(related.id))) continue;
         if (!["TV", "TV_SHORT"].includes(related.format)) continue;
-        seasons.set(Number(related.id), byId.get(Number(related.id)) || related);
+        const relatedId = Number(related.id);
+        if (claimed.has(relatedId)) continue;
+        if (junbanLookupCache.get(String(relatedId))?.type === "season") continue;
+        seasons.set(relatedId, byId.get(relatedId) || related);
       }
-      const ordered = [...seasons.values()].sort((x, y) =>
-        (Number(x.seasonYear) || Number.MAX_SAFE_INTEGER) -
-        (Number(y.seasonYear) || Number.MAX_SAFE_INTEGER) ||
-        Number(x.id) - Number(y.id)
+
+      const ordered = [...seasons.values()].sort((a, b) =>
+        (Number(a.seasonYear) || Number.MAX_SAFE_INTEGER) -
+        (Number(b.seasonYear) || Number.MAX_SAFE_INTEGER) ||
+        Number(a.id) - Number(b.id)
       );
       ordered.forEach(item => claimed.add(Number(item.id)));
-      groups.push(ordered);
+      groups.push({
+        items: ordered.map((item, index) => ({
+          anime: item,
+          seasonNumber: ordered.length > 1 ? index + 1 : null
+        })),
+        source: "anilist"
+      });
     }
+
     return groups;
   }
 
@@ -1996,26 +2107,39 @@
     const orderedItems = [...items].sort((a, b) =>
       Number(hasRecordedReactionLinks(b)) - Number(hasRecordedReactionLinks(a))
     );
-    const groups = getRelatedSeasonGroups(orderedItems);
+    const groups = getSeasonGroups(orderedItems);
     const rendered = new Set();
 
-    for (const seasons of groups) {
-      const unique = seasons.filter(item => {
-        const id = Number(item.id);
+    for (const seasonGroup of groups) {
+      const unique = seasonGroup.items.filter(entry => {
+        const id = Number(entry.anime.id);
         if (rendered.has(id)) return false;
         rendered.add(id);
         return true;
       });
       if (!unique.length) continue;
+
+      const seasonLabel = (entry, index) => {
+        if (entry.seasonNumber === 0) return "Specials";
+        if (Number.isFinite(entry.seasonNumber)) {
+          return "Season " + entry.seasonNumber;
+        }
+        return unique.length > 1 ? "Season " + (index + 1) : "";
+      };
+
       if (unique.length === 1) {
-        results.append(makeCard(unique[0]));
+        results.append(makeCard(
+          unique[0].anime,
+          seasonLabel(unique[0], 0)
+        ));
         continue;
       }
+
       const group = document.createElement("section");
       group.className = "series-group";
       group.setAttribute("aria-label", "Related anime seasons");
-      unique.forEach((season, index) => {
-        group.append(makeCard(season, "Season " + (index + 1)));
+      unique.forEach((entry, index) => {
+        group.append(makeCard(entry.anime, seasonLabel(entry, index)));
       });
       results.append(group);
     }
@@ -2152,6 +2276,19 @@
         `${displayedItems.length} anime${displayedItems.length === 1 ? "" : "s"} found` +
         `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}.`
       );
+
+      // Enrich the already-rendered results with Junban season numbers.
+      // If Junban is unavailable, the page keeps using AniList relations.
+      try {
+        await loadJunbanLookups(displayedItems, controller.signal);
+        if (!controller.signal.aborted && requestController === controller) {
+          render(displayedItems);
+        }
+      } catch (junbanError) {
+        if (junbanError.name !== "AbortError") {
+          console.warn("Junban season data unavailable; keeping AniList grouping.", junbanError);
+        }
+      }
 
     } catch (error) {
       if (error.name === "AbortError") return;
