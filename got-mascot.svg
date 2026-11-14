@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+<title id="title">G.O.T. mascot head</title>
+<defs>
+ <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#71351f"/><stop offset=".45" stop-color="#c66a35"/><stop offset=".72" stop-color="#8e3e24"/><stop offset="1" stop-color="#49251e"/></linearGradient>
+ <linearGradient id="skin" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#ffd6b1"/><stop offset=".58" stop-color="#e9a47d"/><stop offset="1" stop-color="#b96c52"/></linearGradient>
+ <linearGradient id="beard" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d47a42"/><stop offset=".5" stop-color="#9b482b"/><stop offset="1" stop-color="#54291f"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<ellipse cx="258" cy="467" rx="156" ry="20" fill="#000" opacity=".18" filter="url(#shadow)"/>
+<!-- hair silhouette -->
+<path d="M91 236Q56 204 76 161Q91 126 130 123Q107 91 144 66Q171 48 198 69Q204 25 244 25Q276 24 286 64Q317 28 347 53Q367 70 360 101Q411 79 432 119Q451 153 424 183Q459 205 433 247L408 307L105 307Z" fill="url(#hair)" stroke="#321b19" stroke-width="9" stroke-linejoin="round"/>
+<!-- ears and face -->
+<path d="M115 230Q72 211 79 261Q83 303 128 300L147 273M389 231Q432 211 428 261Q424 303 379 300L365 270" fill="url(#skin)" stroke="#552b25" stroke-width="9"/>
+<path d="M124 177Q137 117 203 112Q278 88 350 128Q390 155 390 232L379 314Q369 384 310 420Q270 446 224 424Q151 394 135 318Q119 254 124 177Z" fill="url(#skin)" stroke="#512a24" stroke-width="10"/>
+<!-- hair fringe -->
+<path d="M105 204Q77 156 121 132Q104 91 153 76Q180 65 202 91Q204 43 243 43Q274 43 279 91Q315 52 343 79Q361 97 345 129Q395 111 414 151Q426 179 397 204Q374 177 353 168Q335 196 309 191Q284 189 274 160Q251 195 222 191Q192 188 187 156Q158 195 130 195Z" fill="url(#hair)" stroke="#321b19" stroke-width="8" stroke-linejoin="round"/>
+<path d="M151 126Q178 93 206 103M229 85Q247 67 265 94M293 117Q321 88 341 111M357 145Q382 131 396 159" fill="none" stroke="#e18a4e" stroke-width="10" stroke-linecap="round" opacity=".8"/>
+<!-- brows -->
+<path d="M151 230Q188 199 228 220Q199 222 164 246Z" fill="#4b2922"/>
+<path d="M281 220Q323 197 362 228L349 244Q317 224 285 237Z" fill="#4b2922"/>
+<!-- smug closed eyes -->
+<path d="M158 265Q190 246 221 261" fill="none" stroke="#442923" stroke-width="9" stroke-linecap="round"/>
+<path d="M291 261Q322 245 355 264" fill="none" stroke="#442923" stroke-width="9" stroke-linecap="round"/>
+<path d="M177 278Q198 272 215 278M310 278Q330 272 345 279" fill="none" stroke="#9b5b48" stroke-width="4" stroke-linecap="round"/>
+<!-- nose -->
+<path d="M258 266Q246 301 236 318Q249 329 270 320" fill="none" stroke="#b66e58" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- mustache -->
+<path d="M161 340Q184 318 222 330Q244 340 257 349Q277 331 305 328Q345 318 363 344Q342 369 307 362Q279 357 257 353Q230 366 201 364Q176 362 161 340Z" fill="url(#beard)" stroke="#48251e" stroke-width="7" stroke-linejoin="round"/>
+<!-- beard mass -->
+<path d="M137 335Q158 352 183 356Q205 372 226 371Q250 376 267 370Q300 374 323 358Q352 350 378 330Q388 389 355 425Q321 468 260 476Q196 472 159 427Q129 391 137 335Z" fill="url(#beard)" stroke="#48251e" stroke-width="9" stroke-linejoin="round"/>
+<path d="M161 374Q180 397 193 402M201 382Q213 412 225 421M249 380Q251 414 263 440M296 380Q291 411 280 431M338 372Q325 401 313 409M359 357Q345 379 333 383" fill="none" stroke="#e08a4e" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+<!-- smug mouth -->
+<path d="M203 348Q248 365 291 349Q314 340 331 346" fill="none" stroke="#542820" stroke-width="8" stroke-linecap="round"/>
+<path d="M224 358Q265 368 299 356" fill="none" stroke="#f2b18e" stroke-width="4" stroke-linecap="round"/>
+<!-- small cheek creases -->
+<path d="M137 308l18 9M359 309l17-10" stroke="#b96f59" stroke-width="5" stroke-linecap="round"/>
+</svg>
