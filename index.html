@@ -467,6 +467,28 @@ footer.site-foot p{margin:0 0 14px}
       }
     }
 
+
+    /* Schedule health and overview — added without changing the existing schedule renderer. */
+    .schedule-status-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:color-mix(in srgb,var(--card) 88%,var(--bg));color:var(--mute);font-size:.84rem}
+    .schedule-status-main{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+    .schedule-status-led{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#9aa4ae}
+    .schedule-status-bar [data-state="ready"] .schedule-status-led{background:#2db879;box-shadow:0 0 0 4px rgba(45,184,121,.12)}
+    .schedule-status-bar [data-state="warning"] .schedule-status-led{background:#e2a72e;box-shadow:0 0 0 4px rgba(226,167,46,.12)}
+    .schedule-status-bar [data-state="error"] .schedule-status-led{background:#df6262;box-shadow:0 0 0 4px rgba(223,98,98,.12)}
+    .schedule-status-bar [data-state="loading"] .schedule-status-led{animation:statusPulse 1.2s ease-in-out infinite}
+    @keyframes statusPulse{50%{opacity:.35;transform:scale(.8)}}
+    .schedule-status-text{color:var(--ink);font-weight:800}
+    .schedule-checked{font-size:.78rem}
+    .refresh-schedule{border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:7px 11px;font:700 .82rem var(--font);cursor:pointer;transition:border-color .18s ease,transform .18s ease,opacity .18s ease}
+    .refresh-schedule:hover{border-color:var(--accent);transform:translateY(-1px)}
+    .refresh-schedule:disabled{opacity:.55;cursor:wait;transform:none}
+    .week-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px}
+    .overview-card{min-width:0;padding:13px 15px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+    .overview-card span{display:block;color:var(--mute);font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .overview-card strong{display:block;margin-top:3px;color:var(--ink);font-size:1.45rem;line-height:1.15;font-weight:800}
+    .overview-card small{display:block;margin-top:3px;color:var(--mute);font-size:.78rem}
+    @media(max-width:620px){.week-overview{gap:7px}.overview-card{padding:11px 9px}.overview-card strong{font-size:1.2rem}.overview-card span{font-size:.66rem}.overview-card small{font-size:.7rem}.schedule-status-bar{align-items:flex-start}.schedule-status-main{flex-basis:100%}.refresh-schedule{margin-left:auto}}
+    @media(prefers-reduced-motion:reduce){.schedule-status-bar [data-state="loading"] .schedule-status-led{animation:none}.refresh-schedule{transition:none}.refresh-schedule:hover{transform:none}}
   </style>
 </head>
 <body>
@@ -497,6 +519,15 @@ footer.site-foot p{margin:0 0 14px}
     <div class="controls">
       <label for="tz">Timezone</label>
       <select id="tz" aria-label="Choose timezone"></select>
+    </div>
+    <div class="schedule-status-bar" role="status" aria-live="polite">
+      <div class="schedule-status-main" id="scheduleIndicator" data-state="loading">
+        <i class="schedule-status-led" aria-hidden="true"></i>
+        <span class="schedule-status-text" id="scheduleStatusText">Loading schedule…</span>
+        <span id="scheduleStatusDetail"></span>
+      </div>
+      <span class="schedule-checked" id="scheduleChecked">Checking connection</span>
+      <button class="refresh-schedule" id="refreshSchedule" type="button">↻ Refresh</button>
     </div>
   </header>
 
@@ -540,6 +571,11 @@ footer.site-foot p{margin:0 0 14px}
     </section>
   </div>
 
+  <section class="week-overview" aria-label="This week's schedule summary">
+    <article class="overview-card"><span>Scheduled</span><strong id="statSessions">—</strong><small>Confirmed events</small></article>
+    <article class="overview-card"><span>Platforms</span><strong id="statPlatforms">—</strong><small>Places to watch</small></article>
+    <article class="overview-card"><span>Predicted</span><strong id="statPredicted">—</strong><small>Not confirmed yet</small></article>
+  </section>
   <div class="next" id="next" hidden></div>
 
   <p class="legend">
@@ -864,6 +900,23 @@ let data = null;
 let liveFeed = null;
 let shows = {};
 let tz = pickStartZone();
+let scheduleLoading = false;
+let lastScheduleCheck = null;
+
+const scheduleIndicator = document.getElementById("scheduleIndicator");
+const scheduleStatusText = document.getElementById("scheduleStatusText");
+const scheduleStatusDetail = document.getElementById("scheduleStatusDetail");
+const scheduleChecked = document.getElementById("scheduleChecked");
+const refreshScheduleButton = document.getElementById("refreshSchedule");
+
+function setScheduleStatus(state, message, detail = "") {
+  scheduleIndicator.dataset.state = state;
+  scheduleStatusText.textContent = message;
+  scheduleStatusDetail.textContent = detail ? " · " + detail : "";
+  scheduleChecked.textContent = lastScheduleCheck
+    ? "Checked " + lastScheduleCheck.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : "Checking connection";
+}
 
 const SEEN_KEY = "gotLiveSeen";
 let seenLive = (()=>{
@@ -1041,6 +1094,13 @@ function render(){
 
   const liveKeys=currentLiveKeys(events,now);
 
+  const confirmedCount = events.filter(ev => ev.status === "confirmed" || ev.status === "posted").length;
+  const predictedCount = events.filter(ev => ev.status === "predicted").length;
+  const platformCount = new Set(events.map(ev => ev.platform).filter(Boolean)).size;
+  document.getElementById("statSessions").textContent = String(confirmedCount);
+  document.getElementById("statPlatforms").textContent = String(platformCount);
+  document.getElementById("statPredicted").textContent = String(predictedCount);
+
   document.getElementById("range").textContent=
     "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+
     " – "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(addDays(weekStart,6)))+
@@ -1182,18 +1242,47 @@ function render(){
 }
 
 async function load(){
+  if(scheduleLoading)return;
+  scheduleLoading=true;
+  refreshScheduleButton.disabled=true;
+  refreshScheduleButton.textContent="Refreshing…";
+  setScheduleStatus("loading",data?"Checking for schedule updates":"Loading schedule");
+
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),12000);
   try{
-    const r=await fetch("schedule.json?t="+Date.now(),{cache:"no-store"});
-    if(!r.ok)throw new Error(r.status);
-    data=await r.json();
+    const r=await fetch("schedule.json?t="+Date.now(),{cache:"no-store",signal:controller.signal});
+    if(!r.ok)throw new Error("Schedule request returned HTTP "+r.status);
+    const nextData=await r.json();
+    if(!nextData||!Array.isArray(nextData.events))throw new Error("Schedule data has an unexpected format.");
+
+    data=nextData;
+    lastScheduleCheck=new Date();
     render();
+
+    const sourceUpdated=data.updated?new Date(data.updated):null;
+    const sourceAge=sourceUpdated&&!Number.isNaN(sourceUpdated.getTime())?Date.now()-sourceUpdated.getTime():null;
+    const sourceIsOld=sourceAge!==null&&sourceAge>8*24*60*60*1000;
+    setScheduleStatus(sourceIsOld?"warning":"ready",
+      sourceIsOld?"Schedule loaded, but the posted data is old":"Schedule loaded",
+      data.events.length+" events");
   }catch(e){
+    lastScheduleCheck=new Date();
     if(!data){
-      document.getElementById("range").textContent=
-        "Couldn't load the schedule. Refresh to try again.";
+      document.getElementById("range").textContent="Couldn't load the schedule. Use Refresh to try again.";
     }
+    setScheduleStatus(data?"warning":"error",
+      data?"Connection issue · showing the last loaded schedule":"Couldn't load the schedule",
+      e?.name==="AbortError"?"request timed out":(e?.message||"check your connection"));
+  }finally{
+    clearTimeout(timeout);
+    scheduleLoading=false;
+    refreshScheduleButton.disabled=false;
+    refreshScheduleButton.textContent="↻ Refresh";
   }
 }
+
+refreshScheduleButton.addEventListener("click",()=>load());
 
 async function loadShows(){
   try{
