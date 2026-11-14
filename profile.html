@@ -597,8 +597,6 @@ main{width:min(1120px,calc(100% - 36px));margin:34px auto 64px}
     currentRoles = roles;
     document.getElementById("username").textContent = profile.username;
     document.getElementById("bio").textContent = profile.bio || "This player hasn't added a bio yet.";
-    document.getElementById("platform").textContent = profile.favorite_platform || "Not specified";
-    document.getElementById("joinedDate").textContent = formatJoinDate(profile.created_at);
     document.getElementById("profileJoinedStat").textContent = formatJoinDate(profile.created_at);
     document.getElementById("profilePlatformStat").textContent = profile.favorite_platform || "Not set";
     const validLinkCount = Object.entries(socialPlatforms).filter(([key,settings]) => {
