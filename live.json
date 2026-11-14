@@ -1,9 +1,9 @@
 {
-  "updated": "2026-11-14T20:43:58.855793Z",
+  "updated": "2026-11-14T21:22:35.222479Z",
   "platforms": {
     "twitch": true,
     "youtube": false,
-    "rumble": false
+    "rumble": true
   },
   "details": {
     "twitch": {
@@ -19,24 +19,29 @@
     },
     "rumble": {
       "ok": true,
-      "live": false,
-      "page_checked": 1,
-      "next_page": 2,
-      "url": "https://rumble.com/c/GOTGames",
+      "live": true,
+      "title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6",
+      "url": "https://rumble.com/v7icoik--the-anme-reactor-king-of-the-world-is-here-.html",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "session_state": "waiting",
-      "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
+      "channel_name": "G.O.T Games",
+      "viewers": 68,
+      "page_checked": 2,
+      "next_page": 3,
+      "session_state": "live",
+      "message": "Rumble is live."
     }
   },
   "rumble_session": {
     "event_key": "2026-11-14T20:30:00Z|rumble|Hell's Paradise S2 E7-10",
     "title": "Hell's Paradise S2 E7-10",
     "scheduled_start": "2026-11-14T20:30:00Z",
-    "state": "waiting",
+    "state": "live",
     "twitch_seen_live": true,
-    "rumble_seen_live": false,
-    "rumble_page": 2,
-    "next_rumble_check_at": "2026-11-14T20:48:58.855793Z",
-    "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
+    "rumble_seen_live": true,
+    "rumble_page": 3,
+    "next_rumble_check_at": "2026-11-14T21:27:35.222479Z",
+    "message": "Rumble is live.",
+    "rumble_stream_url": "https://rumble.com/v7icoik--the-anme-reactor-king-of-the-world-is-here-.html",
+    "rumble_stream_title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6"
   }
 }
