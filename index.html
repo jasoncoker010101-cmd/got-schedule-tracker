@@ -1244,6 +1244,22 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
   }
 }
 
+
+/* Anchor the account dropdown to the profile button itself. */
+.main-nav .account-area{position:relative!important}
+.main-nav .account-menu{
+  position:absolute!important;
+  top:calc(100% + 9px)!important;
+  right:0!important;
+  left:auto!important;
+  z-index:1000!important;
+  min-width:190px;
+  margin:0;
+}
+@media(max-width:600px){
+  .main-nav .account-area{position:relative!important}
+  .main-nav .account-menu{top:calc(100% + 8px)!important;right:0!important}
+}
 </style>
 </head>
 <body>
@@ -1273,6 +1289,10 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
           <img class="account-avatar" id="accountAvatar" alt="">
           <span id="accountButtonText">Log In / Sign Up</span>
         </button>
+        <div class="account-menu" id="accountMenu" hidden>
+          <button type="button" id="viewProfileButton">My Profile</button>
+          <button type="button" id="logoutButton">Log Out</button>
+        </div>
       </div>
       </nav>
 
@@ -1291,11 +1311,6 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
       <button class="refresh-schedule" id="refreshSchedule" type="button">↻ Refresh</button>
     </div>
   </header>
-
-  <div class="account-menu" id="accountMenu" hidden>
-    <button type="button" id="viewProfileButton">My Profile</button>
-    <button type="button" id="logoutButton">Log Out</button>
-  </div>
 
   <div class="modal-backdrop" id="authBackdrop" hidden>
     <section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
