@@ -2667,7 +2667,7 @@ liveStatus=function(ev,now,liveKeys){
     if (item?.kind === "episode" && title && Number.isInteger(season) && season >= 0) {
       const slug = String(title).normalize("NFKC").toLocaleLowerCase()
         .replace(/&/g, " and ").replace(/[’']/g, "")
-        .replace(/[^a-z0-9]+/g, " ").trim().replace(/\\s+/g, "-");
+        .replace(/[^a-z0-9]+/g, " ").trim().split(" ").join("-");
       return safeInternalHref("anime.html#anime-title-" + slug + "-season-" + season);
     }
     return safeInternalHref(item?.href);
