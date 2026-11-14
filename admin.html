@@ -1151,6 +1151,7 @@ const fullDiagnosticSteps=[
     fullDiagReadAll("got_anime_pending_episode_links","id,status,confidence,youtube_url")
    ]);
    const notifications=notificationResult.rows,reports=reportResult.rows,pending=pendingResult.rows;
+   const activePending=pending.filter(row=>["pending","needs_checking"].includes(row.status));
    const badNotifications=notifications.filter(row=>!String(row.title||"").trim()||!String(row.message||"").trim()||!["episode","announcement","system"].includes(row.kind)||!row.metadata||typeof row.metadata!=="object").length;
    const allowedTargets=new Set(["index.html","anime.html","notifications.html","profile.html","player-directory.html","nexus.html"]);
    const badTargets=notifications.filter(row=>{
@@ -1169,7 +1170,7 @@ const fullDiagnosticSteps=[
    if(badPendingUrls)problems.push(badPendingUrls+" pending submissions have invalid YouTube URLs");
    if(badPendingConfidence)problems.push(badPendingConfidence+" pending submissions have invalid confidence values");
    if(notificationResult.truncated||reportResult.truncated||pendingResult.truncated)problems.push("one or more queue tables reached the 25,000-row scan limit");
-   return fullDiagResult("Notifications, visitor reports, and review queues",problems.length?"warning":"pass",notifications.length+" notifications · "+reports.length+" visitor reports · "+pending.length+" pending-link records · "+(problems.length?problems.join(" · "):"content, destinations, and workflow fields look valid"));
+   return fullDiagResult("Notifications, visitor reports, and review queues",problems.length?"warning":"pass",notifications.length+" notifications · "+reports.length+" visitor reports · "+activePending.length+" active pending-link records ("+pending.length+" total records) · "+(problems.length?problems.join(" · "):"content, destinations, and workflow fields look valid"));
   }
  },
  {
