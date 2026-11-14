@@ -1489,21 +1489,24 @@ function normalizeAniListTitle(value){
 }
 async function resolveAniListTitle(title){
  const query=String.raw`query ($search: String) {
-  Media(search: $search, type: ANIME, isAdult: false) {
-   id
-   title { romaji english native }
-   synonyms
-   format
-   seasonYear
+  Page(perPage: 10) {
+   media(search: $search, type: ANIME, isAdult: false) {
+    id
+    title { romaji english native }
+    synonyms
+    format
+    seasonYear
+   }
   }
  }`;
  const response=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({query,variables:{search:title}})});
  if(!response.ok)throw new Error("AniList lookup returned HTTP "+response.status+".");
  const payload=await response.json();
  if(payload.errors?.length)throw new Error(payload.errors[0].message||"AniList search failed.");
- const results=(payload.data?.Media||[]).filter(x=>x&&Number.isInteger(Number(x.id)));
+ const media=payload.data?.Page?.media;
+ const results=(Array.isArray(media)?media:[]).filter(x=>x&&Number.isInteger(Number(x.id)));
  const needle=normalizeAniListTitle(title);
- const exact=results.filter(item=>[item.title?.romaji,item.title?.english,item.title?.native,...(item.synonyms||[])].some(name=>normalizeAniListTitle(name)===needle));
+ const exact=results.filter(item=>[item.title?.romaji,item.title?.english,item.title?.native,...(Array.isArray(item.synonyms)?item.synonyms:[])].some(name=>normalizeAniListTitle(name)===needle));
  return {exact,results};
 }
 async function updateAniListLookup(prefix,force=false){
