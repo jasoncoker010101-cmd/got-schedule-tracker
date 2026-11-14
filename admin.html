@@ -1541,28 +1541,21 @@ const fullDiagnosticSteps=[
   }
  },
  {
-  name:"Nexus community chat frontend and realtime contract",
+  name:"Nexus community chat availability and maintenance gate",
   run:async()=>{
-   const [htmlResponse,jsResponse]=await Promise.all([fullDiagFetch("nexus.html"),fullDiagFetch("nexus.js")]);
-   if(!htmlResponse.ok)throw new Error("Nexus page returned HTTP "+htmlResponse.status);
-   if(!jsResponse.ok)throw new Error("Nexus script returned HTTP "+jsResponse.status);
-   const html=await htmlResponse.text(),js=await jsResponse.text();
-   const doc=new DOMParser().parseFromString(html,"text/html");
-   const requiredIds=["authPanel","hub","authForm","authMessage","roomList","messages","composer","messageInput","reportBackdrop","reportForm","liveDot","liveText","loginTab","signupTab","authSubmit"];
-   const missing=requiredIds.filter(id=>!doc.getElementById(id));
-   const missingInScript=requiredIds.filter(id=>!js.includes('"'+id+'"'));
-   const realtime=js.includes('postgres_changes')&&js.includes('.subscribe(')&&js.includes('removeChannel');
-   const safeTextRendering=js.includes("textContent")&&!/\.innerHTML\s*=/.test(js);
-   const reportWorkflow=js.includes("got_chat_reports")&&js.includes("reportForm");
-   const authWorkflow=js.includes("auth.signInWithPassword")&&js.includes("auth.signUp");
+   const response=await fullDiagFetch("nexus.html");
+   if(!response.ok)throw new Error("Nexus page returned HTTP "+response.status);
+   const html=await response.text();
+   const closed=html.includes('class="nexus-closed"')&&html.includes("Temporarily unavailable")&&html.includes("taking a break");
+   const blocked=html.includes("body.nexus-closed .shell")&&html.includes("display:none!important");
+   const chatScriptDisabled=!html.includes('<script src="nexus.js"></script>');
+   const supabaseClientDisabled=!html.includes('cdn.jsdelivr.net/npm/@supabase/supabase-js');
    const issues=[];
-   if(missing.length)issues.push("Nexus page is missing required UI element(s): "+missing.join(", "));
-   if(missingInScript.length)issues.push("Nexus script does not wire required element(s): "+missingInScript.join(", "));
-   if(!realtime)issues.push("chat realtime subscribe/cleanup wiring is incomplete");
-   if(!safeTextRendering)issues.push("message rendering may not be safely text-only");
-   if(!reportWorkflow)issues.push("chat report workflow wiring is missing");
-   if(!authWorkflow)issues.push("login/signup authentication wiring is missing");
-   return fullDiagResult("Nexus community chat frontend and realtime contract",issues.length?"warning":"pass","Nexus UI controls · login/signup · realtime room updates · channel cleanup · chat reporting · safe text rendering · "+(issues.length?issues.join(" · "):"frontend contracts are present"));
+   if(!closed)issues.push("temporary closure page is missing");
+   if(!blocked)issues.push("community interface is not hidden behind the closure gate");
+   if(!chatScriptDisabled)issues.push("Nexus chat client is still loading");
+   if(!supabaseClientDisabled)issues.push("Nexus page still initializes its Supabase client");
+   return fullDiagResult("Nexus community hub temporary closure",issues.length?"fail":"pass",issues.length?issues.join(" · "):"maintenance page active · chat/auth client disabled · community data preserved");
   }
  },
  {
