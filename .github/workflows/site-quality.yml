@@ -1,0 +1,144 @@
+name: Site quality checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "*.html"
+      - "**/*.html"
+      - "*.js"
+      - "**/*.js"
+      - "*.json"
+      - "**/*.json"
+      - "*.py"
+      - "**/*.py"
+      - ".github/workflows/site-quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate site source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Validate HTML IDs and inline JavaScript
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import json
+          import subprocess
+          import tempfile
+
+          class PageParser(HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)
+                  self.ids = []
+                  self.scripts = []
+                  self.current_script = None
+
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if "id" in attrs:
+                      self.ids.append(attrs["id"])
+                  if tag.lower() == "script":
+                      self.current_script = {"attrs": attrs, "parts": []}
+
+              def handle_data(self, data):
+                  if self.current_script is not None:
+                      self.current_script["parts"].append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.current_script is not None:
+                      self.scripts.append(self.current_script)
+                      self.current_script = None
+
+          pages = sorted(Path(".").rglob("*.html"))
+          if not pages:
+              raise SystemExit("No HTML pages found.")
+
+          checked_scripts = 0
+          for page in pages:
+              parser = PageParser()
+              parser.feed(page.read_text(encoding="utf-8"))
+
+              duplicates = sorted({value for value in parser.ids if parser.ids.count(value) > 1})
+              if duplicates:
+                  raise SystemExit(f"{page}: duplicate HTML IDs: {', '.join(duplicates)}")
+
+              for index, script in enumerate(parser.scripts, start=1):
+                  attrs = script["attrs"]
+                  source = attrs.get("src")
+                  if source:
+                      continue
+
+                  code = "".join(script["parts"]).strip()
+                  if not code:
+                      continue
+
+                  script_type = attrs.get("type", "").lower().split(";")[0].strip()
+                  if script_type in {"application/json", "application/ld+json", "importmap"}:
+                      json.loads(code)
+                      continue
+                  if script_type and script_type not in {
+                      "text/javascript", "application/javascript", "module"
+                  }:
+                      continue
+
+                  suffix = ".mjs" if script_type == "module" else ".js"
+                  with tempfile.NamedTemporaryFile("w", suffix=suffix, encoding="utf-8") as temp:
+                      temp.write(code)
+                      temp.flush()
+                      result = subprocess.run(
+                          ["node", "--check", temp.name],
+                          text=True,
+                          capture_output=True
+                      )
+                  if result.returncode:
+                      raise SystemExit(f"{page} inline script {index} failed syntax check:\n{result.stderr}")
+                  checked_scripts += 1
+
+          print(f"Checked {len(pages)} HTML pages and {checked_scripts} inline JavaScript blocks.")
+          PY
+
+      - name: Validate JSON data files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          files = sorted(Path(".").rglob("*.json"))
+          for path in files:
+              json.loads(path.read_text(encoding="utf-8"))
+          print(f"Validated {len(files)} JSON files.")
+          PY
+
+      - name: Compile Python automation scripts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import py_compile
+
+          files = sorted(Path(".").rglob("*.py"))
+          for path in files:
+              py_compile.compile(str(path), doraise=True)
+          print(f"Compiled {len(files)} Python files.")
+          PY
