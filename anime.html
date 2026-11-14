@@ -1829,6 +1829,27 @@
     ).join(", ");
   }
 
+  function getDemonSlayerReactionSeason(anime) {
+    // The saved G.O.T. reaction rows use the five AniList season cards as
+    // their canonical numbering, regardless of Junban's franchise numbering.
+    const directTitles = [
+      anime.title?.english,
+      anime.title?.romaji,
+      anime.title?.native,
+      ...(Array.isArray(anime.synonyms) ? anime.synonyms : [])
+    ].filter(Boolean).map(normalizeTitle);
+
+    const titleText = directTitles.join(" ");
+    if (!/demon slayer|kimetsu no yaiba/.test(titleText)) return null;
+
+    if (/mugen train|mugen ressha|mugen ressah/.test(titleText)) return 2;
+    if (/entertainment district|yuukaku/.test(titleText)) return 3;
+    if (/swordsmith village|katanakaji/.test(titleText)) return 4;
+    if (/hashira training|hashira geiko/.test(titleText)) return 5;
+
+    return 1;
+  }
+
   function getAnimeAliases(anime) {
     const aliases = [
       anime.title?.english,
@@ -1838,9 +1859,17 @@
       ...(Array.isArray(anime.historyAliases) ? anime.historyAliases : [])
     ];
 
-    return [...new Set(
-      aliases.map(normalizeTitle).filter(Boolean)
-    )];
+    const normalized = aliases.map(normalizeTitle).filter(Boolean);
+
+    // Every Demon Slayer arc should also match the canonical title stored
+    // in got_anime_episode_links, even when AniList uses an arc-specific title.
+    if (normalized.some(alias =>
+      alias.includes("demon slayer") || alias.includes("kimetsu no yaiba")
+    )) {
+      normalized.push(normalizeTitle("Demon Slayer: Kimetsu no Yaiba"));
+    }
+
+    return [...new Set(normalized)];
   }
 
   // =========================================================
@@ -2096,6 +2125,11 @@
     const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
     const seasonKey = historySeason == null ? "overall" : String(historySeason);
     const episodeOffset = Math.max(0, Number(historyMapping?.episodeOffset) || 0);
+    const demonSlayerSeason = getDemonSlayerReactionSeason(anime);
+    const reactionSeasonKey = demonSlayerSeason == null
+      ? seasonKey
+      : String(demonSlayerSeason);
+    const reactionEpisodeOffset = demonSlayerSeason == null ? episodeOffset : 0;
     const watchedRanges = historyGroups
       .filter(group => String(group.season) === seasonKey)
       .flatMap(group => group.ranges);
@@ -2120,8 +2154,8 @@
       for (let episode = range.start; episode <= range.end; episode++) {
         const reactionLink = getEpisodeReactionLink(
           anime,
-          seasonKey,
-          episode + episodeOffset
+          reactionSeasonKey,
+          episode + reactionEpisodeOffset
         );
 
         const isWatched = watchedRanges.some(watched =>
@@ -2185,8 +2219,8 @@
       for (let episode = range.start; episode <= range.end; episode++) {
         const reactionLink = getEpisodeReactionLink(
           anime,
-          seasonKey,
-          episode + episodeOffset
+          reactionSeasonKey,
+          episode + reactionEpisodeOffset
         );
 
         if (
