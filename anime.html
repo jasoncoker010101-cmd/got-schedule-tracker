@@ -2596,6 +2596,29 @@ input,select,textarea{accent-color:var(--got-gold)}
   function makeCard(anime, seasonLabel = "", seasonNumber = null, historyMapping = null) {
     const card = document.createElement("article");
     card.className = "card";
+    card.style.position = "relative";
+    const anchorSeason = seasonNumber == null || !Number.isFinite(Number(seasonNumber))
+      ? 1
+      : Number(seasonNumber);
+    // Stable in-page targets let inbox alerts jump directly to the matching
+    // anime season card, including sequel titles that use franchise aliases.
+    for (const alias of getAnimeAliases(anime)) {
+      const slug = String(alias || "").toLowerCase()
+        .replace(/&/g," and ")
+        .replace(/[^a-z0-9]+/g,"-")
+        .replace(/^-|-$/g,"");
+      if (!slug) continue;
+      const anchor = document.createElement("span");
+      anchor.id = "anime-title-" + slug + "-season-" + anchorSeason;
+      anchor.setAttribute("aria-hidden","true");
+      anchor.style.position = "absolute";
+      anchor.style.top = "0";
+      anchor.style.left = "0";
+      anchor.style.width = "0";
+      anchor.style.height = "0";
+      anchor.style.scrollMarginTop = "24px";
+      card.append(anchor);
+    }
 
     const coverWrap = document.createElement("div");
     coverWrap.className = "cover-wrap";
