@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11110f">
-  <meta name="description" content="Discover anime and explore G.O.T. Games' anime watch history.">
-  <title>Anime Search & Watch History | G.O.T. Games</title>
+  <meta name="description" content="Discover anime and explore G.O.T Games' anime watch history.">
+  <title>Anime Search & Watch History | G.O.T Games</title>
   <link rel="icon" type="image/png" href="favicon.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -957,7 +957,7 @@
   </script>
 
   <header class="topbar">
-    <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
+    <a class="logo" href="index.html">G.O.T <span>Games</span></a>
 
     <nav class="site-nav" aria-label="Main navigation">
       <a href="index.html">Schedule</a>
@@ -973,13 +973,13 @@
       <h1 id="pageTitle">Anime corner</h1>
       <p>
         Search the AniList anime catalog, save your favorite shows,
-        and check how many episodes G.O.T. Games has watched.
+        and check how many episodes G.O.T Games has watched.
       </p>
     </section>
 
-    <section class="history-overview" aria-label="G.O.T. anime watch statistics">
+    <section class="history-overview" aria-label="G.O.T anime watch statistics">
       <div class="overview-card">
-        <div class="overview-heading">G.O.T. watch history</div>
+        <div class="overview-heading">G.O.T watch history</div>
         <div class="overview-number" id="totalWatched">—</div>
         <div class="overview-description">Recorded episodes watched</div>
       </div>
@@ -999,7 +999,7 @@
 
     <div class="history-connection" aria-live="polite">
       <span class="connection-dot" id="connectionDot"></span>
-      <span id="connectionText">Connecting to G.O.T. watch history…</span>
+      <span id="connectionText">Connecting to G.O.T watch history…</span>
     </div>
 
     <section class="continue-section" aria-label="Continue watching">
@@ -1062,7 +1062,7 @@
   <dialog id="reportDialog" class="report-dialog">
     <form id="reportForm" class="report-form">
       <div class="report-head"><h2>Report a problem</h2><button type="button" class="dialog-close" id="reportClose" aria-label="Close">×</button></div>
-      <p>Tell us what's wrong. Your report will go straight into the private G.O.T. Games admin inbox.</p>
+      <p>Tell us what's wrong. Your report will go straight into the private G.O.T Games admin inbox.</p>
       <label>Problem type
         <select id="reportCategory" required>
           <option value="missing_anime">Anime is missing</option>
@@ -1129,7 +1129,7 @@
     Anime information provided by
     <a href="https://anilist.co/" target="_blank" rel="noopener noreferrer">AniList</a>.
     Favorites are stored locally in your browser.
-    Watch history is provided by G.O.T. Games.
+    Watch history is provided by G.O.T Games.
     Season grouping data is provided by <a href="https://junban.moe/api" target="_blank" rel="noopener noreferrer">Junban</a> and manami-project (ODbL).
   </footer>
 
@@ -1747,7 +1747,7 @@
     episodeLinksLoaded = true;
 
     console.log(
-      `Loaded ${episodeLinks.length} G.O.T. anime episode reaction links.`
+      `Loaded ${episodeLinks.length} G.O.T anime episode reaction links.`
     );
   }
 
@@ -1898,7 +1898,7 @@
   }
 
   function getDemonSlayerReactionSeason(anime) {
-    // The saved G.O.T. reaction rows use the five AniList season cards as
+    // The saved G.O.T reaction rows use the five AniList season cards as
     // their canonical numbering, regardless of Junban's franchise numbering.
     const directTitles = [
       anime.title?.english,
@@ -1939,7 +1939,7 @@
 
     // My Hero Academia sequel seasons can use season-specific titles
     // such as "Boku no Hero Academia 2". Match them to the canonical title
-    // used by G.O.T.'s saved reaction-link and watch-history rows.
+    // used by G.O.T's saved reaction-link and watch-history rows.
     if (normalized.some(alias =>
       alias.includes("my hero academia") || alias.includes("boku no hero academia")
     )) {
@@ -1995,7 +1995,7 @@
       }
     }
 
-    // Junban can number split cours as separate cards. G.O.T. history uses
+    // Junban can number split cours as separate cards. G.O.T history uses
     // conventional season numbers, so use the resolved season and episode span.
     const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
     if (historySeason != null && Number.isInteger(Number(historySeason))) {
@@ -2170,7 +2170,7 @@
       renderLastResults();
 
     } catch (error) {
-      console.error("G.O.T. watch history:", error);
+      console.error("G.O.T watch history:", error);
 
       historyLoaded = false;
       historyError = true;
@@ -2256,12 +2256,12 @@
           const videoTitle = safeText(reactionLink.video_title);
 
           chip.title = videoTitle
-            ? `Watch G.O.T.'s reaction: ${videoTitle}`
-            : `Watch G.O.T.'s reaction to episode ${episode}`;
+            ? `Watch G.O.T's reaction: ${videoTitle}`
+            : `Watch G.O.T's reaction to episode ${episode}`;
 
           chip.setAttribute(
             "aria-label",
-            `Episode ${episode}. Open G.O.T.'s YouTube reaction in a new tab.`
+            `Episode ${episode}. Open G.O.T's YouTube reaction in a new tab.`
           );
           chip.textContent = `EP ${episode}`;
         } else {
@@ -2270,7 +2270,7 @@
             ? "episode-chip"
             : "episode-chip unwatched";
           chip.title = isWatched
-            ? `Episode ${episode} recorded in G.O.T.'s watch history`
+            ? `Episode ${episode} recorded in G.O.T's watch history`
             : `Episode ${episode} not recorded as watched`;
           chip.textContent = `EP ${episode}`;
 
@@ -2281,7 +2281,7 @@
 
           if (isMhaSeasonThreeEpisodeTwenty) {
             chip.classList.add("missing-reaction");
-            chip.title = "No G.O.T. Games reaction for this episode has been found.";
+            chip.title = "No G.O.T Games reaction for this episode has been found.";
             chip.setAttribute("aria-label", "Episode 20. No reaction found.");
             const label = document.createElement("small");
             label.className = "missing-reaction-label";
@@ -2334,7 +2334,7 @@
     const note = document.createElement("div");
     note.className = "episode-note";
     note.textContent = episodeLinksLoaded
-      ? "Green episodes are recorded as watched. Gray episodes have no watch record. Gold links open G.O.T.'s YouTube reactions; Patreon-exclusive episodes are marked separately."
+      ? "Green episodes are recorded as watched. Gray episodes have no watch record. Gold links open G.O.T's YouTube reactions; Patreon-exclusive episodes are marked separately."
       : "Watch history and reaction links are still loading.";
 
     list.append(note);
@@ -2359,7 +2359,7 @@
 
       message.textContent = historyError
         ? "Watch history unavailable"
-        : "Loading G.O.T. history…";
+        : "Loading G.O.T history…";
 
       box.append(message);
       return box;
@@ -2372,7 +2372,7 @@
 
     const label = document.createElement("span");
     label.className = "watch-label";
-    label.textContent = "G.O.T. watched";
+    label.textContent = "G.O.T watched";
 
     const number = document.createElement("span");
     number.className = "watch-number";
@@ -2868,7 +2868,7 @@
         }
 
         // Every season card also needs the parent series/franchise titles.
-        // G.O.T. watch-history rows are commonly stored under the main series
+        // G.O.T watch-history rows are commonly stored under the main series
         // title (for example "Attack on Titan"), not each AniList season title.
         const historyAliases = [
           series.title,
@@ -2965,7 +2965,7 @@
       const count = Number(entry.anime.episodes) || 0;
       const isAttackOnTitanPartTwo =
         entry.isAttackOnTitanFinalSeason && entry.parsedPart === 2;
-      // The Part 2 AniList entry numbers its local episodes 1-12, while G.O.T.
+      // The Part 2 AniList entry numbers its local episodes 1-12, while G.O.T
       // stores the same episodes in the full Season 4 sequence as 17-28.
       const offset = isAttackOnTitanPartTwo
         ? 16
@@ -3495,7 +3495,7 @@
         isSiteOwner = false;
 
         ownerStatus.textContent =
-          "Log in with your existing G.O.T. Games owner account.";
+          "Log in with your existing G.O.T Games owner account.";
 
         ownerLoginForm.hidden = false;
         ownerLogout.hidden = true;
@@ -3744,7 +3744,7 @@
 
         if (!ownerPanel.hidden) {
           ownerStatus.textContent =
-            "Log in with your existing G.O.T. Games owner account.";
+            "Log in with your existing G.O.T Games owner account.";
 
           ownerLoginForm.hidden = false;
           ownerLogout.hidden = true;
@@ -3802,7 +3802,7 @@
       if (!response.ok) {
         throw new Error(await readSupabaseError(response));
       }
-      reportStatus.textContent = "Report sent! Thank you for helping improve G.O.T. Games.";
+      reportStatus.textContent = "Report sent! Thank you for helping improve G.O.T Games.";
       reportForm.reset();
     } catch (error) {
       reportStatus.textContent = "Couldn't send report: " + (error.message || "Connection error.");
