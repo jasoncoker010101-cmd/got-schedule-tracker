@@ -560,10 +560,21 @@ async function fullDiagWithTimeout(promise,label,milliseconds=9000){
   ]);
  }finally{clearTimeout(timer);}
 }
+function fullDiagRootUrl(path){
+ const clean=String(path||"").replace(/^\\/+/, "");
+ const url=new URL("/"+clean,location.origin);
+ if(url.origin!==location.origin)throw new Error("Diagnostic resource is not on the current website origin: "+url.href);
+ return url;
+}
 async function fullDiagFetch(path,milliseconds=7000){
- const url=new URL(path,location.href);
+ const url=fullDiagRootUrl(path);
  url.searchParams.set("got_diag",String(Date.now()));
- return fetchWithTimeout(url.toString(),{cache:"no-store"},milliseconds);
+ try{
+  return await fetchWithTimeout(url.toString(),{cache:"no-store",credentials:"same-origin"},milliseconds);
+ }catch(error){
+  const reason=error?.message||"Network request failed";
+  throw new Error(reason+" · requested "+url.pathname+" on "+location.origin+" · check that the current website host serves root-level site files and does not redirect fetch requests to another domain");
+ }
 }
 async function fullDiagReadAll(table,columns,maxRows=25000,orderColumn="id"){
  const pageSize=1000,rows=[];
@@ -648,7 +659,7 @@ const fullDiagnosticSteps=[
        const raw=node.getAttribute(attr);
        if(!raw||raw.startsWith("#")||/^(mailto:|tel:|javascript:|data:|blob:)/i.test(raw))return;
        try{
-        const base=new URL(path,location.href);
+        const base=fullDiagRootUrl(path);
         const url=new URL(raw,base);
         if(url.origin===location.origin)targets.add(url.pathname);
        }catch(_){}
@@ -666,7 +677,7 @@ const fullDiagnosticSteps=[
      return {path,ok:true,detail:"HTTP "+response.status+" · asset reachable",warnings:[],errors:[],targets:[]};
     }catch(error){return {path,ok:false,detail:error.message||"Request failed",warnings:[],errors:[],targets:[]};}
    }));
-   const knownPaths=new Set(FULL_DIAGNOSTIC_PAGE_PATHS.map(path=>new URL(path,location.href).pathname));
+   const knownPaths=new Set(FULL_DIAGNOSTIC_PAGE_PATHS.map(path=>fullDiagRootUrl(path).pathname));
    const targets=[...new Set(checks.flatMap(item=>item.targets||[]))].filter(path=>!knownPaths.has(path));
    const targetChecks=await Promise.all(targets.map(async path=>{
     try{const response=await fullDiagFetch(path);return {path,ok:response.ok,status:response.status};}
