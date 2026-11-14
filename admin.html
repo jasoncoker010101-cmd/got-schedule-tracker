@@ -633,13 +633,17 @@ const fullDiagnosticSteps=[
    const watch=watchResult.rows,links=linkResult.rows;
    const badWatchRanges=watch.filter(row=>!Number.isInteger(Number(row.episode_start))||!Number.isInteger(Number(row.episode_end))||Number(row.episode_start)<1||Number(row.episode_end)<Number(row.episode_start)).length;
    const weakWatchIdentity=watch.filter(row=>!row.anime_title||!row.anilist_id).length;
+   const missingWatchSeasons=watch.filter(row=>!Number.isInteger(Number(row.season_number))||Number(row.season_number)<1).length;
    const badLinkRanges=links.filter(row=>!Number.isInteger(Number(row.episode_start))||!Number.isInteger(Number(row.episode_end))||Number(row.episode_start)<1||Number(row.episode_end)<Number(row.episode_start)).length;
+   const weakLinkIdentity=links.filter(row=>!row.anime_title||!row.anilist_id).length;
    const noLink=links.filter(row=>!row.youtube_url&&!row.patreon_url).length;
    const badYoutube=links.filter(row=>row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
    const badPatreon=links.filter(row=>row.patreon_url&&!fullDiagSafeUrl(row.patreon_url,["patreon.com"])).length;
    const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&!row.youtube_url)||(row.link_type==="patreon"&&!row.patreon_url)).length;
    const warnings=[];
-   if(weakWatchIdentity)warnings.push(weakWatchIdentity+" watch records missing an anime title or AniList ID");
+   if(weakWatchIdentity)warnings.push(weakWatchIdentity+" watch-history records missing an anime title or AniList ID");
+   if(weakLinkIdentity)warnings.push(weakLinkIdentity+" reaction-link records missing an anime title or AniList ID");
+   if(missingWatchSeasons)warnings.push(missingWatchSeasons+" watch-history records missing a valid season number");
    if(watchResult.truncated||linkResult.truncated)warnings.push("the 25,000-row safety scan limit was reached");
    const failures=[];
    if(badWatchRanges)failures.push(badWatchRanges+" invalid watch-history episode ranges");
@@ -648,7 +652,7 @@ const fullDiagnosticSteps=[
    if(badYoutube)failures.push(badYoutube+" invalid YouTube URLs");
    if(badPatreon)failures.push(badPatreon+" invalid Patreon URLs");
    if(wrongProvider)failures.push(wrongProvider+" provider type/URL mismatches");
-   const detail=watch.length+" watch-history rows scanned · "+links.length+" reaction-link rows scanned · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link problems"+(warnings.length?" · "+warnings.join(" · "):"");
+   const detail=watch.length+" watch-history rows scanned · "+links.length+" reaction-link rows scanned · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link problems · "+weakWatchIdentity+" watch IDs/titles missing · "+weakLinkIdentity+" reaction-link IDs/titles missing · "+missingWatchSeasons+" seasons missing"+(warnings.length?" · "+warnings.join(" · "):"");
    if(failures.length)throw new Error(failures.join(" · "));
    return fullDiagResult("Watch history and anime reaction-link integrity",warnings.length?"warning":"pass",detail);
   }
