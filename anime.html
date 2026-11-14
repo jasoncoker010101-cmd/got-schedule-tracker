@@ -272,6 +272,49 @@
 
     .status.error { color: var(--red); }
 
+    .results-stage {
+      position: relative;
+      min-height: 180px;
+    }
+
+    .results-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: start center;
+      padding: 28px 16px;
+      background: rgba(8,9,13,.76);
+      backdrop-filter: blur(3px);
+      border: 1px solid rgba(239,189,50,.22);
+      border-radius: 14px;
+      pointer-events: none;
+    }
+    .results-loading[hidden] { display: none; }
+    .results-loading-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 17px;
+      border: 1px solid rgba(239,189,50,.3);
+      border-radius: 12px;
+      background: rgba(19,21,29,.96);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 8px 28px rgba(0,0,0,.3);
+    }
+    .results-loading-spinner {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 19px;
+      border: 2px solid rgba(239,189,50,.25);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: results-spin .75s linear infinite;
+    }
+    @keyframes results-spin { to { transform: rotate(360deg); } }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -983,7 +1026,12 @@
         Loading popular anime…
       </p>
 
-      <div class="grid" id="results" aria-live="polite"></div>
+      <div class="results-stage">
+        <div class="grid" id="results" aria-live="polite"></div>
+        <div class="results-loading" id="resultsLoading" role="status" aria-live="polite" hidden>
+          <div class="results-loading-card"><span class="results-loading-spinner" aria-hidden="true"></span><span>Searching anime…</span></div>
+        </div>
+      </div>
 
       <div class="pagination" id="pagination" hidden>
         <button class="page-button" id="previousButton" type="button">Previous</button>
@@ -1161,6 +1209,7 @@
 
   const searchInput = document.getElementById("searchInput");
   const pageLoader = document.getElementById("pageLoader");
+  const resultsLoading = document.getElementById("resultsLoading");
   const results = document.getElementById("results");
   const status = document.getElementById("status");
   const pagination = document.getElementById("pagination");
@@ -1208,6 +1257,7 @@
 
   let requestController = null;
   let debounceTimer = null;
+  let initialCatalogueLoad = true;
 
   let displayedItems = [];
 
@@ -3183,7 +3233,11 @@
     const controller = new AbortController();
     requestController = controller;
 
-    pageLoader.hidden = false;
+    if (initialCatalogueLoad) {
+      pageLoader.hidden = false;
+    } else {
+      resultsLoading.hidden = false;
+    }
     setStatus("Searching AniList…");
     pagination.hidden = true;
 
@@ -3302,6 +3356,8 @@
       if (requestController === controller) {
         requestController = null;
         pageLoader.hidden = true;
+        resultsLoading.hidden = true;
+        initialCatalogueLoad = false;
       }
     }
   }
