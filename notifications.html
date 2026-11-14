@@ -141,7 +141,7 @@ function slugifyTitle(value){
   return String(value || "").normalize("NFKC").toLocaleLowerCase()
     .replace(/&/g," and ")
     .replace(/[’']/g,"")
-    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g,"-");
+    .replace(/[^a-z0-9]+/g," ").trim().split(" ").join("-");
 }
 function notificationHref(item){
   const metadata = item && item.metadata && typeof item.metadata === "object" ? item.metadata : {};
