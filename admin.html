@@ -1161,7 +1161,7 @@ const fullDiagnosticSteps=[
      }else problems.push("record "+row.id+" has an unknown reaction-link type");
      const title=String(row.video_title||"").trim();
      if(row.link_type==="youtube"&&row.youtube_url){
-      const match=String(row.youtube_url).match(/(?:v=|youtu\\.be\\/|shorts\\/|embed\\/)([A-Za-z0-9_-]{6,})/i);
+      const match=String(row.youtube_url).match(/(?:v=|youtu\.be\/|shorts\\/|embed\\/)([A-Za-z0-9_-]{6,})/i);
       if(match){
        if(!videoEvidence.has(match[1]))videoEvidence.set(match[1],{videoId:match[1],title,mappings:[]});
        videoEvidence.get(match[1]).mappings.push("Record #"+row.id+" · S"+season+" E"+start+(end!==start?"–"+end:""));
@@ -1307,7 +1307,7 @@ const fullDiagnosticSteps=[
    const titleIdConflicts=[...titleIds].filter(([,ids])=>ids.size>1);
    for(const row of links){
     if(row.youtube_url){
-     const match=String(row.youtube_url).match(/(?:v=|youtu\\.be\\/|shorts\\/|embed\\/)([A-Za-z0-9_-]{6,})/i);
+     const match=String(row.youtube_url).match(/(?:v=|youtu\.be\/|shorts\\/|embed\\/)([A-Za-z0-9_-]{6,})/i);
      if(match){
       if(!videoOwners.has(match[1]))videoOwners.set(match[1],[]);
       videoOwners.get(match[1]).push(row);
