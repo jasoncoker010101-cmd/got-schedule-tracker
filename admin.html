@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#11110f"><title>G.O.T. Games Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#11110f;--surface:#191916;--raised:#22211c;--text:#f7f4ec;--muted:#aaa69a;--accent:#efbd32;--line:rgba(245,235,206,.13);--green:#82d6a0;--red:#ff8585;--display:"Bricolage Grotesque",sans-serif;--body:"DM Sans",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,rgba(143,102,39,.16),transparent 40rem),var(--bg);color:var(--text);font-family:var(--body)}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px max(5%,calc((100% - 1180px)/2));border-bottom:1px solid var(--line);background:#191916}
+.logo{font:800 22px var(--display)}.logo span{color:var(--accent)}a{color:var(--accent)}
+main{width:min(1180px,calc(100% - 32px));margin:34px auto 70px}h1{font:800 clamp(30px,5vw,46px) var(--display);margin:0 0 8px}.muted{color:var(--muted)}
+.panel,.status-card,.report{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:22px 0}
+.status-card strong{display:block;font:800 23px var(--display);margin:8px 0;color:var(--accent)}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#888;margin-right:8px}.ok{background:var(--green)}.bad{background:var(--red)}
+input,select,textarea,button{font:inherit}input,select,textarea{width:100%;background:#10100e;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;margin:6px 0}
+button{background:var(--accent);color:#211a0b;border:0;border-radius:9px;padding:11px 16px;font-weight:800;cursor:pointer;margin:5px 5px 5px 0}
+button.secondary{background:var(--raised);color:var(--text);border:1px solid var(--line)}
+#login{max-width:440px;margin:25px 0}#dashboard[hidden],#login[hidden]{display:none}
+.report{margin:12px 0}.report h3{margin:0 0 8px}.report-meta{color:var(--muted);font-size:13px}.report p{white-space:pre-wrap;line-height:1.55}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row select{max-width:180px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+@media(max-width:600px){header{padding:15px}.row>*{flex:1}.row select{max-width:none}}
+</style></head>
+<body>
+<header><div class="logo">G.O.T. <span>Games</span> · Admin</div><a href="anime.html">Back to Anime</a></header>
+<main>
+<div class="muted">PRIVATE CONTROL CENTER</div><h1>Admin dashboard</h1>
+<p class="muted">Service health, site activity, and visitor reports. Only the G.O.T. Games owner account can access this dashboard.</p>
+<section id="login" class="panel">
+<h2>Owner sign in</h2><p class="muted" id="authMessage">Sign in with your existing G.O.T. Games owner account.</p>
+<form id="loginForm"><input id="email" type="email" placeholder="Owner email" autocomplete="username" required><input id="password" type="password" placeholder="Password" autocomplete="current-password" required><button type="submit">Sign in</button></form>
+</section>
+<section id="dashboard" hidden>
+<div class="section-head"><h2>System status</h2><div><button class="secondary" id="refresh">Refresh status</button><button class="secondary" id="logout">Log out</button></div></div>
+<div class="grid">
+<article class="status-card"><span class="dot" id="anilistDot"></span>AniList<strong id="anilistStatus">Checking…</strong><span class="muted" id="anilistDetail">Anime catalogue API</span></article>
+<article class="status-card"><span class="dot" id="junbanDot"></span>Junban<strong id="junbanStatus">Checking…</strong><span class="muted" id="junbanDetail">Season grouping API</span></article>
+<article class="status-card"><span class="dot" id="supabaseDot"></span>Supabase<strong id="supabaseStatus">Checking…</strong><span class="muted" id="supabaseDetail">Watch history and reports</span></article>
+<article class="status-card"><span class="dot" id="linksDot"></span>Reaction links<strong id="linksStatus">—</strong><span class="muted">Saved YouTube and Patreon links</span></article>
+</div>
+<div class="grid">
+<article class="status-card">Recorded watched episodes<strong id="watchedCount">—</strong><span class="muted">G.O.T. watch history records</span></article>
+<article class="status-card">New reports<strong id="newReports">—</strong><span class="muted">Waiting for your review</span></article>
+<article class="status-card">Pending reaction links<strong id="pendingLinks">—</strong><span class="muted">Owner review queue</span></article>
+</div>
+<div class="section-head"><h2>Visitor reports</h2><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div>
+<p class="muted" id="reportMessage">Loading reports…</p><div id="reports"></div>
+</section>
+</main>
+<script>
+const SUPABASE_URL="https://tzgxkiucsjampbresqkw.supabase.co";
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6Z3hraXVjc2phbXBicmVzcWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0Mzg5NjIsImV4cCI6MjExMDAxNDk2Mn0.O63F1TtK7tISlSBEvjixN283emRPDTtsS8taVEyK3co";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);let currentReports=[];
+function setHealth(name,ok,value,detail){$(name+"Dot").className="dot "+(ok?"ok":"bad");$(name+"Status").textContent=value;$(name+"Detail").textContent=detail;}
+async function verifyOwner(){
+ const {data:{session}}=await db.auth.getSession();
+ if(!session){$("dashboard").hidden=true;$("login").hidden=false;return false;}
+ const {data:role,error}=await db.from("user_roles").select("role").eq("user_id",session.user.id).eq("role","owner").maybeSingle();
+ if(error||!role){$("authMessage").textContent="This account does not have owner access.";$("dashboard").hidden=true;$("login").hidden=false;return false;}
+ $("login").hidden=true;$("dashboard").hidden=false;return true;
+}
+async function health(){
+ setHealth("anilist",false,"Checking…","AniList catalogue API");
+ try{const r=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:"{ Page(page:1,perPage:1){ pageInfo { total } } }"})});if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("anilist",true,"Online","Catalogue query succeeded");}catch(e){setHealth("anilist",false,"Unavailable",e.message);}
+ try{const r=await fetch("https://junban.moe/api/v1/lookup?site=anilist&id=16498");if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("junban",true,"Online","Lookup request succeeded");}catch(e){setHealth("junban",false,"Unavailable",e.message);}
+ const {count:watched,error:wErr}=await db.from("got_anime_watch_history").select("id",{count:"exact",head:true});
+ const {count:links,error:lErr}=await db.from("got_anime_episode_links").select("id",{count:"exact",head:true});
+ const {count:pending,error:pErr}=await db.from("got_anime_pending_episode_links").select("id",{count:"exact",head:true}).in("status",["pending","needs_checking"]);
+ const dbOk=!wErr&&!lErr&&!pErr;
+ setHealth("supabase",dbOk,dbOk?"Connected":"Issue",dbOk?"Database queries succeeded":[wErr,lErr,pErr].filter(Boolean).map(x=>x.message).join(" · "));
+ setHealth("links",!lErr,links??"Error",lErr?.message||"Active reaction links");
+ $("watchedCount").textContent=watched??"Error";$("pendingLinks").textContent=pending??"Error";
+}
+function renderReports(){
+ const filter=$("reportFilter").value;const rows=currentReports.filter(r=>filter==="all"||r.status===filter);$("reports").replaceChildren();
+ if(!rows.length){$("reports").textContent="No reports in this view.";return;}
+ for(const r of rows){
+  const card=document.createElement("article");card.className="report";
+  const h=document.createElement("h3");h.textContent="#"+r.id+" · "+r.category.replaceAll("_"," ");
+  const meta=document.createElement("div");meta.className="report-meta";meta.textContent=new Date(r.created_at).toLocaleString()+" · "+(r.anime_title||"No anime specified")+" · "+(r.season_label||"");
+  const body=document.createElement("p");body.textContent=r.details;
+  const context=document.createElement("div");context.className="report-meta";context.textContent=[r.episode_label,r.contact,r.page_url].filter(Boolean).join(" · ");
+  const row=document.createElement("div");row.className="row";const sel=document.createElement("select");
+  for(const v of ["new","reviewing","fixed","dismissed"]){const o=document.createElement("option");o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);sel.append(o);}sel.value=r.status;
+  const save=document.createElement("button");save.textContent="Save status";save.onclick=async()=>{save.disabled=true;const {error}=await db.from("got_site_reports").update({status:sel.value,updated_at:new Date().toISOString()}).eq("id",r.id);save.disabled=false;if(error){$("reportMessage").textContent="Could not update report: "+error.message;return;}await loadReports();};
+  row.append(sel,save);card.append(h,meta,body,context,row);$("reports").append(card);
+ }
+}
+async function loadReports(){
+ $("reportMessage").textContent="Loading reports…";
+ const {data,error}=await db.from("got_site_reports").select("*").order("created_at",{ascending:false}).limit(200);
+ if(error){$("reportMessage").textContent="Could not load reports: "+error.message;return;}
+ currentReports=data||[];$("newReports").textContent=currentReports.filter(r=>r.status==="new").length;
+ $("reportMessage").textContent=currentReports.length+" report(s) loaded.";renderReports();
+}
+async function refreshAll(){if(!await verifyOwner())return;await Promise.all([health(),loadReports()]);}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("authMessage").textContent="Signing in…";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("password").value="";if(error){$("authMessage").textContent="Sign-in failed: "+error.message;return;}await refreshAll();});
+$("logout").onclick=async()=>{await db.auth.signOut();await verifyOwner();};
+$("refresh").onclick=refreshAll;$("reportFilter").onchange=renderReports;
+refreshAll();
+</script></body></html>
