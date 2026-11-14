@@ -1199,7 +1199,8 @@ const fullDiagnosticSteps=[
    if(badStats)failures.push(badStats+" player-stat records contain invalid or negative values");
    const detail=profiles.length+" profiles · "+roles.length+" role records · "+rooms.length+" chat rooms · "+messages.length+" chat messages · "+chatReports.length+" chat reports · "+achievements.length+" achievements · "+stats.length+" player-stat rows · "+playerAchievements.length+" earned-achievement rows";
    return fullDiagResult("Community, profiles, chat, and player systems",failures.length?"fail":warnings.length?"warning":"pass",failures.length?failures.join(" · ")+" · "+detail:detail+(warnings.length?" · "+warnings.join(" · "):""));
-  },
+  }
+ },
  {
   name:"Anime catalogue identity, duplicate links, and watch coverage",
   run:async()=>{
