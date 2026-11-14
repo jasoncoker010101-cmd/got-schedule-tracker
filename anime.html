@@ -1728,9 +1728,9 @@
 
     const seasonTitle = document.createElement("div");
     seasonTitle.className = "episode-season-title";
-    seasonTitle.textContent = seasonNumber == null
+    seasonTitle.textContent = historySeason == null
       ? "Episodes"
-      : `Season ${seasonNumber}`;
+      : `Season ${historySeason}`;
 
     const chips = document.createElement("div");
     chips.className = "episode-chips";
@@ -1805,7 +1805,7 @@
         const reactionLink = getEpisodeReactionLink(
           anime,
           seasonKey,
-          episode
+          episode + episodeOffset
         );
 
         if (
