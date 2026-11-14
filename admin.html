@@ -1454,13 +1454,13 @@ async function runPlaylistAudit(event){
   if(error)throw new Error(error.message||"The playlist audit request failed.");
   if(!data?.success)throw new Error(data?.error||"The playlist audit could not be completed.");
   const counts=data.counts||{};
-  const explicitMissing=(data.items||[]).filter(item=>item.status==="missing_episode_link"&&item.season_inferred===false&&item.season_number!=null&&item.episode_start!=null);
+  const eligibleMissing=(data.items||[]).filter(item=>item.status==="missing_episode_link"&&item.season_number!=null&&item.episode_start!=null&&(item.season_inferred===false||item.season_inference_confident===true));
+  const uncertainInferred=(data.items||[]).filter(item=>item.season_inferred===true&&item.season_inference_confident!==true&&item.episode_start!=null).length;
   const applyButton=$("playlistAuditApply");
-  applyButton.hidden=explicitMissing.length===0;
-  applyButton.dataset.eligibleCount=String(explicitMissing.length);
-  applyButton.textContent="ADD "+explicitMissing.length+" EXPLICITLY VERIFIED MISSING LINK"+(explicitMissing.length===1?"":"S");
-  const inferredCount=Math.max(0,(counts.missing_episode_link||0)-explicitMissing.length);
-  $("playlistAuditApplyNote").textContent="Only videos with the season and episode explicitly stated in the title qualify. "+inferredCount+" inferred-season match(es) will be left untouched.";
+  applyButton.hidden=eligibleMissing.length===0;
+  applyButton.dataset.eligibleCount=String(eligibleMissing.length);
+  applyButton.textContent="ADD "+eligibleMissing.length+" VERIFIED MISSING LINK"+(eligibleMissing.length===1?"":"S");
+  $("playlistAuditApplyNote").textContent="Includes explicit season labels and high-confidence season matches confirmed by nearby playlist episode order. "+uncertainInferred+" uncertain inferred-season match(es) will remain for manual review.";
   const statItems=[
    ["Videos",counts.videos||0],["Already matched",counts.already_matched||0],
    ["Missing links",counts.missing_episode_link||0],["Already catalogued",counts.episode_already_catalogued||0],
@@ -1482,7 +1482,7 @@ async function runPlaylistAudit(event){
    tr.append(pos,ep,title,statusCell);tbody.append(tr);
   }
   table.append(tbody);wrap.append(table);results.append(wrap);
-  message.textContent="Audit complete for "+(data.anime_title||"the selected anime")+". "+explicitMissing.length+" match(es) have an explicit season and episode and are eligible to add. Inferred seasons are excluded.";
+  message.textContent="Audit complete for "+(data.anime_title||"the selected anime")+". "+eligibleMissing.length+" verified match(es) are eligible to add, including high-confidence season matches inferred from nearby playlist episodes. "+uncertainInferred+" uncertain match(es) remain for manual review.";
  }catch(error){
   $("playlistAuditApply").hidden=true;
   message.textContent="Audit failed: "+(error?.message||String(error));
@@ -1494,7 +1494,7 @@ $("playlistAuditApply").addEventListener("click",async()=>{
  if(!db||button.disabled)return;
  const count=Number(button.dataset.eligibleCount||0);
  if(!count)return;
- if(!confirm("Add "+count+" reaction link(s)? Only videos with an explicitly stated season and episode will be saved. Inferred seasons, duplicates, and uncertain matches will be skipped."))return;
+ if(!confirm("Add "+count+" reaction link(s)? Videos must have an explicit season label or a high-confidence season match confirmed by nearby playlist episode order. Duplicates and uncertain matches will be skipped."))return;
  button.disabled=true;button.textContent="ADDING VERIFIED LINKS…";
  result.textContent="Adding verified links. Please wait…";
  try{
