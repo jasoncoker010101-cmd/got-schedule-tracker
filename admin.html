@@ -1032,21 +1032,29 @@ const fullDiagnosticSteps=[
     }else if(row.link_type==="patreon"){
      if(!fullDiagSafeUrl(row.patreon_url,["patreon.com"])||row.youtube_url)problems.push("record "+row.id+" has a mismatched Patreon destination");
     }else problems.push("record "+row.id+" has an unknown reaction-link type");
-    if(!String(row.video_title||"").trim())warnings.push("record "+row.id+" has no saved video title");
+    const title=String(row.video_title||"").toLowerCase();
+    if(!title.trim())warnings.push("record "+row.id+" has no saved video title");
+    else{
+     if(!title.includes("jujutsu kaisen"))problems.push("record "+row.id+" title does not identify Jujutsu Kaisen");
+     if(!title.includes("episode "+start))problems.push("record "+row.id+" title does not match episode "+start);
+     if(season>1&&!title.includes("season "+season))problems.push("record "+row.id+" title does not match Season "+season);
+    }
     for(let episode=start;episode<=end&&episode-start<100;episode++){
      const key=season+"|"+episode;
      if(occupied.has(key))problems.push("season "+season+" episode "+episode+" is linked more than once");
      occupied.set(key,row.id);
     }
    }
-   const season3=[...occupied.keys()].filter(key=>key.startsWith("3|")).map(key=>Number(key.split("|")[1])).sort((a,b)=>a-b);
-   const missingSeason3=Array.from({length:12},(_,i)=>i+1).filter(ep=>!season3.includes(ep));
-   if(missingSeason3.length)warnings.push("no verified G.O.T reaction link currently recorded for Season 3 episode(s) "+missingSeason3.join(", "));
-   const season1Count=rows.filter(row=>Number(row.season_number)===1).length;
-   const season2Count=rows.filter(row=>Number(row.season_number)===2).length;
-   if(!season1Count&&!season2Count)warnings.push("no G.O.T episode-reaction links are currently verified for Seasons 1 or 2; episodes remain listed without invented destinations");
+   const expectedBySeason={1:24,2:23,3:12};
+   const coverage={};
+   for(const [season,total] of Object.entries(expectedBySeason)){
+    const covered=Array.from({length:total},(_,i)=>i+1).filter(ep=>occupied.has(season+"|"+ep));
+    const missing=Array.from({length:total},(_,i)=>i+1).filter(ep=>!occupied.has(season+"|"+ep));
+    coverage[season]={covered,missing,total};
+    if(missing.length)warnings.push("Season "+season+": no verified G.O.T reaction link for episode(s) "+missing.join(", "));
+   }
    if(result.truncated)warnings.push("JJK reaction-link scan reached its row limit");
-   const detail=rows.length+" JJK reaction-link records · "+season3.length+"/12 Season 3 episodes covered · Season 1 links: "+season1Count+" · Season 2 links: "+season2Count+" · "+(problems.length?problems.join(" · "):warnings.length?warnings.join(" · "):"all JJK episode destinations and episode mappings passed");
+   const detail=rows.length+" JJK reaction-link records · S1 "+coverage[1].covered.length+"/24 · S2 "+coverage[2].covered.length+"/23 · S3 "+coverage[3].covered.length+"/12 · "+(problems.length?problems.join(" · "):warnings.length?warnings.join(" · "):"all JJK episode destinations and episode mappings passed");
    return fullDiagResult("Jujutsu Kaisen reaction-link accuracy",problems.length?"fail":warnings.length?"warning":"pass",detail);
   }
  },
