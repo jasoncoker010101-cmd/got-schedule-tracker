@@ -2756,7 +2756,7 @@ liveStatus=function(ev,now,liveKeys){
     try {
       const { data, error } = await db
         .from("got_notifications")
-        .select("id,kind,title,message,href,created_at")
+        .select("id,kind,title,message,href,created_at,metadata")
         .order("created_at", { ascending: false })
         .limit(LIMIT);
       if (error) throw error;
