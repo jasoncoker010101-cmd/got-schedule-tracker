@@ -451,11 +451,20 @@
     }
 
     .series-season-list {
-      display: grid;
-      gap: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      min-height: 0;
     }
 
     .series-season {
+      position: relative;
+      display: block;
+      flex: 0 0 auto;
+      min-height: 0;
+      height: auto;
+      margin: 0;
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -501,8 +510,14 @@
     }
 
     .series-season-anchor {
+      position: absolute;
+      top: 0;
+      left: 0;
       display: block;
+      width: 0;
       height: 0;
+      overflow: hidden;
+      pointer-events: none;
       scroll-margin-top: 24px;
     }
 
@@ -3158,6 +3173,11 @@ input,select,textarea{accent-color:var(--got-gold)}
       const partNumber = entry.historyMapping?.partNumber;
       const isSpecial = entry.isSpecial || entry.seasonNumber === 0;
 
+      const details = document.createElement("details");
+      details.className = "series-season";
+
+      // Keep jump targets inside the row they belong to. They are absolutely
+      // positioned so hidden aliases can never become extra layout rows.
       for (const alias of getAnimeAliases(anime)) {
         const slug = String(alias || "").toLowerCase()
           .replace(/&/g, " and ")
@@ -3168,11 +3188,9 @@ input,select,textarea{accent-color:var(--got-gold)}
         anchor.id = "anime-title-" + slug + "-season-" + canonicalSeason;
         anchor.className = "series-season-anchor";
         anchor.setAttribute("aria-hidden", "true");
-        seasonList.append(anchor);
+        details.append(anchor);
       }
 
-      const details = document.createElement("details");
-      details.className = "series-season";
       const summary = document.createElement("summary");
       const seasonTitle = document.createElement("span");
       const seasonName = isSpecial
@@ -3197,7 +3215,7 @@ input,select,textarea{accent-color:var(--got-gold)}
       content.append(makeWatchBox(anime, entry.seasonNumber, entry.historyMapping));
       details.append(summary, content);
       seasonList.append(details);
-    });
+    });;
 
     body.append(seasonList);
     card.append(coverWrap, body);
