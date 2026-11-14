@@ -184,7 +184,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 <p class="muted">Service health, site activity, and visitor reports. Only the G.O.T Games owner account can access this dashboard.</p>
 <section id="login" class="panel">
 <h2>Owner sign in</h2><p class="muted" id="authMessage">Sign in with your existing G.O.T Games owner account.</p>
-<form id="loginForm"><input id="email" type="email" placeholder="Owner email" autocomplete="username" required><input id="password" type="password" placeholder="Password" autocomplete="current-password" required><button type="submit">Sign in</button></form>
+<form id="loginForm"><input id="email" type="email" aria-label="Owner email address" placeholder="Owner email" autocomplete="username" required><input id="password" type="password" aria-label="Owner account password" placeholder="Password" autocomplete="current-password" required><button type="submit">Sign in</button></form>
 </section>
 <section id="dashboard" hidden>
  <section class="panel announcement-panel" aria-labelledby="announcementTitle">
@@ -256,7 +256,7 @@ input,select,textarea{accent-color:var(--got-gold)}
  <div class="diag-summary" id="fullDiagSummary" role="status">No scan has been run yet.</div>
  <p class="diag-footnote">Errors mean a tested check found a broken or invalid condition. Warnings mean something is incomplete, stale, inaccessible, or needs human review. Select a severity to focus the list, or search for a page or feature. This is a broad audit, not a simulation of every visitor action or every device.</p>
 </section>
-<div class="section-head"><h2>Visitor reports</h2><div class="report-tools"><input id="reportSearch" type="search" placeholder="Search reports by anime, type or details…" aria-label="Search visitor reports"><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div></div>
+<div class="section-head"><h2>Visitor reports</h2><div class="report-tools"><input id="reportSearch" type="search" placeholder="Search reports by anime, type or details…" aria-label="Search visitor reports"><select id="reportFilter" aria-label="Filter visitor reports by status"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div></div>
 <p class="muted" id="reportMessage">Loading reports…</p><div id="reports"></div>
 </section>
 </main>
@@ -718,7 +718,8 @@ const fullDiagnosticSteps=[
     }catch(error){return {path,ok:false,detail:error.message||"Request failed",warnings:[],errors:[],targets:[]};}
    }));
    const knownPaths=new Set(FULL_DIAGNOSTIC_PAGE_PATHS.map(path=>fullDiagRootUrl(path).pathname));
-   const targets=[...new Set(checks.flatMap(item=>item.targets||[]))].filter(path=>!knownPaths.has(path));
+   const discoveredTargets=[...new Set(checks.flatMap(item=>item.targets||[]))];
+   const targets=discoveredTargets.filter(path=>!knownPaths.has(path));
    const targetChecks=await Promise.all(targets.map(async path=>{
     try{const response=await fullDiagFetch(path);return {path,ok:response.ok,status:response.status};}
     catch(error){return {path,ok:false,detail:error.message||"Request failed"};}
@@ -729,7 +730,7 @@ const fullDiagnosticSteps=[
    const warnings=checks.flatMap(item=>(item.warnings||[]).map(note=>item.path+": "+note));
    if(failures.length)return fullDiagResult("Website pages, scripts, links, and accessibility","fail",failures.slice(0,10).join(" · ")+(failures.length>10?" · +"+(failures.length-10)+" more broken route/resource(s)":""));
    const warningDetail=warnings.slice(0,8).join(" · ")+(warnings.length>8?" · +"+(warnings.length-8)+" more markup warning(s)":"");
-   const detail=checks.length+" page/feed/asset files reachable · "+targetChecks.length+" discovered internal targets checked · "+(warnings.length?warningDetail:"no duplicate IDs or basic markup issues found");
+   const detail=checks.length+" page/feed/asset files reachable · "+discoveredTargets.length+" internal targets discovered · "+targetChecks.length+" additional targets checked beyond the file inventory · "+(warnings.length?warningDetail:"no duplicate IDs or basic markup issues found");
    return fullDiagResult("Website pages, scripts, links, and accessibility",warnings.length?"warning":"pass",detail);
   }
  },
@@ -1032,8 +1033,8 @@ const fullDiagnosticSteps=[
     ["my hero academia",21459]
    ]);
    const knownIdFor=row=>canonicalIds.get(String(row.anime_title||"").trim().toLowerCase());
-   const wrongKnownIds=watch.filter(row=>knownIdFor(row)!=null&&Number(row.anilist_id)!==knownIdFor(row)).length
-    +links.filter(row=>knownIdFor(row)!=null&&Number(row.anilist_id)!==knownIdFor(row)).length;
+   const wrongKnownIds=watch.filter(row=>row.anilist_id!=null&&knownIdFor(row)!=null&&Number(row.anilist_id)!==knownIdFor(row)).length
+    +links.filter(row=>row.anilist_id!=null&&knownIdFor(row)!=null&&Number(row.anilist_id)!==knownIdFor(row)).length;
    const warnings=[];
    if(missingWatchTitles)warnings.push(missingWatchTitles+" watch-history rows have no anime title");
    if(missingWatchIds)warnings.push(missingWatchIds+" watch-history rows have no valid AniList ID");
@@ -1093,7 +1094,8 @@ const fullDiagnosticSteps=[
     if(missing.length)warnings.push("Season "+season+": no verified G.O.T reaction link for episode(s) "+missing.join(", "));
    }
    if(result.truncated)warnings.push("JJK reaction-link scan reached its row limit");
-   const detail=rows.length+" JJK reaction-link records · S1 "+coverage[1].covered.length+"/24 · S2 "+coverage[2].covered.length+"/23 · S3 "+coverage[3].covered.length+"/12 · "+(problems.length?problems.join(" · "):warnings.length?warnings.join(" · "):"all JJK episode destinations and episode mappings passed");
+   const coveredEpisodeSlots=Object.values(coverage).reduce((sum,item)=>sum+item.covered.length,0);
+   const detail=rows.length+" JJK reaction-link records · "+coveredEpisodeSlots+" verified episode slots · S1 "+coverage[1].covered.length+"/24 · S2 "+coverage[2].covered.length+"/23 · S3 "+coverage[3].covered.length+"/12 · "+(problems.length?problems.join(" · "):warnings.length?warnings.join(" · "):"all JJK episode destinations and episode mappings passed");
    return fullDiagResult("Jujutsu Kaisen reaction-link accuracy",problems.length?"fail":warnings.length?"warning":"pass",detail);
   }
  },
