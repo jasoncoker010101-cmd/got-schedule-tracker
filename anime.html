@@ -1484,7 +1484,7 @@
     }
   }
 
-  function getHistoryForAnime(anime, seasonNumber = null) {
+  function getHistoryForAnime(anime, seasonNumber = null, historyMapping = null) {
     const aliases = getAnimeAliases(anime);
     let matchingRows = [];
     const seenRows = new Set();
@@ -1510,14 +1510,32 @@
       }
     }
 
-    // The search result is a single season card, so only count rows recorded
-    // for that exact season. Never repeat the whole franchise total on every
-    // season card.
-    if (seasonNumber != null && Number.isInteger(Number(seasonNumber))) {
+    // Junban can number split cours as separate cards. G.O.T. history uses
+    // conventional season numbers, so use the resolved season and episode span.
+    const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
+    if (historySeason != null && Number.isInteger(Number(historySeason))) {
       matchingRows = matchingRows.filter(row =>
         row.season_number != null &&
-        Number(row.season_number) === Number(seasonNumber)
+        Number(row.season_number) === Number(historySeason)
       );
+      if (historyMapping) {
+        const offset = Math.max(0, Number(historyMapping.episodeOffset) || 0);
+        const count = Number(historyMapping.episodeCount);
+        const first = offset + 1;
+        const last = Number.isInteger(count) && count > 0 ? offset + count : Infinity;
+        matchingRows = matchingRows.flatMap(row => {
+          const range = getRowRange(row);
+          if (!range) return [];
+          const start = Math.max(range.start, first);
+          const end = Math.min(range.end, last);
+          if (start > end) return [];
+          return [{
+            ...row,
+            episode_start: start - offset,
+            episode_end: end - offset
+          }];
+        });
+      }
     } else {
       const knownSeasons = new Set(matchingRows.map(row =>
         row.season_number == null ? "overall" : String(row.season_number)
@@ -1686,7 +1704,7 @@
   // EXPANDABLE EPISODE LIST
   // =========================================================
 
-  function makeEpisodeList(historyGroups, anime, seasonNumber) {
+  function makeEpisodeList(historyGroups, anime, seasonNumber, historyMapping = null) {
     const list = document.createElement("div");
     list.className = "episode-list";
     list.hidden = true;
@@ -1694,7 +1712,9 @@
     const episodeCount = Number(anime.episodes);
     const hasEpisodeCount = Number.isInteger(episodeCount) &&
       episodeCount > 0 && episodeCount <= 1000;
-    const seasonKey = seasonNumber == null ? "overall" : String(seasonNumber);
+    const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
+    const seasonKey = historySeason == null ? "overall" : String(historySeason);
+    const episodeOffset = Math.max(0, Number(historyMapping?.episodeOffset) || 0);
     const watchedRanges = historyGroups
       .filter(group => String(group.season) === seasonKey)
       .flatMap(group => group.ranges);
@@ -1720,7 +1740,7 @@
         const reactionLink = getEpisodeReactionLink(
           anime,
           seasonKey,
-          episode
+          episode + episodeOffset
         );
 
         const isWatched = watchedRanges.some(watched =>
@@ -1819,7 +1839,7 @@
   // WATCH HISTORY CARD DISPLAY
   // =========================================================
 
-  function makeWatchBox(anime, seasonNumber = null) {
+  function makeWatchBox(anime, seasonNumber = null, historyMapping = null) {
     const box = document.createElement("div");
     box.className = "watch-box";
 
@@ -1838,7 +1858,7 @@
       return box;
     }
 
-    const history = getHistoryForAnime(anime, seasonNumber);
+    const history = getHistoryForAnime(anime, seasonNumber, historyMapping);
 
     const top = document.createElement("div");
     top.className = "watch-top";
@@ -1900,7 +1920,7 @@
 
     toggle.append(toggleText, arrow);
 
-    const episodeList = makeEpisodeList(history.groups, anime, seasonNumber);
+    const episodeList = makeEpisodeList(history.groups, anime, seasonNumber, historyMapping);
 
     toggle.addEventListener("click", () => {
       const isOpen = toggle.getAttribute("aria-expanded") === "true";
@@ -1919,7 +1939,7 @@
   // ANIME CARDS
   // =========================================================
 
-  function makeCard(anime, seasonLabel = "", seasonNumber = null) {
+  function makeCard(anime, seasonLabel = "", seasonNumber = null, historyMapping = null) {
     const card = document.createElement("article");
     card.className = "card";
 
@@ -2001,7 +2021,7 @@
       safeText(anime.description) || "No description available.";
 
     body.append(description);
-    body.append(makeWatchBox(anime, seasonNumber));
+    body.append(makeWatchBox(anime, seasonNumber, historyMapping));
 
     card.append(coverWrap, body);
 
@@ -2326,6 +2346,49 @@
     }
   }
 
+  function resolveHistoryMappings(entries) {
+    const parsed = entries.map(entry => {
+      const title = [
+        titleFor(entry.anime),
+        entry.anime.title?.romaji,
+        entry.anime.title?.native,
+        ...(Array.isArray(entry.anime.synonyms) ? entry.anime.synonyms : [])
+      ].filter(Boolean).join(" ");
+      const seasonMatch = title.match(/\\bseason\\s*(\\d+)\\b|\\b(\\d+)(?:st|nd|rd|th)\\s+season\\b/i);
+      const partMatch = title.match(/\\bpart\\s*(\\d+)\\b|\\bcour\\s*(\\d+)\\b/i);
+      return {
+        ...entry,
+        parsedSeason: seasonMatch ? Number(seasonMatch[1] || seasonMatch[2]) : null,
+        isFinalSeason: /\\bfinal season\\b/i.test(title),
+        parsedPart: partMatch ? Number(partMatch[1] || partMatch[2]) : null
+      };
+    });
+    const highestNamedSeason = Math.max(0, ...parsed.map(entry => entry.parsedSeason || 0));
+    const resolved = parsed.map(entry => ({
+      ...entry,
+      historySeasonNumber: entry.parsedSeason ??
+        (entry.isFinalSeason ? highestNamedSeason + 1 : entry.seasonNumber)
+    }));
+    const offsets = new Map();
+    for (const entry of resolved) {
+      const season = entry.historySeasonNumber;
+      if (season == null || !Number.isFinite(Number(season))) {
+        entry.historyMapping = null;
+        continue;
+      }
+      const key = String(season);
+      const offset = offsets.get(key) || 0;
+      const count = Number(entry.anime.episodes) || 0;
+      entry.historyMapping = {
+        seasonNumber: Number(season),
+        episodeOffset: offset,
+        episodeCount: count
+      };
+      offsets.set(key, offset + count);
+    }
+    return resolved;
+  }
+
   function getSeasonGroups(items) {
     const groups = [];
     const claimed = new Set();
@@ -2348,8 +2411,9 @@
             a.seasonNumber - b.seasonNumber ||
             Number(a.anime.id) - Number(b.anime.id)
           );
-          ordered.forEach(entry => claimed.add(Number(entry.anime.id)));
-          groups.push({ items: ordered, source: "junban-franchise" });
+          const mapped = resolveHistoryMappings(ordered);
+          mapped.forEach(entry => claimed.add(Number(entry.anime.id)));
+          groups.push({ items: mapped, source: "junban-franchise" });
           continue;
         }
       }
@@ -2423,7 +2487,8 @@
         results.append(makeCard(
           unique[0].anime,
           seasonLabel(unique[0], 0),
-          unique[0].seasonNumber
+          unique[0].seasonNumber,
+          unique[0].historyMapping
         ));
         continue;
       }
@@ -2431,7 +2496,12 @@
       // Keep related seasons adjacent, but let every card participate in the
       // same page grid. Nested full-width grids left large empty areas.
       unique.forEach((entry, index) => {
-        results.append(makeCard(entry.anime, seasonLabel(entry, index), entry.seasonNumber));
+        results.append(makeCard(
+          entry.anime,
+          seasonLabel(entry, index),
+          entry.seasonNumber,
+          entry.historyMapping
+        ));
       });
     }
   }
