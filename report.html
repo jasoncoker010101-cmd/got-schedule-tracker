@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Submit a Report · G.O.T Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#0b1118;--panel:#141e29;--panel2:#1a2734;--ink:#edf3f8;--muted:#9aabba;--line:#2b3a49;--gold:#e9bd43;--cyan:#78dce4}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#263b4d 0,transparent 55%),var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;min-height:100vh}
+.wrap{width:min(760px,calc(100% - 28px));margin:0 auto;padding:28px 0 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:30px}.brand{font-weight:800;letter-spacing:.08em;color:var(--gold)}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+.hero{margin-bottom:22px}.eyebrow{color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.hero h1{font-size:clamp(30px,6vw,46px);margin:8px 0 10px;letter-spacing:-.04em}.hero p{color:var(--muted);line-height:1.65;margin:0;max-width:650px}
+form{background:linear-gradient(145deg,#172431,#101923);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,4vw,30px);box-shadow:0 22px 65px #0005}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:8px;margin-bottom:17px}.field.full{grid-column:1/-1}label{font-size:13px;font-weight:700;color:#dce6ee}input,select,textarea{width:100%;background:#0c151e;border:1px solid #354858;border-radius:10px;color:var(--ink);padding:13px 14px;font:inherit;font-size:14px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #78dce41c}textarea{min-height:150px;resize:vertical;line-height:1.55}.hint{font-size:12px;color:var(--muted);line-height:1.5}.submit{width:100%;border:0;border-radius:11px;background:linear-gradient(100deg,#f0c94f,#dcae2d);color:#18202a;padding:15px;font-weight:800;font-size:15px;cursor:pointer}.submit:disabled{opacity:.55;cursor:wait}.status{display:none;margin-top:16px;padding:13px 15px;border-radius:10px;font-size:14px;line-height:1.5}.status.show{display:block}.status.success{background:#12352d;border:1px solid #286a55;color:#b7f1d7}.status.error{background:#3b2023;border:1px solid #814047;color:#ffd1d4}.privacy{margin:16px 2px 0;color:var(--muted);font-size:12px;line-height:1.55}.trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+footer{text-align:center;color:#778897;font-size:12px;margin-top:28px}
+@media(max-width:600px){.grid{grid-template-columns:1fr;gap:0}.top{align-items:flex-start}.top a{font-size:13px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div class="brand">G.O.T GAMES</div><a href="help.html">← Back to Help Center</a></header>
+<section class="hero"><div class="eyebrow">Community Support</div><h1>Submit a Report</h1><p>Found something broken or incorrect? Send the details here and the site owner can review it in the admin report queue. You can submit a report without signing in.</p></section>
+<form id="reportForm">
+<div class="grid">
+<div class="field"><label for="category">What is the problem? *</label><select id="category" required><option value="other">Other issue</option><option value="missing_anime">Anime is missing</option><option value="missing_cover">Cover image is missing or wrong</option><option value="wrong_season">Wrong season or part</option><option value="wrong_episode_count">Wrong episode count</option><option value="broken_link">Broken link</option></select></div>
+<div class="field"><label for="pageUrl">Which page did it happen on?</label><input id="pageUrl" maxlength="500" placeholder="Paste the page address"></div>
+<div class="field"><label for="animeTitle">Anime title (if relevant)</label><input id="animeTitle" maxlength="200" placeholder="e.g. Jujutsu Kaisen"></div>
+<div class="field"><label for="season">Season or part (if relevant)</label><input id="season" maxlength="100" placeholder="e.g. Season 2 or Part 7"></div>
+<div class="field full"><label for="episode">Episode (if relevant)</label><input id="episode" maxlength="100" placeholder="e.g. Episode 9"></div>
+<div class="field full"><label for="details">Tell us what happened *</label><textarea id="details" minlength="8" maxlength="2000" required placeholder="What were you trying to do? What did you expect to happen, and what actually happened?"></textarea><div class="hint">8–2,000 characters. Please don’t include passwords or private account information.</div></div>
+<div class="field full"><label for="contact">Contact (optional)</label><input id="contact" maxlength="200" placeholder="Email or username, only if you want a reply"><div class="hint">Leave this blank if you don’t need a response.</div></div>
+</div>
+<div class="trap" aria-hidden="true"><label for="website">Leave this field empty</label><input id="website" tabindex="-1" autocomplete="off"></div>
+<button class="submit" id="submitButton" type="submit">Send Report</button>
+<div class="status" id="formStatus" role="status" aria-live="polite"></div>
+<p class="privacy">Reports are sent to the G.O.T. website’s private admin review queue. Other visitors cannot browse submitted reports.</p>
+</form>
+<footer>G.O.T Games · <a href="index.html">Home</a> · <a href="help.html">Help Center</a></footer>
+</main>
+<script>
+(()=>{
+ const SUPABASE_URL="https://tzgxkiucsjampbresqkw.supabase.co";
+ const SUPABASE_KEY="sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ const form=document.getElementById("reportForm"),button=document.getElementById("submitButton"),status=document.getElementById("formStatus");
+ const page=document.getElementById("pageUrl");
+ if(!page.value)page.value=location.href.split("#")[0];
+ function message(text,type){status.textContent=text;status.className="status show "+type;}
+ form.addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(document.getElementById("website").value)return;
+  const details=document.getElementById("details").value.trim();
+  if(details.length<8){message("Please add a little more detail (at least 8 characters).","error");return;}
+  const payload={
+   category:document.getElementById("category").value,
+   page_url:page.value.trim(),
+   anime_title:document.getElementById("animeTitle").value.trim(),
+   season_label:document.getElementById("season").value.trim(),
+   episode_label:document.getElementById("episode").value.trim(),
+   details,
+   contact:document.getElementById("contact").value.trim()
+  };
+  button.disabled=true;button.textContent="Sending…";status.className="status";
+  try{
+   const {error}=await db.from("got_site_reports").insert(payload);
+   if(error)throw error;
+   form.reset();page.value=location.href.split("#")[0];
+   message("Your report was sent successfully. Thank you for helping improve G.O.T Games!","success");
+  }catch(error){
+   console.error("Report submission failed:",error);
+   message("We couldn’t send your report right now. Please try again in a moment. If it keeps failing, use the Help Center link to contact the site owner.","error");
+  }finally{button.disabled=false;button.textContent="Send Report";}
+ });
+})();
+</script></body></html>
