@@ -1267,6 +1267,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
         <a href="profile.html">Profile</a>
         <a href="player-directory.html">Fanbase</a>
         <a href="anime.html">Anime</a>
+        <a href="notifications.html" data-got-alert-link>Alerts <span class="got-alert-count" hidden></span></a>
       <div class="account-area">
         <button class="account-button" id="accountButton" type="button">
           <img class="account-avatar" id="accountAvatar" alt="">
@@ -1419,6 +1420,7 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
+window.GOT_SUPABASE = supabaseClient;
 
 let currentUser = null;
 let currentProfile = null;
@@ -2285,5 +2287,6 @@ liveStatus=function(ev,now,liveKeys){
   return seenLive.has(key)||now-d>ENDED_AFTER_MS?"ended":"none";
 };
 </script>
+<script src="notifications.js"></script>
 </body>
 </html>
