@@ -1950,11 +1950,17 @@ input,select,textarea{accent-color:var(--got-gold)}
           String(row.patreon_url || "")
         );
 
+      const validExternalUrl = (() => {
+        try { const parsed = new URL(String(row.youtube_url || "")); return parsed.protocol === "https:" && !parsed.username && !parsed.password; }
+        catch (_) { return false; }
+      })();
       const validTarget = linkType === "patreon"
         ? validPatreonUrl && !row.youtube_url
         : linkType === "youtube"
           ? validYoutubeUrl && !row.patreon_url
-          : false;
+          : linkType === "external"
+            ? validExternalUrl && !row.patreon_url
+            : false;
 
       return (
         validTarget &&
@@ -2490,23 +2496,16 @@ input,select,textarea{accent-color:var(--got-gold)}
             reactionLink,
             episode
           );
-        } else if (reactionLink?.link_type === "youtube" || reactionLink?.youtube_url) {
+        } else if (reactionLink?.link_type === "youtube" || reactionLink?.link_type === "external" || reactionLink?.youtube_url) {
           chip = document.createElement("a");
           chip.href = reactionLink.youtube_url;
           chip.target = "_blank";
           chip.rel = "noopener noreferrer";
-          chip.className = "episode-chip youtube-link";
-
+          chip.className = "episode-chip " + (reactionLink.link_type === "external" ? "external-link" : "youtube-link");
           const videoTitle = safeText(reactionLink.video_title);
-
-          chip.title = videoTitle
-            ? `Watch G.O.T's reaction: ${videoTitle}`
-            : `Watch G.O.T's reaction to episode ${episode}`;
-
-          chip.setAttribute(
-            "aria-label",
-            `Episode ${episode}. Open G.O.T's YouTube reaction in a new tab.`
-          );
+          const linkKind = reactionLink.link_type === "external" ? "external link" : "YouTube reaction";
+          chip.title = videoTitle ? `Open G.O.T's ${linkKind}: ${videoTitle}` : `Open G.O.T's ${linkKind} for episode ${episode}`;
+          chip.setAttribute("aria-label", `Episode ${episode}. Open G.O.T's ${linkKind} in a new tab.`);
           chip.textContent = `EP ${episode}`;
         } else {
           chip = document.createElement("span");
@@ -2551,7 +2550,7 @@ input,select,textarea{accent-color:var(--got-gold)}
     const note = document.createElement("div");
     note.className = "episode-note";
     note.textContent = episodeLinksLoaded
-      ? "Green episodes are recorded as watched. Gray episodes have no watch record. Gold links open G.O.T's YouTube reactions; Patreon-exclusive episodes are marked separately."
+      ? "Green episodes are recorded as watched. Gray episodes have no watch record. Gold links open G.O.T's saved reactions or external links; Patreon-exclusive episodes are marked separately."
       : "Watch history and reaction links are still loading.";
 
     list.append(note);
