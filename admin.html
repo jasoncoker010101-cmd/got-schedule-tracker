@@ -189,8 +189,8 @@ input,select,textarea{accent-color:var(--got-gold)}
  </section>
 <div class="section-head"><h2>System status</h2><div><button class="secondary" id="refresh">Refresh status</button><button class="secondary" id="logout">Log out</button></div></div>
 <div class="grid">
-<article class="status-card"><span class="dot" id="anilistDot"></span>AniList<strong id="anilistStatus">Checking…</strong><span class="muted" id="anilistDetail">Anime catalogue API</span></article>
-<article class="status-card"><span class="dot" id="junbanDot"></span>Junban<strong id="junbanStatus">Checking…</strong><span class="muted" id="junbanDetail">Season grouping API</span></article>
+<article class="status-card"><span class="dot" id="anilistDot"></span>Taizen catalogue<strong id="anilistStatus">Checking…</strong><span class="muted" id="anilistDetail">Public anime catalogue · no API key</span></article>
+<article class="status-card"><span class="dot" id="junbanDot"></span>Series mapping<strong id="junbanStatus">Checking…</strong><span class="muted" id="junbanDetail">Shared TheTVDB season groups</span></article>
 <article class="status-card"><span class="dot" id="supabaseDot"></span>Supabase<strong id="supabaseStatus">Checking…</strong><span class="muted" id="supabaseDetail">Watch history and reports</span></article>
 <article class="status-card"><span class="dot" id="linksDot"></span>Reaction links<strong id="linksStatus">—</strong><span class="muted">Saved YouTube and Patreon links</span></article>
 </div>
@@ -323,29 +323,26 @@ async function checkPublishedFeeds(){
 }
 
 async function health(){
- setHealth("anilist",false,"Checking…","AniList catalogue API");
+ setHealth("anilist",false,"Checking…","Taizen public anime catalogue · no API key");
+ setHealth("junban",false,"Checking…","Shared TheTVDB season mapping");
  await checkPublishedFeeds();
  try{
-  // A Page query needs a data field as well as optional pageInfo.
-  const query="query AdminAniListHealth { Page(page:1,perPage:1) { pageInfo { hasNextPage } media(type:ANIME) { id } } }";
-  const r=await fetchWithTimeout("https://graphql.anilist.co",{
-   method:"POST",
-   headers:{"Content-Type":"application/json","Accept":"application/json"},
-   body:JSON.stringify({query})
-  },8000);
+  const query="query AdminTaizenHealth { Page(page:1,perPage:1) { media(type:ANIME,isAdult:false) { id } } series: animePage(page:1,perPage:10,filter:{tvdbId:81797}) { pageInfo { total } items { id } } }";
+  const url=new URL("https://taizen.moe/api/graphql");
+  url.searchParams.set("query",query);
+  const r=await fetchWithTimeout(url.toString(),{headers:{Accept:"application/json"}},8000);
   const payload=await r.json().catch(()=>null);
-  if(!r.ok)throw Error("HTTP "+r.status+(payload?.errors?.[0]?.message?": "+payload.errors[0].message:""));
-  if(payload?.errors?.length)throw Error(payload.errors[0].message||"AniList returned a GraphQL error.");
-  if(!payload?.data?.Page)throw Error("AniList returned an unexpected response.");
-  setHealth("anilist",true,"Online","Catalogue query succeeded");
- }catch(e){setHealth("anilist",false,"Unavailable",e.message||"AniList health check failed");}
- try{
-  const r=await fetchWithTimeout("https://junban.moe/api/v1/lookup?site=anilist&id=16498",{},8000);
-  if(!r.ok)throw Error("HTTP "+r.status);
-  await r.json();
-  setHealth("junban",true,"Online","Lookup request succeeded");
- }catch(e){setHealth("junban",false,"Unavailable",e.message||"Junban health check failed");}
- if(!db){
+  if(!r.ok)throw Error("Taizen HTTP "+r.status+(payload?.errors?.[0]?.message?": "+payload.errors[0].message:""));
+  if(payload?.errors?.length)throw Error(payload.errors[0].message||"Taizen returned a GraphQL error.");
+  if(!payload?.data?.Page?.media?.length)throw Error("Taizen returned no valid anime catalogue result.");
+  setHealth("anilist",true,"Online","Taizen catalogue query succeeded · no API key required");
+  if(!Array.isArray(payload?.data?.series?.items))throw Error("Taizen returned an unexpected season-mapping response.");
+  setHealth("junban",true,"Online","Shared TheTVDB series query succeeded · "+(payload.data.series.pageInfo?.total??payload.data.series.items.length)+" mapped title(s)");
+ }catch(e){
+  setHealth("anilist",false,"Unavailable",e.message||"Taizen catalogue health check failed");
+  setHealth("junban",false,"Unavailable",e.message||"Taizen season-mapping health check failed");
+ }
+if(!db){
   setHealth("supabase",false,"Unavailable","Authentication library did not load");
   setHealth("links",false,"Unavailable","Database client unavailable");
   $("watchedCount").textContent="—";$("pendingLinks").textContent="—";
@@ -823,30 +820,22 @@ const fullDiagnosticSteps=[
   }
  },
  {
-  name:"AniList and Junban external APIs",
+  name:"Taizen catalogue and series mapping",
   run:async()=>{
-   const aniTask=(async()=>{
-    const query="query FullDiagnosticsAniList { Page(page:1,perPage:1) { media(type:ANIME) { id title { romaji } } } }";
-    const response=await fetchWithTimeout("https://graphql.anilist.co",{
-     method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({query})
-    },8000);
-    const payload=await response.json().catch(()=>null);
-    if(!response.ok)throw new Error("AniList HTTP "+response.status);
-    if(payload?.errors?.length||!payload?.data?.Page?.media?.length)throw new Error(payload?.errors?.[0]?.message||"AniList returned no valid media result.");
-   })();
-   const junbanTask=(async()=>{
-    const response=await fetchWithTimeout("https://junban.moe/api/v1/lookup?site=anilist&id=16498",{},8000);
-    if(!response.ok)throw new Error("Junban HTTP "+response.status);
-    const payload=await response.json();
-    if(!payload||typeof payload!=="object")throw new Error("Junban returned an unexpected response.");
-   })();
-   const results=await Promise.allSettled([aniTask,junbanTask]);
-   const failures=results.map((item,index)=>item.status==="rejected"?{name:index===0?"AniList":"Junban",detail:item.reason?.message||"API request failed"}:null).filter(Boolean);
-   if(failures.length){
-    const transportOnly=failures.every(item=>/failed to fetch|network|load failed|timed out|cors/i.test(item.detail));
-    return fullDiagResult("AniList and Junban external APIs",transportOnly?"warning":"fail",failures.map(item=>item.name+": "+item.detail).join(" · "));
-   }
-   return fullDiagResult("AniList and Junban external APIs","pass","AniList catalogue query succeeded · Junban season lookup responded");
+   const query="query FullDiagnosticsTaizen { Page(page:1,perPage:1) { media(type:ANIME,isAdult:false) { id title { romaji } } } series: animePage(page:1,perPage:10,filter:{tvdbId:81797}) { pageInfo { total } items { id } } }";
+   const url=new URL("https://taizen.moe/api/graphql");
+   url.searchParams.set("query",query);
+   const response=await fetchWithTimeout(url.toString(),{headers:{Accept:"application/json"}},8000);
+   const payload=await response.json().catch(()=>null);
+   if(!response.ok)throw new Error("Taizen HTTP "+response.status);
+   if(payload?.errors?.length)throw new Error(payload.errors[0].message||"Taizen returned a GraphQL error.");
+   if(!payload?.data?.Page?.media?.length)throw new Error("Taizen returned no valid anime catalogue result.");
+   if(!Array.isArray(payload?.data?.series?.items))throw new Error("Taizen returned an invalid shared-series mapping result.");
+   return fullDiagResult(
+    "Taizen catalogue and series mapping",
+    "pass",
+    "Public anime catalogue query succeeded · shared TheTVDB series mapping query succeeded · no API key required"
+   );
   }
  },
  {
