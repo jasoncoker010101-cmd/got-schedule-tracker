@@ -2022,7 +2022,7 @@ function exportScheduleCalendar(){
     return;
   }
   const now=new Date();
-  const events=data.events.filter(ev=>ev&&ev.title&&(ev.start||/^\\d{4}-\\d{2}-\\d{2}$/.test(ev.date||"")));
+  const events=data.events.filter(ev=>ev&&ev.title&&(ev.start||/^\d{4}-\d{2}-\d{2}$/.test(ev.date||"")));
   if(!events.length){
     document.getElementById("scheduleResultCount").textContent="No dated events are available to export";
     return;
