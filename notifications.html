@@ -116,6 +116,7 @@ let currentUser = null;
 let notices = [];
 let readIds = new Set();
 let activeFilter = "all";
+let inboxAutoReadUserId = null;
 
 function showLogin(message=""){
   $("loginPanel").hidden = false;
@@ -239,16 +240,20 @@ async function loadNotices(){
       if(readError) throw readError;
       for(const row of reads || []) readIds.add(row.notification_id);
     }
-    // Opening the inbox is the read action: persist every unread alert immediately.
-    const unreadNotices = notices.filter(item=>!readIds.has(item.id));
-    if(unreadNotices.length){
-      const rows = unreadNotices.map(item=>({user_id:currentUser.id,notification_id:item.id}));
-      const {error:markError} = await gotClient.from("got_notification_reads").insert(rows);
-      if(markError) throw markError;
-      for(const item of unreadNotices) readIds.add(item.id);
-      // Keep the shared navigation badge in sync after the inbox auto-read.
-      window.GOT_NOTIFICATIONS_READ_SYNC_PENDING = true;
-      window.dispatchEvent(new Event("got:notifications-read"));
+    // Mark existing alerts read once when this user enters the inbox.
+    // Later refreshes preserve any alerts the user deliberately marks unread.
+    if(inboxAutoReadUserId !== currentUser.id){
+      const unreadNotices = notices.filter(item=>!readIds.has(item.id));
+      if(unreadNotices.length){
+        const rows = unreadNotices.map(item=>({user_id:currentUser.id,notification_id:item.id}));
+        const {error:markError} = await gotClient.from("got_notification_reads").insert(rows);
+        if(markError) throw markError;
+        for(const item of unreadNotices) readIds.add(item.id);
+        // Keep the shared navigation badge in sync after the inbox auto-read.
+        window.GOT_NOTIFICATIONS_READ_SYNC_PENDING = true;
+        window.dispatchEvent(new Event("got:notifications-read"));
+      }
+      inboxAutoReadUserId = currentUser.id;
     }
     const unread = notices.filter(item=>!readIds.has(item.id)).length;
     $("inboxStatus").textContent = unread ? unread + " unread · " + notices.length + " recent notifications" : notices.length + " recent notifications · all caught up";
@@ -311,6 +316,7 @@ $("loginForm").addEventListener("submit",async event=>{
 $("logoutButton").addEventListener("click",async()=>{
   await gotClient.auth.signOut();
   currentUser = null;
+  inboxAutoReadUserId = null;
   notices = [];
   readIds.clear();
   showLogin("You have been signed out.");
