@@ -166,7 +166,19 @@ input,select,textarea{accent-color:var(--got-gold)}
 .diag-summary{padding:12px 14px;border:1px solid rgba(142,220,224,.15);border-radius:8px;background:rgba(5,12,19,.45);line-height:1.6}
 @media(max-width:700px){#fullDiagSearch{order:2;flex-basis:100%;max-width:none}.diag-result{grid-template-columns:minmax(0,1fr) auto}.diag-result-detail{grid-column:1/-1;grid-row:2}.diag-result-status{grid-column:2;grid-row:1}}
 
-.playlist-auditor-panel .playlist-audit-apply-row{margin-top:12px;align-items:center}.playlist-auditor-panel #playlistAuditApply{background:linear-gradient(110deg,#f4d28b,#f2bd55);font-weight:900}.playlist-auditor-panel #playlistAuditApply[hidden]{display:none}.playlist-auditor-panel #playlistAuditApplyNote{font-size:12px;line-height:1.5;max-width:620px}.playlist-auditor-panel #playlistAuditApplyResult{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:rgba(88,190,140,.12);border:1px solid rgba(88,190,140,.35);font-size:13px;line-height:1.5;white-space:pre-wrap}.playlist-auditor-panel #playlistAuditApplyResult:empty{display:none}</style></head>
+.playlist-auditor-panel .playlist-audit-apply-row{margin-top:12px;align-items:center}.playlist-auditor-panel #playlistAuditApply{background:linear-gradient(110deg,#f4d28b,#f2bd55);font-weight:900}.playlist-auditor-panel #playlistAuditApply[hidden]{display:none}.playlist-auditor-panel #playlistAuditApplyNote{font-size:12px;line-height:1.5;max-width:620px}.playlist-auditor-panel #playlistAuditApplyResult{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:rgba(88,190,140,.12);border:1px solid rgba(88,190,140,.35);font-size:13px;line-height:1.5;white-space:pre-wrap}.playlist-auditor-panel #playlistAuditApplyResult:empty{display:none}
+.playlist-review-queue{display:grid;gap:12px;margin-top:12px}
+.playlist-review-card{padding:14px;border:1px solid rgba(142,220,224,.18);border-radius:12px;background:rgba(5,12,19,.42)}
+.playlist-review-card h3{margin:0 0 7px;font-size:16px}
+.playlist-review-meta{font-size:12px;color:var(--muted,#aab);margin-bottom:8px;overflow-wrap:anywhere}
+.playlist-review-card .review-fields{display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin-top:10px}
+.playlist-review-card .review-fields label{display:grid;gap:4px;font-size:12px;min-width:90px}
+.playlist-review-card .review-fields input{width:100%;min-width:80px}
+.playlist-review-card .review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.playlist-review-card .review-actions .delete-review{background:rgba(190,75,75,.16);border:1px solid rgba(230,100,100,.35)}
+.playlist-review-card a{overflow-wrap:anywhere}
+@media(max-width:600px){.playlist-review-card .review-fields label{flex:1 1 28%}}
+</style></head>
 <body>
 <header class="site-header">
   <a class="logo" href="index.html">G.O.T <span>Games</span><small>ADMIN</small></a>
@@ -217,6 +229,13 @@ input,select,textarea{accent-color:var(--got-gold)}
   <div class="row playlist-audit-apply-row"><button type="button" id="playlistAuditApply" hidden>ADD EXPLICITLY VERIFIED MISSING LINKS</button><span class="muted" id="playlistAuditApplyNote">Only videos whose season and episode are explicitly stated in the YouTube title can be added. Inferred seasons and uncertain matches are always excluded.</span></div>
    <div id="playlistAuditApplyResult" role="status" aria-live="polite"></div>
   <div id="playlistAuditResults" class="playlist-audit-results" aria-live="polite"></div>
+ </section>
+ <section class="panel" id="playlistReviewPanel" aria-labelledby="playlistReviewTitle">
+  <h2 id="playlistReviewTitle">Manual Playlist Review</h2>
+  <p class="muted">Uncertain matches from every anime playlist are saved here. Set the correct season and episode, then choose Add Link. If a video is not an episode, choose Delete to remove it from the active review queue.</p>
+  <div class="row"><input id="playlistReviewSearch" type="search" placeholder="Filter by anime or video title" aria-label="Filter manual playlist reviews"><button type="button" class="secondary" id="playlistReviewRefresh">Refresh queue</button></div>
+  <p class="muted" id="playlistReviewMessage" role="status" aria-live="polite">Loading saved review items…</p>
+  <div id="playlistReviewQueue" class="playlist-review-queue"></div>
  </section>
 <div class="section-head"><h2>System status</h2><div><button class="secondary" id="refresh">Refresh status</button><button class="secondary" id="logout">Log out</button></div></div>
 <div class="grid">
@@ -1520,6 +1539,65 @@ $("playlistAuditApply").addEventListener("click",async()=>{
  }
 });
 
+let currentPlaylistReviewRows=[];
+function renderPlaylistReviewQueue(){
+ const query=$("playlistReviewSearch").value.trim().toLowerCase();
+ const rows=currentPlaylistReviewRows.filter(row=>[row.anime_title,row.video_title,row.review_note,row.anilist_id].filter(Boolean).join(" ").toLowerCase().includes(query));
+ const root=$("playlistReviewQueue");root.replaceChildren();
+ if(!rows.length){root.textContent=query?"No review items match that filter.":"No saved playlist items need review.";return;}
+ for(const item of rows){
+  const card=document.createElement("article");card.className="playlist-review-card";
+  const heading=document.createElement("h3");heading.textContent=(item.anime_title||"Unknown anime")+" · "+(item.video_title||"Untitled video");
+  const meta=document.createElement("div");meta.className="playlist-review-meta";meta.textContent="Review #"+item.id+" · AniList "+(item.anilist_id||"not set")+" · "+new Date(item.detected_at||item.created_at||Date.now()).toLocaleString();
+  const note=document.createElement("p");note.textContent=item.review_note||"The scanner could not confidently identify this video.";
+  const link=document.createElement("a");link.href=item.youtube_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="Open YouTube video";
+  const fields=document.createElement("div");fields.className="review-fields";
+  const seasonLabel=document.createElement("label");seasonLabel.textContent="Season";
+  const season=document.createElement("input");season.type="number";season.min="1";season.step="1";season.placeholder="Season";season.value=item.season_number??"";seasonLabel.append(season);
+  const episodeLabel=document.createElement("label");episodeLabel.textContent="Episode";
+  const episode=document.createElement("input");episode.type="number";episode.min="1";episode.step="1";episode.placeholder="Episode";episode.value=item.episode_start??"";episodeLabel.append(episode);
+  const endLabel=document.createElement("label");endLabel.textContent="End episode (optional)";
+  const end=document.createElement("input");end.type="number";end.min="1";end.step="1";end.placeholder="Same as start";end.value=item.episode_end!=null&&item.episode_end!==item.episode_start?item.episode_end:"";endLabel.append(end);
+  fields.append(seasonLabel,episodeLabel,endLabel);
+  const actions=document.createElement("div");actions.className="review-actions";
+  const add=document.createElement("button");add.type="button";add.textContent="Add Link";
+  add.addEventListener("click",async()=>{
+   const seasonNumber=Number(season.value),episodeNumber=Number(episode.value),endNumber=end.value.trim()?Number(end.value):episodeNumber;
+   if(!Number.isInteger(seasonNumber)||seasonNumber<1||!Number.isInteger(episodeNumber)||episodeNumber<1||!Number.isInteger(endNumber)||endNumber<episodeNumber){$("playlistReviewMessage").textContent="Enter a valid season and episode before adding this link.";return;}
+   add.disabled=true;add.textContent="Adding…";
+   try{
+    const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"review",review_action:"add",pending_id:item.id,season_number:seasonNumber,episode_start:episodeNumber,episode_end:endNumber,playlist_url:item.source_url||"https://www.youtube.com/playlist?list=PL0000000000000000000000"}});
+    if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not add this link.");
+    $("playlistReviewMessage").textContent="Added "+(item.anime_title||"the anime")+" S"+seasonNumber+" E"+episodeNumber+" to reaction links.";
+    await loadPlaylistReviewQueue();await health();
+   }catch(error){$("playlistReviewMessage").textContent="Could not add link: "+(error?.message||String(error));add.disabled=false;add.textContent="Add Link";}
+  });
+  const del=document.createElement("button");del.type="button";del.className="delete-review";del.textContent="Delete";
+  del.addEventListener("click",async()=>{
+   if(!confirm("Remove this video from the active review queue? This will not delete any existing reaction link."))return;
+   del.disabled=true;del.textContent="Deleting…";
+   try{
+    const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"review",review_action:"delete",pending_id:item.id,playlist_url:item.source_url||"https://www.youtube.com/playlist?list=PL0000000000000000000000"}});
+    if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not remove this item.");
+    $("playlistReviewMessage").textContent="Removed the video from the active review queue.";
+    await loadPlaylistReviewQueue();await health();
+   }catch(error){$("playlistReviewMessage").textContent="Could not delete review item: "+(error?.message||String(error));del.disabled=false;del.textContent="Delete";}
+  });
+  actions.append(add,del);card.append(heading,meta,note,link,fields,actions);root.append(card);
+ }
+}
+async function loadPlaylistReviewQueue(){
+ if(!db)return;
+ $("playlistReviewMessage").textContent="Loading saved review items…";
+ const {data,error}=await db.from("got_anime_pending_episode_links").select("*").in("status",["pending","needs_checking"]).order("detected_at",{ascending:false}).limit(500);
+ if(error){$("playlistReviewMessage").textContent="Could not load review queue: "+error.message;return;}
+ currentPlaylistReviewRows=data||[];
+ $("playlistReviewMessage").textContent=currentPlaylistReviewRows.length+" item(s) awaiting review across all anime.";
+ renderPlaylistReviewQueue();
+}
+$("playlistReviewSearch").addEventListener("input",renderPlaylistReviewQueue);
+$("playlistReviewRefresh").addEventListener("click",loadPlaylistReviewQueue);
+
 function renderReports(){
  const filter=$("reportFilter").value;
  const query=$("reportSearch").value.trim().toLowerCase();
@@ -1549,7 +1627,7 @@ async function loadReports(){
  currentReports=data||[];$("newReports").textContent=currentReports.filter(r=>r.status==="new").length;
  $("reportMessage").textContent=currentReports.length+" report(s) loaded.";renderReports();
 }
-async function refreshAll(){if(!await verifyOwner())return;await Promise.all([health(),loadReports()]);}
+async function refreshAll(){if(!await verifyOwner())return;await Promise.all([health(),loadReports(),loadPlaylistReviewQueue()]);}
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){$("authMessage").textContent="Sign-in is unavailable because the authentication library did not load.";return;}$("authMessage").textContent="Signing in…";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("password").value="";if(error){$("authMessage").textContent="Sign-in failed: "+error.message;return;}await refreshAll();});
 $("logout").onclick=async()=>{if(!db)return;await db.auth.signOut();await verifyOwner();};
 $("refresh").onclick=refreshAll;$("reportFilter").onchange=renderReports;$("reportSearch").addEventListener("input",renderReports);
