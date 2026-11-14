@@ -1595,6 +1595,7 @@ $("manualEpisodeLinkForm").addEventListener("submit",submitManualEpisodeLink);
 async function runPlaylistAudit(event){
  event.preventDefault();
  if(!db)return;
+ if(!Number.isInteger(Number($("playlistAuditAniList").value))||Number($("playlistAuditAniList").value)<1){const resolved=await updateAniListLookup("audit",true);if(!resolved){$("playlistAuditMessage").textContent="Select a confirmed AniList match before scanning.";return;}}
  const button=$("playlistAuditRun"),message=$("playlistAuditMessage"),summary=$("playlistAuditSummary"),results=$("playlistAuditResults");
  button.disabled=true;button.textContent="Scanning playlist…";message.textContent="Checking owner session and retrieving playlist videos…";summary.hidden=true;results.replaceChildren();
  try{
