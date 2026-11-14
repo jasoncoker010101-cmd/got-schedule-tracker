@@ -1157,6 +1157,21 @@
     });
   }
 
+  async function waitForAniListSlot(signal) {
+    // sessionStorage survives a quick reload in the same tab. Space initial
+    // AniList requests so repeated refreshes do not hammer the public API.
+    const storageKey = "gotAnimeLastAniListRequest";
+    let waitMs = 0;
+    try {
+      const lastRequest = Number(sessionStorage.getItem(storageKey)) || 0;
+      waitMs = Math.max(0, 1800 - (Date.now() - lastRequest));
+      sessionStorage.setItem(storageKey, String(Date.now() + waitMs));
+    } catch (_) {
+      // Storage can be unavailable in private browsing; continue normally.
+    }
+    if (waitMs) await waitForRetry(waitMs, signal);
+  }
+
   async function fetchAniListWithRetry(url, options, maxAttempts = 4) {
     let lastError;
 
@@ -1166,6 +1181,7 @@
       }
 
       try {
+        if (attempt === 0) await waitForAniListSlot(options.signal);
         const response = await fetch(url, options);
 
         if (response.ok) return response;
