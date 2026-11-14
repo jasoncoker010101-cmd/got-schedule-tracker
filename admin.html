@@ -1367,18 +1367,26 @@ const fullDiagnosticSteps=[
      const slug="audit-youtube-playlist";
      try{
       const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY},body:JSON.stringify({action:"scan",playlist_url:"",anime_title:"",anilist_id:0})},10000);
-      const allow=response.headers.get("access-control-allow-origin");
       const payload=await response.json().catch(()=>null);
-      return {slug,ok:!!allow||!!payload,status:response.status,allow,detail:payload?.error||(!allow?"Browser could read the function response; CORS header was not exposed by the wrapper.":"")};
+      // A successful browser fetch that can read the JSON response proves the CORS
+      // contract worked. Access-Control-Allow-Origin is not a CORS-safelisted
+      // response header, so JavaScript cannot inspect it unless explicitly exposed.
+      return {slug,ok:!!payload,status:response.status,detail:payload
+       ?(response.status===400?"Validation probe returned the expected HTTP 400; browser CORS and JSON access succeeded.":"Browser POST HTTP "+response.status+" · JSON response readable; CORS succeeded.")
+       :"The browser could not read a valid JSON response."};
      }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
     })(),
     (async()=>{
      const slug="thegamesdb-game-cover";
      try{
       const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},body:JSON.stringify({title:"Super Mario Bros."})},10000);
-      const allow=response.headers.get("access-control-allow-origin");
       const payload=await response.json().catch(()=>null);
-      return {slug,ok:!!allow,status:response.status,allow,detail:payload?.error||(!payload?"Response was not readable JSON.":"")};
+      // Do not inspect Access-Control-Allow-Origin from JavaScript: browsers hide
+      // that response header unless the server explicitly exposes it. A readable
+      // JSON response from this cross-origin POST is the actual CORS contract test.
+      return {slug,ok:!!payload,status:response.status,detail:payload
+       ?"Browser POST HTTP "+response.status+" · JSON response readable; CORS succeeded."
+       :"The browser could not read a valid JSON response."};
      }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
     })()
    ]);
