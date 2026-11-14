@@ -161,3 +161,6 @@ jobs:
               py_compile.compile(str(path), doraise=True)
           print(f"Compiled {len(files)} Python files.")
           PY
+
+      - name: Test Patreon verification matching
+        run: python3 -m unittest discover -s Script -p 'test_*.py'
