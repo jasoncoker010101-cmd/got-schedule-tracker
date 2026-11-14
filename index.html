@@ -2660,6 +2660,19 @@ liveStatus=function(ev,now,liveKeys){
     }
   }
 
+  function activityHref(item) {
+    const metadata = item && item.metadata && typeof item.metadata === "object" ? item.metadata : {};
+    const title = metadata.anime_title || metadata.title;
+    const season = Number(metadata.season_number);
+    if (item?.kind === "episode" && title && Number.isInteger(season) && season >= 0) {
+      const slug = String(title).normalize("NFKC").toLocaleLowerCase()
+        .replace(/&/g, " and ").replace(/[’']/g, "")
+        .replace(/[^a-z0-9]+/g, " ").trim().replace(/\\s+/g, "-");
+      return safeInternalHref("anime.html#anime-title-" + slug + "-season-" + season);
+    }
+    return safeInternalHref(item?.href);
+  }
+
   function relativeTime(value) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "Recently";
@@ -2685,7 +2698,7 @@ liveStatus=function(ev,now,liveKeys){
     const meta = labels[kind];
     const card = document.createElement("a");
     card.className = "activity-card";
-    card.href = safeInternalHref(item.href);
+    card.href = activityHref(item);
 
     const top = document.createElement("div");
     top.className = "activity-card-top";
