@@ -1094,14 +1094,15 @@
   // SUPABASE CLIENT
   // =========================================================
 
-  if (!window.supabase || !window.supabase.createClient) {
-    throw new Error("Supabase library failed to load.");
+  // The public catalogue and watch-history REST requests do not depend on
+  // the Supabase auth SDK. If the CDN is temporarily unavailable, keep the
+  // rest of the page working and disable only sign-in/owner controls.
+  let authClient = null;
+  if (window.supabase && typeof window.supabase.createClient === "function") {
+    authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn("Supabase auth SDK did not load. Catalogue and public history will continue without owner tools.");
   }
-
-  const authClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
 
   // =========================================================
   // ANILIST QUERY
@@ -1306,22 +1307,61 @@
     });
   }
 
+  async function fetchWithTimeout(url, options = {}, milliseconds = 10000) {
+    const timeoutController = new AbortController();
+    const sourceSignal = options.signal;
+    let timedOut = false;
+
+    if (sourceSignal?.aborted) {
+      throw new DOMException("Request was cancelled.", "AbortError");
+    }
+
+    const abortFromSource = () => timeoutController.abort();
+    sourceSignal?.addEventListener("abort", abortFromSource, { once: true });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      timeoutController.abort();
+    }, milliseconds);
+
+    try {
+      return await fetch(url, { ...options, signal: timeoutController.signal });
+    } catch (error) {
+      if (timedOut) {
+        throw new Error(`Request timed out after ${Math.round(milliseconds / 1000)} seconds.`);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timer);
+      sourceSignal?.removeEventListener("abort", abortFromSource);
+    }
+  }
+
   async function waitForAniListSlot(signal) {
-    // sessionStorage survives a quick reload in the same tab. Space initial
-    // AniList requests so repeated refreshes do not hammer the public API.
+    // Store the real request start time, not a future timestamp. Older code
+    // stored a moving future time, which made every rapid reload add more delay.
     const storageKey = "gotAnimeLastAniListRequest";
     let waitMs = 0;
     try {
-      const lastRequest = Number(sessionStorage.getItem(storageKey)) || 0;
-      waitMs = Math.max(0, 1800 - (Date.now() - lastRequest));
-      sessionStorage.setItem(storageKey, String(Date.now() + waitMs));
-    } catch (_) {
+      const now = Date.now();
+      const savedTime = Number(sessionStorage.getItem(storageKey)) || 0;
+      if (savedTime > now) {
+        // Honor one already-scheduled request from the previous version.
+        waitMs = Math.min(1800, savedTime - now);
+      } else if (savedTime > 0) {
+        waitMs = Math.max(0, 1800 - (now - savedTime));
+      }
+      if (waitMs) await waitForRetry(waitMs, signal);
+      if (signal?.aborted) {
+        throw new DOMException("Request was cancelled.", "AbortError");
+      }
+      sessionStorage.setItem(storageKey, String(Date.now()));
+    } catch (error) {
+      if (error?.name === "AbortError") throw error;
       // Storage can be unavailable in private browsing; continue normally.
     }
-    if (waitMs) await waitForRetry(waitMs, signal);
   }
 
-  async function fetchAniListWithRetry(url, options, maxAttempts = 4) {
+  async function fetchAniListWithRetry(url, options, maxAttempts = 2) {
     let lastError;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -1331,7 +1371,7 @@
 
       try {
         if (attempt === 0) await waitForAniListSlot(options.signal);
-        const response = await fetch(url, options);
+        const response = await fetchWithTimeout(url, options, 9000);
 
         if (response.ok) return response;
 
@@ -1447,7 +1487,7 @@
       url.searchParams.set("order", "watched_at.desc");
       url.searchParams.set("limit", String(HISTORY_PAGE_SIZE));
 
-      const response = await fetch(url.toString(), {
+      const response = await fetchWithTimeout(url.toString(), {
         method: "GET",
         headers: {
           "apikey": SUPABASE_KEY,
@@ -1456,7 +1496,7 @@
           "Range-Unit": "items",
           "Range": `${offset}-${offset + HISTORY_PAGE_SIZE - 1}`
         }
-      });
+      }, 10000);
 
       if (!response.ok) {
         const detail = await readSupabaseError(response);
@@ -1549,7 +1589,7 @@
       url.searchParams.set("order", "season_number.asc,episode_start.asc");
       url.searchParams.set("limit", String(pageSize));
 
-      const response = await fetch(url.toString(), {
+      const response = await fetchWithTimeout(url.toString(), {
         method: "GET",
         headers: {
           "apikey": SUPABASE_KEY,
@@ -1558,7 +1598,7 @@
           "Range-Unit": "items",
           "Range": `${offset}-${offset + pageSize - 1}`
         }
-      });
+      }, 10000);
 
       if (!response.ok) {
         throw new Error(
@@ -3022,10 +3062,13 @@
   // ANILIST SEARCH
   // =========================================================
 
-  function withLoadingTimeout(promise, milliseconds, message) {
+  function withLoadingTimeout(promise, milliseconds, message, abortController = null) {
     let timer;
     const timeout = new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(message)), milliseconds);
+      timer = setTimeout(() => {
+        abortController?.abort();
+        reject(new Error(message));
+      }, milliseconds);
     });
     return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
   }
@@ -3078,55 +3121,15 @@
         signal: controller.signal
       };
 
-      // A full page refresh is not needed when AniList briefly drops a request.
-      // Retry the search itself a few times while keeping the anime loader up.
-      let response = null;
-      let lastConnectionError = null;
+      // One bounded request flow: two attempts, each with a real abortable
+      // timeout. This prevents nested retries from running longer than the
+      // full-screen loader's failsafe.
       const loaderDetail = pageLoader.querySelector(".page-loader-detail");
-
-      for (let recoveryAttempt = 0; recoveryAttempt < 3; recoveryAttempt++) {
-        if (controller.signal.aborted || requestController !== controller) return;
-
-        try {
-          if (loaderDetail) {
-            loaderDetail.textContent = recoveryAttempt === 0
-              ? "Connecting to AniList and gathering your anime…"
-              : `Connection interrupted. Reconnecting automatically (${recoveryAttempt}/2)…`;
-          }
-
-          response = await withLoadingTimeout(
-            fetchAniListWithRetry(API_URL, requestOptions),
-            18000,
-            "AniList took too long to respond."
-          );
-          if (!response.ok) {
-            throw new Error(response.status === 429
-              ? "AniList is receiving too many requests."
-              : `AniList request failed (${response.status}).`);
-          }
-          lastConnectionError = null;
-          break;
-        } catch (requestError) {
-          if (requestError.name === "AbortError") throw requestError;
-          lastConnectionError = requestError;
-
-          const canRetry = recoveryAttempt < 2 &&
-            (requestError instanceof TypeError ||
-             /fetch|network|connection|timed out|temporarily unavailable|429|5\\d\\d/i.test(requestError.message || ""));
-
-          if (!canRetry) throw requestError;
-
-          if (loaderDetail) {
-            loaderDetail.textContent = "The connection dropped. G.O.T. is trying again…";
-          }
-          await waitForRetry(recoveryAttempt === 0 ? 2200 : 5000, controller.signal);
-        }
+      if (loaderDetail) {
+        loaderDetail.textContent = "Connecting to AniList and gathering your anime…";
       }
 
-      if (!response) {
-        throw lastConnectionError || new Error("AniList is temporarily unavailable.");
-      }
-
+      const response = await fetchAniListWithRetry(API_URL, requestOptions, 2);
       const payload = await response.json();
 
       if (controller.signal.aborted || requestController !== controller) {
@@ -3169,18 +3172,25 @@
         loaderDetail.textContent = "Finding connected seasons and episode counts…";
       }
 
+      const junbanController = new AbortController();
+      const abortJunban = () => junbanController.abort();
+      controller.signal.addEventListener("abort", abortJunban, { once: true });
+
       try {
         await withLoadingTimeout(
-          loadJunbanFullSeasonGroups(displayedItems, controller.signal),
-          10000,
-          "Season details are taking too long. Showing the anime list while details catch up."
+          loadJunbanFullSeasonGroups(displayedItems, junbanController.signal),
+          9000,
+          "Season lookup timed out. Showing the AniList catalogue instead.",
+          junbanController
         );
       } catch (junbanError) {
-        if (junbanError.name === "AbortError") throw junbanError;
+        if (junbanError.name === "AbortError" && controller.signal.aborted) throw junbanError;
         console.warn("Junban season data unavailable; using AniList results.", junbanError);
         if (loaderDetail) {
           loaderDetail.textContent = "Season lookup is slow. Showing available anime now…";
         }
+      } finally {
+        controller.signal.removeEventListener("abort", abortJunban);
       }
 
       if (controller.signal.aborted || requestController !== controller) {
@@ -3248,6 +3258,11 @@
   ownerLoginForm.addEventListener("submit", async event => {
     event.preventDefault();
 
+    if (!authClient) {
+      ownerStatus.textContent = "Owner sign-in is unavailable because the authentication library did not load. The anime catalogue can still work.";
+      return;
+    }
+
     ownerStatus.textContent = "Signing in…";
 
     const email = document.getElementById("ownerEmail").value.trim();
@@ -3270,6 +3285,7 @@
   });
 
   ownerLogout.addEventListener("click", async () => {
+    if (!authClient) return;
     await authClient.auth.signOut();
 
     ownerSession = null;
@@ -3280,6 +3296,14 @@
   });
 
   async function checkOwnerAccess() {
+    if (!authClient) {
+      isSiteOwner = false;
+      ownerStatus.textContent = "Owner review is unavailable because the authentication library did not load.";
+      ownerLoginForm.hidden = false;
+      ownerLogout.hidden = true;
+      pendingLinksContainer.replaceChildren();
+      return;
+    }
     if (ownerCheckInProgress) return;
 
     ownerCheckInProgress = true;
@@ -3531,25 +3555,27 @@
   // AUTH STATE CHANGES
   // =========================================================
 
-  authClient.auth.onAuthStateChange((_event, session) => {
-    ownerSession = session;
+  if (authClient) {
+    authClient.auth.onAuthStateChange((_event, session) => {
+      ownerSession = session;
 
-    if (!session) {
-      isSiteOwner = false;
-      pendingLinksContainer.replaceChildren();
+      if (!session) {
+        isSiteOwner = false;
+        pendingLinksContainer.replaceChildren();
 
-      if (!ownerPanel.hidden) {
-        ownerStatus.textContent =
-          "Log in with your existing G.O.T. Games owner account.";
+        if (!ownerPanel.hidden) {
+          ownerStatus.textContent =
+            "Log in with your existing G.O.T. Games owner account.";
 
-        ownerLoginForm.hidden = false;
-        ownerLogout.hidden = true;
+          ownerLoginForm.hidden = false;
+          ownerLogout.hidden = true;
+        }
+      } else if (!ownerPanel.hidden) {
+        // Defer the role check until after the auth event finishes.
+        setTimeout(() => checkOwnerAccess(), 0);
       }
-    } else if (!ownerPanel.hidden) {
-      // Defer the role check until after the auth event finishes.
-      setTimeout(() => checkOwnerAccess(), 0);
-    }
-  });
+    });
+  }
 
   // =========================================================
   // EVENTS
@@ -3562,24 +3588,48 @@
   document.getElementById("reportOpen").addEventListener("click",()=>reportDialog.showModal());
   document.getElementById("reportClose").addEventListener("click",()=>reportDialog.close());
   reportDialog.addEventListener("click",event=>{if(event.target===reportDialog)reportDialog.close();});
-  reportForm.addEventListener("submit",async event=>{
+  reportForm.addEventListener("submit", async event => {
     event.preventDefault();
-    const submit=document.getElementById("reportSubmit");
-    const reportStatus=document.getElementById("reportStatus");
-    submit.disabled=true;reportStatus.textContent="Sending report…";
-    const {error}=await authClient.from("got_site_reports").insert({
-      category:document.getElementById("reportCategory").value,
-      page_url:location.href.slice(0,500),
-      anime_title:document.getElementById("reportAnime").value.trim(),
-      season_label:document.getElementById("reportSeason").value.trim(),
-      episode_label:document.getElementById("reportEpisode").value.trim(),
-      details:document.getElementById("reportDetails").value.trim(),
-      contact:document.getElementById("reportContact").value.trim()
-    });
-    submit.disabled=false;
-    if(error){reportStatus.textContent="Couldn't send report: "+error.message;return;}
-    reportStatus.textContent="Report sent! Thank you for helping improve G.O.T. Games.";
-    reportForm.reset();
+    const submit = document.getElementById("reportSubmit");
+    const reportStatus = document.getElementById("reportStatus");
+    submit.disabled = true;
+    reportStatus.textContent = "Sending report…";
+
+    const report = {
+      category: document.getElementById("reportCategory").value,
+      page_url: location.href.slice(0, 500),
+      anime_title: document.getElementById("reportAnime").value.trim(),
+      season_label: document.getElementById("reportSeason").value.trim(),
+      episode_label: document.getElementById("reportEpisode").value.trim(),
+      details: document.getElementById("reportDetails").value.trim(),
+      contact: document.getElementById("reportContact").value.trim()
+    };
+
+    try {
+      const response = await fetchWithTimeout(
+        SUPABASE_URL + "/rest/v1/got_site_reports",
+        {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(report)
+        },
+        10000
+      );
+      if (!response.ok) {
+        throw new Error(await readSupabaseError(response));
+      }
+      reportStatus.textContent = "Report sent! Thank you for helping improve G.O.T. Games.";
+      reportForm.reset();
+    } catch (error) {
+      reportStatus.textContent = "Couldn't send report: " + (error.message || "Connection error.");
+    } finally {
+      submit.disabled = false;
+    }
   });
 
   searchInput.addEventListener("input", () => {
