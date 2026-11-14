@@ -213,6 +213,12 @@ input,select,textarea{accent-color:var(--got-gold)}
    <div class="row"><button type="submit" id="announcementSubmit">Publish alert</button><span class="muted" id="announcementMessage" role="status" aria-live="polite"></span></div>
   </form>
  </section>
+ <section class="panel" id="youtubeAutoScanPanel" aria-labelledby="youtubeAutoScanTitle" style="margin:22px 0;border-color:rgba(242,189,85,.3)">
+  <h2 id="youtubeAutoScanTitle">Latest YouTube Upload Scanner</h2>
+  <p class="muted">Test the automatic checker against the channel's 10 newest uploads and FirstWatchers catalogue. Test mode does not save anything to the review queue or publish episode links.</p>
+  <div class="row"><button type="button" id="runYoutubeTestScan">Run test scan</button><span class="muted" id="youtubeTestScanStatus" role="status" aria-live="polite">Ready · owner sign-in required</span></div>
+  <div id="youtubeTestScanResults" class="report" hidden aria-live="polite"></div>
+ </section>
   <section class="panel manual-episode-link-panel" aria-labelledby="manualEpisodeLinkTitle">
   <h2 id="manualEpisodeLinkTitle">Manually add an episode link</h2>
   <p class="muted">Add a YouTube reaction, Patreon post, or any other secure HTTPS link directly to an anime episode. Only the owner account can save links.</p>
@@ -1832,6 +1838,42 @@ announcementForm.addEventListener("submit",async event=>{
  }catch(error){message.textContent="Couldn't publish: "+(error.message||"Please retry.");}
  finally{submit.disabled=false;}
 });
+async function runYoutubeTestScan(){
+ const button=$("runYoutubeTestScan"),status=$("youtubeTestScanStatus"),results=$("youtubeTestScanResults");
+ if(!db||button.disabled)return;
+ button.disabled=true;button.textContent="Scanning latest uploads…";status.textContent="Authenticating owner and checking the newest 10 videos…";results.hidden=true;results.replaceChildren();
+ try{
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!session?.access_token)throw new Error("Your owner session expired. Sign in again.");
+  const {data,error}=await db.functions.invoke("check-got-youtube-links",{body:{dry_run:true}});
+  if(error)throw new Error(error.message||"The test scan request failed.");
+  if(!data?.success)throw new Error(data?.error||"The test scan did not complete.");
+  const lines=[
+   "Test scan completed · no database changes made",
+   "Newest channel uploads checked: "+(data.latest_channel_videos_checked??"—"),
+   "FirstWatchers title pages checked: "+(data.title_pages_checked??"—"),
+   "FirstWatchers videos seen: "+(data.videos_seen??"—"),
+   "Episode candidates detected: "+(data.all_episode_candidates_found??"—"),
+   "Candidates newer than baseline: "+(data.episode_candidates_found??"—"),
+   "Historical/undated candidates skipped: "+(data.skipped_historical_or_undated??"—"),
+   "Baseline: "+(data.baseline_at?new Date(data.baseline_at).toLocaleString():"not returned")
+  ];
+  const summary=document.createElement("p");summary.style.whiteSpace="pre-wrap";summary.textContent=lines.join("\n");results.append(summary);
+  const samples=Array.isArray(data.samples)?data.samples:[];
+  if(samples.length){
+   const heading=document.createElement("h3");heading.textContent="Detected episode candidates";results.append(heading);
+   const list=document.createElement("ul");
+   for(const item of samples){const li=document.createElement("li");li.textContent=[item.anime_title,item.season_number?"S"+item.season_number:null,item.episode_start?"E"+item.episode_start+(item.episode_end&&item.episode_end!==item.episode_start?"–"+item.episode_end:""):null,item.video_title].filter(Boolean).join(" · ");list.append(li);}
+   results.append(list);
+  }else{const empty=document.createElement("p");empty.textContent="No episode candidates were detected in this scan.";results.append(empty);}
+  const warnings=Array.isArray(data.warnings)?data.warnings:[];
+  if(warnings.length){const heading=document.createElement("h3");heading.textContent="Warnings";results.append(heading);const list=document.createElement("ul");for(const warning of warnings){const li=document.createElement("li");li.textContent=warning;list.append(li);}results.append(list);}
+  results.hidden=false;status.textContent="Test scan finished · "+(data.latest_channel_videos_checked??0)+" newest uploads checked · dry run only";
+ }catch(error){status.textContent="Test scan failed: "+(error?.message||String(error));}
+ finally{button.disabled=false;button.textContent="Run test scan";}
+}
+$("runYoutubeTestScan").addEventListener("click",runYoutubeTestScan);
 refreshAll();
 </script>
 <script src="notifications.js"></script>
