@@ -414,6 +414,34 @@
       font-size: 12px;
     }
 
+    .page-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(16, 16, 14, .96);
+      color: var(--text);
+      text-align: center;
+    }
+    .page-loader[hidden] { display: none; }
+    .page-loader-content { display: grid; justify-items: center; gap: 14px; }
+    .page-loader-spinner {
+      width: 42px;
+      height: 42px;
+      border: 4px solid rgba(239,189,50,.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: page-loader-spin .8s linear infinite;
+    }
+    .page-loader-title { font: 800 18px var(--display); }
+    .page-loader-detail { color: var(--muted); font-size: 13px; }
+    @keyframes page-loader-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .page-loader-spinner { animation-duration: 1.8s; }
+    }
+
     .watch-error {
       color: var(--red);
       font-size: 12px;
@@ -719,6 +747,14 @@
 </head>
 
 <body>
+  <div class="page-loader" id="pageLoader" role="status" aria-live="polite">
+    <div class="page-loader-content">
+      <span class="page-loader-spinner" aria-hidden="true"></span>
+      <span class="page-loader-title">Loading anime corner…</span>
+      <span class="page-loader-detail">Getting seasons, covers, and watch history ready.</span>
+    </div>
+  </div>
+
   <header class="topbar">
     <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
 
@@ -938,6 +974,7 @@
   // =========================================================
 
   const searchInput = document.getElementById("searchInput");
+  const pageLoader = document.getElementById("pageLoader");
   const results = document.getElementById("results");
   const status = document.getElementById("status");
   const pagination = document.getElementById("pagination");
@@ -2647,6 +2684,7 @@
 
   async function searchAnime() {
     if (mode === "favorites") {
+      pageLoader.hidden = true;
       if (requestController) {
         requestController.abort();
         requestController = null;
@@ -2671,6 +2709,7 @@
     const controller = new AbortController();
     requestController = controller;
 
+    pageLoader.hidden = false;
     setStatus("Searching AniList…");
     pagination.hidden = true;
 
@@ -2765,6 +2804,7 @@
     } finally {
       if (requestController === controller) {
         requestController = null;
+        pageLoader.hidden = true;
       }
     }
   }
