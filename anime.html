@@ -1478,6 +1478,8 @@ input,select,textarea{accent-color:var(--got-gold)}
   const searchInput = document.getElementById("searchInput");
   const pageLoader = document.getElementById("pageLoader");
   const resultsLoading = document.getElementById("resultsLoading");
+  // Keep the mascot visible for at least three seconds on each catalogue load.
+  let resultsLoadingStartedAt = 0;
   const resultsStage = document.getElementById("resultsStage");
   const resultsLoadingText = document.getElementById("resultsLoadingText");
   const results = document.getElementById("results");
@@ -3446,7 +3448,11 @@ input,select,textarea{accent-color:var(--got-gold)}
     requestController = controller;
 
     // Keep every catalogue/search load inside the results area. Never cover
-    // the whole page while the user is typing or browsing.
+    // the whole page while the user is typing or browsing. If the search box
+    // already started the loader during its debounce, preserve that start time.
+    if (resultsLoading.hidden || !resultsLoadingStartedAt) {
+      resultsLoadingStartedAt = Date.now();
+    }
     pageLoader.hidden = true;
     resultsStage.classList.add("is-loading");
     resultsStage.setAttribute("aria-busy", "true");
@@ -3556,12 +3562,24 @@ input,select,textarea{accent-color:var(--got-gold)}
 
     } finally {
       if (requestController === controller) {
-        requestController = null;
-        pageLoader.hidden = true;
-        resultsLoading.hidden = true;
-        resultsStage.classList.remove("is-loading");
-        resultsStage.setAttribute("aria-busy", "false");
-        initialCatalogueLoad = false;
+        // Let the catalogue and season grouping finish, then hold the mascot
+        // on screen until the full three-second minimum has elapsed.
+        const elapsed = Date.now() - resultsLoadingStartedAt;
+        const remaining = Math.max(0, 3000 - elapsed);
+        if (remaining) {
+          await new Promise(resolve => setTimeout(resolve, remaining));
+        }
+
+        // A newer search may have started while this one was waiting.
+        if (requestController === controller) {
+          requestController = null;
+          pageLoader.hidden = true;
+          resultsLoading.hidden = true;
+          resultsStage.classList.remove("is-loading");
+          resultsStage.setAttribute("aria-busy", "false");
+          resultsLoadingStartedAt = 0;
+          initialCatalogueLoad = false;
+        }
       }
     }
   }
@@ -3936,6 +3954,7 @@ input,select,textarea{accent-color:var(--got-gold)}
     resultsLoading.hidden = true;
     resultsStage.classList.remove("is-loading");
     resultsStage.setAttribute("aria-busy", "false");
+    resultsLoadingStartedAt = 0;
     setMode("discover");
   });
 
@@ -3991,6 +4010,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 
     // Search feedback stays local to the anime results, even on first load.
     initialCatalogueLoad = false;
+    resultsLoadingStartedAt = Date.now();
     pageLoader.hidden = true;
     resultsStage.classList.add("is-loading");
     resultsStage.setAttribute("aria-busy", "true");
