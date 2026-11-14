@@ -1923,6 +1923,15 @@
       normalized.push(normalizeTitle("Demon Slayer: Kimetsu no Yaiba"));
     }
 
+    // My Hero Academia sequel seasons can use season-specific titles
+    // such as "Boku no Hero Academia 2". Match them to the canonical title
+    // used by G.O.T.'s saved reaction-link and watch-history rows.
+    if (normalized.some(alias =>
+      alias.includes("my hero academia") || alias.includes("boku no hero academia")
+    )) {
+      normalized.push(normalizeTitle("My Hero Academia"));
+    }
+
     return [...new Set(normalized)];
   }
 
