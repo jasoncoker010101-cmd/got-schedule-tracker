@@ -2555,8 +2555,6 @@
       displayedItems = pageData.media || [];
       hasNextPage = Boolean(pageData.pageInfo?.hasNextPage);
 
-      render(displayedItems);
-
       pagination.hidden = false;
 
       previousButton.disabled = page <= 1;
@@ -2572,14 +2570,18 @@
       // If Junban is unavailable, the page keeps using AniList relations.
       try {
         await loadJunbanFullSeasonGroups(displayedItems, controller.signal);
-        if (!controller.signal.aborted && requestController === controller) {
-          render(displayedItems);
-        }
+
       } catch (junbanError) {
         if (junbanError.name !== "AbortError") {
           console.warn("Junban season data unavailable; keeping AniList grouping.", junbanError);
         }
       }
+
+      if (controller.signal.aborted || requestController !== controller) {
+        return;
+      }
+
+      render(displayedItems);
 
     } catch (error) {
       if (error.name === "AbortError") return;
