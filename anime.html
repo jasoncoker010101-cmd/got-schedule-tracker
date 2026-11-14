@@ -2873,6 +2873,14 @@
   // ANILIST SEARCH
   // =========================================================
 
+  function withLoadingTimeout(promise, milliseconds, message) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), milliseconds);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+
   async function searchAnime() {
     if (mode === "favorites") {
       pageLoader.hidden = true;
@@ -2937,7 +2945,11 @@
               : `Connection interrupted. Reconnecting automatically (${recoveryAttempt}/2)…`;
           }
 
-          response = await fetchAniListWithRetry(API_URL, requestOptions);
+          response = await withLoadingTimeout(
+            fetchAniListWithRetry(API_URL, requestOptions),
+            18000,
+            "AniList took too long to respond."
+          );
           if (!response.ok) {
             throw new Error(response.status === 429
               ? "AniList is receiving too many requests."
@@ -3008,10 +3020,17 @@
       }
 
       try {
-        await loadJunbanFullSeasonGroups(displayedItems, controller.signal);
+        await withLoadingTimeout(
+          loadJunbanFullSeasonGroups(displayedItems, controller.signal),
+          10000,
+          "Season details are taking too long. Showing the anime list while details catch up."
+        );
       } catch (junbanError) {
         if (junbanError.name === "AbortError") throw junbanError;
         console.warn("Junban season data unavailable; using AniList results.", junbanError);
+        if (loaderDetail) {
+          loaderDetail.textContent = "Season lookup is slow. Showing available anime now…";
+        }
       }
 
       if (controller.signal.aborted || requestController !== controller) {
