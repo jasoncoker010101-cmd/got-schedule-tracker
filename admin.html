@@ -44,7 +44,7 @@ button.secondary{background:var(--raised);color:var(--text);border:1px solid var
 <article class="status-card">New reports<strong id="newReports">—</strong><span class="muted">Waiting for your review</span></article>
 <article class="status-card">Pending reaction links<strong id="pendingLinks">—</strong><span class="muted">Owner review queue</span></article>
 </div>
-<div class="section-head"><h2>Visitor reports</h2><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div>
+<h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube and Patreon URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div><div class="section-head"><h2>Visitor reports</h2><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div>
 <p class="muted" id="reportMessage">Loading reports…</p><div id="reports"></div>
 </section>
 </main>
@@ -89,6 +89,7 @@ async function verifyOwner(){
  if(error||!role){$("authMessage").textContent="This account does not have owner access.";$("dashboard").hidden=true;$("login").hidden=false;return false;}
  $("login").hidden=true;$("dashboard").hidden=false;return true;
 }
+function validWebUrl(value,allowedHosts){try{const u=new URL(value);return u.protocol==="https:"&&allowedHosts.some(host=>u.hostname===host||u.hostname.endsWith("."+host));}catch(_){return false;}}
 async function health(){
  setHealth("anilist",false,"Checking…","AniList catalogue API");
  try{
@@ -121,6 +122,11 @@ async function health(){
  const {count:watched,error:wErr}=await db.from("got_anime_watch_history").select("id",{count:"exact",head:true});
  const {count:links,error:lErr}=await db.from("got_anime_episode_links").select("id",{count:"exact",head:true});
  const {count:pending,error:pErr}=await db.from("got_anime_pending_episode_links").select("id",{count:"exact",head:true}).in("status",["pending","needs_checking"]);
+ const [watchRows,linkRows,pendingRows]=await Promise.all([
+  db.from("got_anime_watch_history").select("id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,watched_at").limit(5000),
+  db.from("got_anime_episode_links").select("id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type").limit(5000),
+  db.from("got_anime_pending_episode_links").select("id,status,confidence").limit(5000)
+ ]);
  const dbOk=!wErr&&!lErr&&!pErr;
  const dbProblems=[
   wErr?("Watch history: "+(wErr.message||wErr.code||"query failed")):null,
@@ -131,6 +137,33 @@ async function health(){
  setHealth("links",!lErr, lErr?"Issue":String(links??"—"), lErr?(lErr.message||lErr.code||"Could not count links"):"Active YouTube and Patreon links");
  $("watchedCount").textContent=wErr?"Error":(watched??"0");
  $("pendingLinks").textContent=pErr?"Error":(pending??"0");
+ const watch=watchRows.data||[];const linksData=linkRows.data||[];const pendingData=pendingRows.data||[];
+ if(watchRows.error){setHealth("watchData",false,"Unavailable",watchRows.error.message);setHealth("seasonData",false,"Unavailable","Watch-history details could not be read.");}
+ else {
+  const badRange=watch.filter(x=>!Number.isInteger(x.episode_start)||!Number.isInteger(x.episode_end)||x.episode_start<1||x.episode_end<x.episode_start).length;
+  const missingAnime=watch.filter(x=>!x.anilist_id||!x.anime_title).length;
+  const missingSeason=watch.filter(x=>!Number.isInteger(x.season_number)||x.season_number<1).length;
+  setHealth("watchData",badRange===0&&missingAnime===0,badRange===0&&missingAnime===0?"Clean":"Review needed",badRange+" invalid episode ranges · "+missingAnime+" missing anime IDs/titles · "+watch.length+" rows checked");
+  setHealth("seasonData",missingSeason===0&&badRange===0,missingSeason===0&&badRange===0?"Consistent":"Review needed",missingSeason+" missing/invalid season numbers · "+badRange+" invalid episode ranges");
+ }
+ if(linkRows.error){setHealth("linkData",false,"Unavailable",linkRows.error.message);}
+ else {
+  const badYoutube=linksData.filter(x=>x.youtube_url&&!validWebUrl(x.youtube_url,["youtube.com","youtu.be"])).length;
+  const badPatreon=linksData.filter(x=>x.patreon_url&&!validWebUrl(x.patreon_url,["patreon.com"])).length;
+  const noUrl=linksData.filter(x=>!x.youtube_url&&!x.patreon_url).length;
+  const badRanges=linksData.filter(x=>!Number.isInteger(x.episode_start)||!Number.isInteger(x.episode_end)||x.episode_start<1||x.episode_end<x.episode_start).length;
+  const problems=badYoutube+badPatreon+noUrl+badRanges;
+  setHealth("linkData",problems===0,problems===0?"Looks good":"Review needed",badYoutube+" invalid YouTube · "+badPatreon+" invalid Patreon · "+noUrl+" empty links · "+badRanges+" invalid episode ranges");
+ }
+ if(pendingRows.error){setHealth("queueData",false,"Unavailable",pendingRows.error.message);}
+ else {
+  const newCount=currentReports.filter(x=>x.status==="new").length;
+  const reviewCount=currentReports.filter(x=>x.status==="reviewing").length;
+  const waiting=pendingData.filter(x=>x.status==="pending"||x.status==="needs_checking").length;
+  setHealth("queueData",waiting===0&&newCount===0,""+(waiting+newCount)+" waiting",newCount+" new reports · "+reviewCount+" being reviewed · "+waiting+" pending link submissions");
+ }
+ const latest=watch.reduce((best,x)=>!best||Date.parse(x.watched_at)>Date.parse(best)?x.watched_at:best,null);
+ $("watchDataDetail").textContent=watchRows.error?watchRows.error.message:("Latest recorded watch: "+(latest?new Date(latest).toLocaleString():"No watch records"));
 }
 function renderReports(){
  const filter=$("reportFilter").value;const rows=currentReports.filter(r=>filter==="all"||r.status===filter);$("reports").replaceChildren();
