@@ -1132,6 +1132,77 @@
       : "";
   }
 
+  // AniList can briefly rate-limit or drop requests when the page is
+  // refreshed repeatedly. Retry only temporary failures, and stop
+  // immediately when a newer search replaces this one.
+  function waitForRetry(ms, signal) {
+    return new Promise((resolve, reject) => {
+      if (signal?.aborted) {
+        reject(new DOMException("Request was cancelled.", "AbortError"));
+        return;
+      }
+
+      const timer = setTimeout(() => {
+        signal?.removeEventListener("abort", abort);
+        resolve();
+      }, ms);
+
+      function abort() {
+        clearTimeout(timer);
+        signal?.removeEventListener("abort", abort);
+        reject(new DOMException("Request was cancelled.", "AbortError"));
+      }
+
+      signal?.addEventListener("abort", abort, { once: true });
+    });
+  }
+
+  async function fetchAniListWithRetry(url, options, maxAttempts = 4) {
+    let lastError;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (options.signal?.aborted) {
+        throw new DOMException("Request was cancelled.", "AbortError");
+      }
+
+      try {
+        const response = await fetch(url, options);
+
+        if (response.ok) return response;
+
+        const temporary = [408, 425, 429, 500, 502, 503, 504].includes(response.status);
+        if (!temporary || attempt === maxAttempts - 1) {
+          if (response.status === 429) {
+            throw new Error("AniList is busy. Please wait a moment and try again.");
+          }
+          throw new Error(`AniList request failed (${response.status}).`);
+        }
+
+        const retryAfter = Number(response.headers.get("Retry-After"));
+        const delay = Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(retryAfter * 1000, 6000)
+          : Math.min(800 * (2 ** attempt), 4000);
+
+        await waitForRetry(delay, options.signal);
+      } catch (error) {
+        if (error.name === "AbortError") throw error;
+
+        lastError = error;
+        const retryableNetworkError =
+          error instanceof TypeError ||
+          /failed to fetch|network|connection|timed out/i.test(error.message || "");
+
+        if (!retryableNetworkError || attempt === maxAttempts - 1) {
+          throw error;
+        }
+
+        await waitForRetry(Math.min(800 * (2 ** attempt), 4000), options.signal);
+      }
+    }
+
+    throw lastError || new Error("AniList is temporarily unavailable.");
+  }
+
   function normalizeTitle(title) {
     return String(title || "")
       .normalize("NFKC")
@@ -2756,7 +2827,7 @@
     pagination.hidden = true;
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetchAniListWithRetry(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -2839,9 +2910,12 @@
       if (error.name === "AbortError") return;
       if (controller !== requestController) return;
 
-      displayedItems = [];
-      render([]);
-      pagination.hidden = true;
+      // Keep any already-visible cards if a later search fails temporarily.
+      // On a fresh page there are no previous cards, so show the clear error.
+      if (!displayedItems.length) {
+        render([]);
+        pagination.hidden = true;
+      }
 
       setStatus(
         `${error.message || "Couldn't connect to AniList."} Check your connection and try again.`,
