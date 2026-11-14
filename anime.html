@@ -2548,33 +2548,6 @@ input,select,textarea{accent-color:var(--got-gold)}
       list.append(unavailable);
     }
 
-    const patreonLinksForAnime = [];
-    const seenPatreonUrls = new Set();
-
-    for (const range of displayRanges) {
-      for (let episode = range.start; episode <= range.end; episode++) {
-        const reactionLink = getEpisodeReactionLink(
-          anime,
-          reactionSeasonKey,
-          episode + reactionEpisodeOffset
-        );
-
-        if (
-          reactionLink?.link_type === "patreon" &&
-          !seenPatreonUrls.has(reactionLink.patreon_url)
-        ) {
-          seenPatreonUrls.add(reactionLink.patreon_url);
-          patreonLinksForAnime.push(reactionLink);
-        }
-      }
-    }
-
-    if (patreonLinksForAnime.length) {
-      list.prepend(
-        window.GOTPatreonLinks.createNotice(patreonLinksForAnime)
-      );
-    }
-
     const note = document.createElement("div");
     note.className = "episode-note";
     note.textContent = episodeLinksLoaded
