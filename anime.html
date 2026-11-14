@@ -1016,6 +1016,13 @@ main{max-width:1450px}
 .report-form input,.report-form select,.report-form textarea{background:#0b141d;color:#f5f1e7}
 @media(max-width:600px){.intro{margin:20px 0;padding:25px 18px}.intro::after{display:none}.history-overview{gap:7px}.overview-card{padding:12px 10px}.overview-number{font-size:1.35rem}.anime-filters select{min-width:calc(50% - 6px)}}
 
+
+.site-nav a{display:flex;align-items:center;gap:7px}
+.site-nav a::before{color:#8edce0;font-size:.57rem;font-weight:900}
+.site-nav a:nth-child(1)::before{content:"01"}.site-nav a:nth-child(2)::before{content:"02"}.site-nav a:nth-child(3)::before{content:"03"}.site-nav a:nth-child(4)::before{content:"04"}.site-nav a:nth-child(5)::before{content:"05"}
+.site-nav a.active::before{color:#33240d}
+@media(max-width:700px){.site-nav a{flex:1;min-width:0;padding:8px 4px;font-size:.66rem}.site-nav a::before{display:none}}
+
   </style>
 </head>
 
@@ -1054,6 +1061,7 @@ main{max-width:1450px}
 
     <nav class="site-nav" aria-label="Main navigation">
       <a href="index.html">Schedule</a>
+      <a href="profile.html">Profile</a>
       <a href="player-directory.html">Fanbase</a>
       <a href="anime.html" class="active" aria-current="page">Anime</a>
       <a href="admin.html">Admin</a>
