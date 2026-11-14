@@ -2456,16 +2456,31 @@
         }
       }
 
-      // Fallback for anime not yet mapped in Junban.
+      // Fallback for anime not yet mapped in Junban. Walk the connected
+      // PREQUEL/SEQUEL TV entries already returned by AniList, rather than
+      // grouping only one neighboring season. This keeps split cours together.
       const seasons = new Map([[id, anime]]);
-      for (const edge of anime.relations?.edges || []) {
-        if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
-        const related = edge.node;
-        if (!related || !Number.isFinite(Number(related.id))) continue;
-        if (!["TV", "TV_SHORT"].includes(related.format)) continue;
-        const relatedId = Number(related.id);
-        if (claimed.has(relatedId)) continue;
-        seasons.set(relatedId, byId.get(relatedId) || related);
+      const queue = [anime];
+
+      while (queue.length) {
+        const current = queue.shift();
+
+        for (const edge of current.relations?.edges || []) {
+          if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
+          const related = edge.node;
+          if (!related || !Number.isFinite(Number(related.id))) continue;
+          if (!["TV", "TV_SHORT"].includes(related.format)) continue;
+
+          const relatedId = Number(related.id);
+          if (seasons.has(relatedId) || claimed.has(relatedId)) continue;
+
+          const fullRelated = byId.get(relatedId) || related;
+          seasons.set(relatedId, fullRelated);
+
+          // Only full search results have their own relation edges. A related
+          // node not present in this page is still shown, but remains a leaf.
+          if (byId.has(relatedId)) queue.push(fullRelated);
+        }
       }
 
       const ordered = [...seasons.values()].sort((a, b) =>
