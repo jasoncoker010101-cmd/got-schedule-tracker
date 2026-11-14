@@ -877,7 +877,7 @@ const fullDiagnosticSteps=[
    }),"Game cover Edge Function",12000);
    const payload=await response.json().catch(()=>null);
    if(!response.ok&&/THEGAMESDB_API_KEY has not been configured/i.test(String(payload?.error||""))){
-    return fullDiagResult("Game cover lookup Edge Function","fail","Missing Supabase Edge Function secrets: THEGAMESDB_API_KEY · configure them in Supabase Edge Function secrets · never put these credentials in website JavaScript");
+    return fullDiagResult("Game cover lookup Edge Function","warning","The Edge Function is deployed and reachable, but TheGamesDB is not configured yet · add THEGAMESDB_API_KEY in Supabase Project Settings → Edge Functions → Secrets · keep the key out of website JavaScript");
    }
    if(!response.ok)throw new Error("TheGamesDB game-cover function returned HTTP "+response.status+(payload?.error?": "+payload.error:""));
    if(!payload||typeof payload!=="object")throw new Error("Game-cover function returned an unexpected response.");
@@ -941,7 +941,6 @@ const fullDiagnosticSteps=[
     ["Watch history","got_anime_watch_history","id"],
     ["Reaction links","got_anime_episode_links","id"],
     ["Pending reaction links","got_anime_pending_episode_links","id"],
-    ["Reaction-link scanner state","got_anime_link_scanner_state","scanner_key"],
     ["Visitor reports","got_site_reports","id"],
     ["Notifications","got_notifications","id"],
     ["Notification read receipts","got_notification_reads","notification_id"]
@@ -963,12 +962,11 @@ const fullDiagnosticSteps=[
  {
   name:"Anime IDs, seasons, episode ranges, and video links",
   run:async()=>{
-   const [watchResult,linkResult,scannerResult]=await Promise.all([
+   const [watchResult,linkResult]=await Promise.all([
     fullDiagReadAll("got_anime_watch_history","id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,platform,watched_at,created_at"),
-    fullDiagReadAll("got_anime_episode_links","id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type,created_at"),
-    fullDiagReadAll("got_anime_link_scanner_state","scanner_key,baseline_at,updated_at",1000,"scanner_key")
+    fullDiagReadAll("got_anime_episode_links","id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type,created_at")
    ]);
-   const watch=watchResult.rows,links=linkResult.rows,scannerStates=scannerResult.rows;
+   const watch=watchResult.rows,links=linkResult.rows;
    const badWatchRanges=watch.filter(row=>!Number.isInteger(Number(row.episode_start))||!Number.isInteger(Number(row.episode_end))||Number(row.episode_start)<1||Number(row.episode_end)<Number(row.episode_start)).length;
    const missingWatchTitles=watch.filter(row=>!String(row.anime_title||"").trim()).length;
    const missingWatchIds=watch.filter(row=>row.anilist_id==null||!Number.isInteger(Number(row.anilist_id))||Number(row.anilist_id)<1).length;
@@ -1002,8 +1000,7 @@ const fullDiagnosticSteps=[
    if(missingWatchSeasons)warnings.push(missingWatchSeasons+" watch-history rows have no valid season assignment; the season was not guessed");
    if(duplicateEventKeys)warnings.push(duplicateEventKeys+" duplicate watch-history event key(s)");
    if(wrongKnownIds)warnings.push(wrongKnownIds+" known-series AniList ID mismatch(es)");
-   if(watchResult.truncated||linkResult.truncated||scannerResult.truncated)warnings.push("one or more anime tables reached the scan limit");
-   if(!scannerStates.length)warnings.push("the automatic reaction-link scanner has no saved baseline state");
+   if(watchResult.truncated||linkResult.truncated)warnings.push("one or more anime tables reached the scan limit");
    const failures=[];
    if(badWatchRanges)failures.push(badWatchRanges+" invalid watch-history episode ranges");
    if(badLinkRanges)failures.push(badLinkRanges+" invalid reaction-link episode ranges");
@@ -1012,7 +1009,7 @@ const fullDiagnosticSteps=[
    if(badPatreon)failures.push(badPatreon+" invalid Patreon URLs");
    if(wrongProvider)failures.push(wrongProvider+" provider type/URL mismatches");
    if(invalidWatchTimes||invalidLinkTimes)failures.push((invalidWatchTimes+invalidLinkTimes)+" records have missing or invalid timestamps");
-   const detail=watch.length+" watch-history rows · "+links.length+" reaction-link rows · "+scannerStates.length+" scanner-state records · missing AniList IDs: "+missingWatchIds+" watch / "+missingLinkIds+" links · missing titles: "+missingWatchTitles+" watch / "+missingLinkTitles+" links · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link errors · "+missingWatchSeasons+" missing season assignments · "+wrongKnownIds+" known ID mismatches";
+   const detail=watch.length+" watch-history rows · "+links.length+" reaction-link rows · missing AniList IDs: "+missingWatchIds+" watch / "+missingLinkIds+" links · missing titles: "+missingWatchTitles+" watch / "+missingLinkTitles+" links · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link errors · "+missingWatchSeasons+" missing season assignments · "+wrongKnownIds+" known ID mismatches";
    return fullDiagResult("Anime IDs, seasons, episode ranges, and video links",failures.length?"fail":warnings.length?"warning":"pass",failures.length?failures.join(" · ")+" · "+detail:detail+(warnings.length?" · "+warnings.join(" · "):""));
   }
  },
