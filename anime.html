@@ -1799,7 +1799,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 
       url.searchParams.set(
         "select",
-        "anime_title,season_number,episode_start,episode_end,link_type,youtube_url,patreon_url,video_title"
+        "anime_title,season_number,episode_start,episode_end,link_type,youtube_url,patreon_url,video_title,uploaded_at"
       );
       url.searchParams.set("order", "season_number.asc,episode_start.asc");
       url.searchParams.set("limit", String(pageSize));
@@ -1870,6 +1870,12 @@ input,select,textarea{accent-color:var(--got-gold)}
 
     buildEpisodeLinkIndex();
     episodeLinksLoaded = true;
+
+    // Reaction links are also verified evidence that G.O.T watched these
+    // episodes. Merge them into the display/count index without changing
+    // the separate watch-history records or Continue Watching feed.
+    buildHistoryIndex();
+    if (historyLoaded) updateOverview();
 
     console.log(
       `Loaded ${episodeLinks.length} G.O.T anime episode reaction links.`
@@ -2054,6 +2060,12 @@ input,select,textarea{accent-color:var(--got-gold)}
 
     const normalized = aliases.map(normalizeTitle).filter(Boolean);
 
+    // All Jujutsu Kaisen sequel-season cards must also match the canonical
+    // title used by G.O.T's saved reaction links and watch-history rows.
+    if (normalized.some(alias => alias.includes("jujutsu kaisen"))) {
+      normalized.push(normalizeTitle("Jujutsu Kaisen"));
+    }
+
     // Every Demon Slayer arc should also match the canonical title stored
     // in got_anime_episode_links, even when AniList uses an arc-specific title.
     if (normalized.some(alias =>
@@ -2081,7 +2093,17 @@ input,select,textarea{accent-color:var(--got-gold)}
   function buildHistoryIndex() {
     historyByTitle = new Map();
 
-    for (const row of watchHistory) {
+    // Union recorded watch-history ranges with verified reaction-link ranges.
+    // The range-merging logic below prevents the same episode being counted
+    // twice when it exists in both tables.
+    const verifiedReactionRows = episodeLinks.map((link, index) => ({
+      ...link,
+      event_key: `reaction:${normalizeTitle(link.anime_title)}:${link.season_number ?? "overall"}:${link.episode_start}-${link.episode_end}:${index}`,
+      watched_at: link.uploaded_at || null,
+      platform: link.link_type || "youtube"
+    }));
+
+    for (const row of [...watchHistory, ...verifiedReactionRows]) {
       const title = normalizeTitle(row.anime_title);
 
       if (!title) continue;
