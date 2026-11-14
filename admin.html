@@ -536,12 +536,22 @@ const fullDiagnosticSteps=[
    if(!schedule.payload||!Array.isArray(schedule.payload.events))throw new Error("Schedule feed has an unexpected structure; events[] is missing.");
    if(!live.response.ok)throw new Error("live.json returned HTTP "+live.response.status);
    if(!live.payload||!live.payload.platforms||typeof live.payload.platforms!=="object")throw new Error("Live feed has an unexpected structure; platforms{} is missing.");
+   const events=schedule.payload.events;
+   const malformedEvents=events.filter(event=>!event||typeof event!=="object"||!event.title||!event.platform||!event.start||Number.isNaN(Date.parse(event.start))).length;
    const updated=schedule.payload.updated?new Date(schedule.payload.updated):null;
    const age=updated&&!Number.isNaN(updated.getTime())?(Date.now()-updated.getTime())/3600000:null;
    const stale=age!==null&&age>192;
+   const platformNames=["twitch","youtube","rumble"];
    const platforms=Object.keys(live.payload.platforms).length;
-   const detail=schedule.payload.events.length+" schedule events · "+platforms+" live platform states · "+(updated&&!Number.isNaN(updated.getTime())?"schedule data updated "+updated.toLocaleString():"schedule timestamp missing");
-   return fullDiagResult("Schedule and live-status feeds",stale?"warning":"pass",detail+(stale?" · schedule data is older than eight days":""));
+   const missingLiveStates=platformNames.filter(name=>typeof live.payload.platforms[name]!=="boolean").length;
+   const issues=[];
+   if(malformedEvents)issues.push(malformedEvents+" malformed schedule events");
+   if(events.length===0)issues.push("schedule has no events");
+   if(missingLiveStates)issues.push(missingLiveStates+" live platform states missing or invalid");
+   if(stale)issues.push("schedule data is older than eight days");
+   if(!updated||Number.isNaN(updated.getTime()))issues.push("schedule timestamp missing or invalid");
+   const detail=events.length+" schedule events · "+platforms+" live platform states · "+malformedEvents+" malformed events · "+missingLiveStates+" invalid live states · "+(updated&&!Number.isNaN(updated.getTime())?"schedule updated "+updated.toLocaleString():"schedule timestamp unavailable")+(issues.length?" · "+issues.join(" · "):"");
+   return fullDiagResult("Schedule and live-status feeds",issues.length?"warning":"pass",detail);
   }
  },
  {
