@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: "*/10 * * * *"
 
+  push:
+    branches: [main]
+    paths:
+      - "Script/check_patreon.py"
+      - "Script/parse_schedule.py"
+      - ".github/workflows/update-schedule.yml"
+
   workflow_dispatch:
     inputs:
       any_image:
