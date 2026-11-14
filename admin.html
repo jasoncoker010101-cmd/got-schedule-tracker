@@ -1435,6 +1435,7 @@ async function runPlaylistAudit(event){
   const explicitMissing=(data.items||[]).filter(item=>item.status==="missing_episode_link"&&item.season_inferred===false&&item.season_number!=null&&item.episode_start!=null);
   const applyButton=$("playlistAuditApply");
   applyButton.hidden=explicitMissing.length===0;
+  applyButton.dataset.eligibleCount=String(explicitMissing.length);
   applyButton.textContent="ADD "+explicitMissing.length+" EXPLICITLY VERIFIED MISSING LINK"+(explicitMissing.length===1?"":"S");
   const inferredCount=Math.max(0,(counts.missing_episode_link||0)-explicitMissing.length);
   $("playlistAuditApplyNote").textContent="Only videos with the season and episode explicitly stated in the title qualify. "+inferredCount+" inferred-season match(es) will be left untouched.";
@@ -1469,7 +1470,7 @@ $("playlistAuditForm").addEventListener("submit",runPlaylistAudit);
 $("playlistAuditApply").addEventListener("click",async()=>{
  const button=$("playlistAuditApply"),message=$("playlistAuditMessage");
  if(!db||button.disabled)return;
- const count=Number((button.textContent.match(/ADD (\\d+)/)||[])[1]||0);
+ const count=Number(button.dataset.eligibleCount||0);
  if(!count)return;
  if(!confirm("Add "+count+" reaction link(s)? Only videos with an explicitly stated season and episode will be saved. Inferred seasons, duplicates, and uncertain matches will be skipped."))return;
  button.disabled=true;button.textContent="ADDING VERIFIED LINKS…";
