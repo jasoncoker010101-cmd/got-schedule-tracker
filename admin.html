@@ -86,6 +86,46 @@ input,select,textarea{accent-color:var(--got-gold)}
 .announcement-panel h2{margin:0 0 6px}.announcement-panel p{margin:0 0 14px}
 .announcement-panel label{display:block;margin-top:9px;color:var(--muted);font-size:13px;font-weight:700}
 .announcement-panel input,.announcement-panel textarea,.announcement-panel select{margin:5px 0 8px}
+/* FULL DIAGNOSTICS // animated read-only audit console */
+.full-diagnostics{margin:24px 0;border-color:rgba(242,189,85,.3)}
+.full-diagnostics-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.full-diagnostics-head h2{margin:0 0 5px;font:800 24px var(--display)}
+.full-diagnostics-head p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+.full-diagnostics-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#runFullDiagnostics{min-width:190px}
+#runFullDiagnostics:disabled{opacity:.6;cursor:wait}
+.diag-run-state{display:flex;align-items:center;gap:8px;color:#8edce0;font:800 11px var(--body);letter-spacing:.15em;text-transform:uppercase}
+.diag-run-state[data-state="done"]{color:#8edce0}
+.diag-run-state[data-state="error"]{color:#ff7868}
+.diag-pulse{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor}
+.diag-run-state[data-state="running"] .diag-pulse{animation:diagPulse .9s ease-in-out infinite}
+.diag-progress-meta{display:flex;justify-content:space-between;gap:12px;margin:20px 0 7px;color:#a9bac4;font-size:12px}
+.diag-progress-track{height:7px;overflow:hidden;border:1px solid rgba(142,220,224,.16);border-radius:99px;background:#071019}
+.diag-progress-fill{width:0;height:100%;border-radius:99px;background:linear-gradient(90deg,#8edce0,#f2bd55);transition:width .28s ease}
+.diag-current{min-height:25px;margin:12px 0;color:#f5d99a;font:700 13px var(--body)}
+.diag-console{height:250px;overflow:auto;padding:14px;border:1px solid rgba(142,220,224,.17);border-radius:8px;background:#050b12;color:#c4d7dc;font:12px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;box-shadow:inset 0 0 28px rgba(0,0,0,.35)}
+.diag-console-line{white-space:pre-wrap;overflow-wrap:anywhere}
+.diag-console-line.dim{color:#6f8792}
+.diag-console-line.good{color:#8edce0}
+.diag-console-line.warn{color:#f2bd55}
+.diag-console-line.fail{color:#ff887e}
+.diag-console-prompt{color:#f2bd55}
+.diag-console-cursor{display:inline-block;width:7px;height:13px;margin-left:4px;vertical-align:-2px;background:#8edce0;animation:diagBlink .85s steps(2,start) infinite}
+.diag-results{display:grid;gap:8px;margin-top:14px}
+.diag-result{display:grid;grid-template-columns:minmax(180px,.75fr) minmax(0,2fr) auto;align-items:start;gap:12px;padding:11px 12px;border:1px solid rgba(142,220,224,.13);border-radius:8px;background:rgba(5,12,19,.42)}
+.diag-result-name{font-size:13px;font-weight:800;color:#eef5f3}
+.diag-result-detail{min-width:0;color:#9fb1bc;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.diag-result-status{justify-self:end;padding:3px 7px;border-radius:4px;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.diag-result-status.pass{background:rgba(142,220,224,.12);color:#8edce0}
+.diag-result-status.warning{background:rgba(242,189,85,.13);color:#f2bd55}
+.diag-result-status.fail{background:rgba(255,120,104,.13);color:#ff887e}
+.diag-summary{margin-top:13px;color:#d9e5e5;font-size:13px;font-weight:700}
+.diag-footnote{margin:12px 0 0;color:#8295a1;font-size:11px;line-height:1.5}
+@keyframes diagBlink{to{visibility:hidden}}
+@keyframes diagPulse{50%{opacity:.35;transform:scale(.72)}}
+@media(max-width:700px){.diag-result{grid-template-columns:minmax(0,1fr) auto}.diag-result-detail{grid-column:1/-1;grid-row:2}.diag-result-status{grid-column:2;grid-row:1}.full-diagnostics-head{align-items:flex-start}.full-diagnostics-actions{width:100%}.full-diagnostics-actions button{flex:1}}
+@media(prefers-reduced-motion:reduce){.diag-console-cursor,.diag-run-state[data-state="running"] .diag-pulse{animation:none}.diag-progress-fill{transition:none}}
+
 </style></head>
 <body>
 <header class="site-header">
@@ -142,7 +182,29 @@ input,select,textarea{accent-color:var(--got-gold)}
   <article class="status-card"><span class="dot" id="animeActivityDot"></span>Recent anime data<strong id="animeActivityStatus">Checking…</strong><span class="status-detail" id="animeActivityDetail">Checking latest saved reaction and watch records</span></article>
  </div>
 </section>
-<h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube and Patreon URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div><div class="section-head"><h2>Visitor reports</h2><div class="report-tools"><input id="reportSearch" type="search" placeholder="Search reports by anime, type or details…" aria-label="Search visitor reports"><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div></div>
+<h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube and Patreon URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div>
+<section class="panel full-diagnostics" id="fullDiagnosticsPanel" aria-labelledby="fullDiagnosticsTitle">
+ <div class="full-diagnostics-head">
+  <div>
+   <h2 id="fullDiagnosticsTitle">Full diagnostics</h2>
+   <p>A read-only system audit covering the admin session, core pages, live feeds, external APIs, Supabase tables, anime records, notifications, and review queues.</p>
+  </div>
+  <div class="full-diagnostics-actions">
+   <span class="diag-run-state" id="fullDiagState" data-state="idle"><i class="diag-pulse" aria-hidden="true"></i><span id="fullDiagStateText">READY</span></span>
+   <button type="button" id="runFullDiagnostics">Run full diagnostics</button>
+  </div>
+ </div>
+ <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 8</span></div>
+ <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
+ <div class="diag-console" id="fullDiagTerminal" role="log" aria-live="polite" aria-relevant="additions text">
+  <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v1.0</div>
+  <div class="diag-console-line dim">Read-only mode · Waiting for operator command…</div>
+ </div>
+ <div class="diag-results" id="fullDiagResults" aria-live="polite"></div>
+ <div class="diag-summary" id="fullDiagSummary" role="status">No scan has been run yet.</div>
+ <p class="diag-footnote">A green result means the tested request or data check succeeded. Warnings identify stale, incomplete, or review-worthy data. This checks service and data integrity; it does not simulate every possible visitor click or device.</p>
+</section>
+<div class="section-head"><h2>Visitor reports</h2><div class="report-tools"><input id="reportSearch" type="search" placeholder="Search reports by anime, type or details…" aria-label="Search visitor reports"><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div></div>
 <p class="muted" id="reportMessage">Loading reports…</p><div id="reports"></div>
 </section>
 </main>
@@ -324,6 +386,335 @@ async function health(){
  const latest=watch.reduce((best,x)=>!best||Date.parse(x.watched_at)>Date.parse(best)?x.watched_at:best,null);
  $("watchDataDetail").textContent=watchRows.error?watchRows.error.message:("Latest recorded watch: "+(latest?new Date(latest).toLocaleString():"No watch records"));
 }
+
+// =========================================================
+// FULL DIAGNOSTICS — SEQUENTIAL, READ-ONLY SYSTEM AUDIT
+// =========================================================
+const FULL_DIAGNOSTIC_PAGE_PATHS = [
+ "index.html","anime.html","notifications.html","profile.html",
+ "player-directory.html","nexus.html","admin.html","notifications.js"
+];
+const fullDiagSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+let fullDiagRunning=false;
+let fullDiagRows=[];
+
+function fullDiagSetState(state,label){
+ const node=$("fullDiagState");
+ node.dataset.state=state;
+ $("fullDiagStateText").textContent=label;
+}
+function fullDiagLogLine(message,kind="dim"){
+ const line=document.createElement("div");
+ line.className="diag-console-line "+kind;
+ line.textContent=message;
+ $("fullDiagTerminal").append(line);
+ $("fullDiagTerminal").scrollTop=$("fullDiagTerminal").scrollHeight;
+ return line;
+}
+async function fullDiagTypeLine(message,index,total){
+ const line=document.createElement("div");
+ line.className="diag-console-line";
+ const prompt=document.createElement("span");
+ prompt.className="diag-console-prompt";
+ prompt.textContent="> ";
+ const typed=document.createElement("span");
+ const cursor=document.createElement("span");
+ cursor.className="diag-console-cursor";
+ line.append(prompt,typed,cursor);
+ $("fullDiagTerminal").append(line);
+ const full="["+String(index).padStart(2,"0")+"/"+String(total).padStart(2,"0")+"] "+message;
+ for(let i=0;i<full.length;i++){
+  typed.textContent+=full[i];
+  $("fullDiagTerminal").scrollTop=$("fullDiagTerminal").scrollHeight;
+  await fullDiagSleep(7);
+ }
+ cursor.remove();
+}
+function fullDiagSetProgress(done,total){
+ const percent=total?Math.round(done/total*100):0;
+ $("fullDiagProgressFill").style.width=percent+"%";
+ $("fullDiagProgress").setAttribute("aria-valuemax",String(total));
+ $("fullDiagProgress").setAttribute("aria-valuenow",String(done));
+ $("fullDiagProgressText").textContent=done+" / "+total;
+}
+function fullDiagRenderResults(){
+ const target=$("fullDiagResults");
+ target.replaceChildren();
+ for(const result of fullDiagRows){
+  const row=document.createElement("article");row.className="diag-result";
+  const name=document.createElement("div");name.className="diag-result-name";name.textContent=result.name;
+  const detail=document.createElement("div");detail.className="diag-result-detail";detail.textContent=result.detail;
+  const status=document.createElement("div");status.className="diag-result-status "+result.status;
+  status.textContent=result.status==="pass"?"PASS":result.status==="warning"?"WARNING":"FAILED";
+  row.append(name,detail,status);target.append(row);
+ }
+ const passed=fullDiagRows.filter(x=>x.status==="pass").length;
+ const warnings=fullDiagRows.filter(x=>x.status==="warning").length;
+ const failed=fullDiagRows.filter(x=>x.status==="fail").length;
+ $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failed+" failures";
+}
+async function fullDiagWithTimeout(promise,label,milliseconds=9000){
+ let timer;
+ try{
+  return await Promise.race([
+   Promise.resolve(promise),
+   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+" timed out after "+Math.round(milliseconds/1000)+" seconds.")),milliseconds);})
+  ]);
+ }finally{clearTimeout(timer);}
+}
+async function fullDiagFetch(path,milliseconds=7000){
+ const url=new URL(path,location.href);
+ url.searchParams.set("got_diag",String(Date.now()));
+ return fetchWithTimeout(url.toString(),{cache:"no-store"},milliseconds);
+}
+async function fullDiagReadAll(table,columns,maxRows=25000){
+ const pageSize=1000,rows=[];
+ for(let offset=0;offset<maxRows;offset+=pageSize){
+  const result=await fullDiagWithTimeout(
+   db.from(table).select(columns).order("id",{ascending:true}).range(offset,Math.min(offset+pageSize,maxRows)-1),
+   table+" read",12000
+  );
+  if(result.error)throw new Error(table+": "+result.error.message);
+  const page=result.data||[];
+  rows.push(...page);
+  if(page.length<pageSize)return {rows,truncated:false};
+ }
+ return {rows,truncated:true};
+}
+function fullDiagSafeUrl(value,hosts){
+ try{
+  const url=new URL(value);
+  return url.protocol==="https:"&&hosts.some(host=>url.hostname===host||url.hostname.endsWith("."+host));
+ }catch(_){return false;}
+}
+function fullDiagResult(name,status,detail){return {name,status,detail:String(detail||"No additional detail.")};}
+
+const fullDiagnosticSteps=[
+ {
+  name:"Admin access and owner security",
+  run:async()=>{
+   if(!db)throw new Error("Supabase client did not load.");
+   const {data,error}=await fullDiagWithTimeout(db.auth.getSession(),"Owner session check");
+   if(error)throw new Error("Session check: "+error.message);
+   const user=data?.session?.user;
+   if(!user)throw new Error("No active owner session. Sign in again.");
+   const roleResult=await fullDiagWithTimeout(
+    db.from("user_roles").select("role").eq("user_id",user.id).eq("role","owner").maybeSingle(),
+    "Owner role check"
+   );
+   if(roleResult.error)throw new Error("Owner role lookup: "+roleResult.error.message);
+   if(!roleResult.data)throw new Error("The signed-in account no longer has the owner role.");
+   return fullDiagResult("Admin access and owner security","pass","Active session verified · owner role confirmed · account "+(user.email||"authenticated user"));
+  }
+ },
+ {
+  name:"Website pages and shared notification script",
+  run:async()=>{
+   const checks=await Promise.all(FULL_DIAGNOSTIC_PAGE_PATHS.map(async path=>{
+    try{
+     const response=await fullDiagFetch(path);
+     if(!response.ok)return {path,ok:false,detail:"HTTP "+response.status};
+     const body=await response.text();
+     if(path.endsWith(".html")&&!/<html[\\s>]/i.test(body))return {path,ok:false,detail:"Response did not look like an HTML page"};
+     if(path.endsWith(".js")&&body.trim().length<40)return {path,ok:false,detail:"Script response was unexpectedly short"};
+     return {path,ok:true,detail:"HTTP "+response.status+" · "+body.length.toLocaleString()+" characters"};
+    }catch(error){return {path,ok:false,detail:error.message||"Request failed"};}
+   }));
+   const failed=checks.filter(x=>!x.ok);
+   if(failed.length)throw new Error(failed.map(x=>x.path+": "+x.detail).join(" · "));
+   return fullDiagResult("Website pages and shared notification script","pass",checks.length+" routes/assets reachable · "+checks.map(x=>x.path).join(", "));
+  }
+ },
+ {
+  name:"Schedule and live-status feeds",
+  run:async()=>{
+   const [schedule,live]=await Promise.all([
+    fullDiagFetch("schedule.json").then(async response=>({response,payload:response.ok?await response.json():null})),
+    fullDiagFetch("live.json").then(async response=>({response,payload:response.ok?await response.json():null}))
+   ]);
+   if(!schedule.response.ok)throw new Error("schedule.json returned HTTP "+schedule.response.status);
+   if(!schedule.payload||!Array.isArray(schedule.payload.events))throw new Error("Schedule feed has an unexpected structure; events[] is missing.");
+   if(!live.response.ok)throw new Error("live.json returned HTTP "+live.response.status);
+   if(!live.payload||!live.payload.platforms||typeof live.payload.platforms!=="object")throw new Error("Live feed has an unexpected structure; platforms{} is missing.");
+   const updated=schedule.payload.updated?new Date(schedule.payload.updated):null;
+   const age=updated&&!Number.isNaN(updated.getTime())?(Date.now()-updated.getTime())/3600000:null;
+   const stale=age!==null&&age>192;
+   const platforms=Object.keys(live.payload.platforms).length;
+   const detail=schedule.payload.events.length+" schedule events · "+platforms+" live platform states · "+(updated&&!Number.isNaN(updated.getTime())?"schedule data updated "+updated.toLocaleString():"schedule timestamp missing");
+   return fullDiagResult("Schedule and live-status feeds",stale?"warning":"pass",detail+(stale?" · schedule data is older than eight days":""));
+  }
+ },
+ {
+  name:"AniList and Junban external APIs",
+  run:async()=>{
+   const aniTask=(async()=>{
+    const query="query FullDiagnosticsAniList { Page(page:1,perPage:1) { media(type:ANIME) { id title { romaji } } } }";
+    const response=await fetchWithTimeout("https://graphql.anilist.co",{
+     method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({query})
+    },8000);
+    const payload=await response.json().catch(()=>null);
+    if(!response.ok)throw new Error("AniList HTTP "+response.status);
+    if(payload?.errors?.length||!payload?.data?.Page?.media?.length)throw new Error(payload?.errors?.[0]?.message||"AniList returned no valid media result.");
+    return "AniList query succeeded";
+   })();
+   const junbanTask=(async()=>{
+    const response=await fetchWithTimeout("https://junban.moe/api/v1/lookup?site=anilist&id=16498",{},8000);
+    if(!response.ok)throw new Error("Junban HTTP "+response.status);
+    const payload=await response.json();
+    if(!payload||typeof payload!=="object")throw new Error("Junban returned an unexpected response.");
+    return "Junban lookup responded";
+   })();
+   const results=await Promise.allSettled([aniTask,junbanTask]);
+   const errors=results.filter(x=>x.status==="rejected").map(x=>x.reason?.message||"API request failed");
+   if(errors.length)throw new Error(errors.join(" · "));
+   return fullDiagResult("AniList and Junban external APIs","pass","AniList query succeeded · Junban lookup responded");
+  }
+ },
+ {
+  name:"Supabase authentication and database connection",
+  run:async()=>{
+   if(!db)throw new Error("Supabase JavaScript client is unavailable.");
+   const {data,error}=await fullDiagWithTimeout(db.auth.getUser(),"Supabase user validation");
+   if(error)throw new Error("Auth validation: "+error.message);
+   if(!data?.user)throw new Error("Supabase did not return the authenticated owner.");
+   const probe=await fullDiagWithTimeout(
+    db.from("user_roles").select("role").eq("user_id",data.user.id).eq("role","owner").maybeSingle(),
+    "Supabase database probe"
+   );
+   if(probe.error)throw new Error("Database probe: "+probe.error.message);
+   if(!probe.data)throw new Error("Owner permission could not be verified.");
+   return fullDiagResult("Supabase authentication and database connection","pass","Authenticated user validated · protected owner-role query succeeded");
+  }
+ },
+ {
+  name:"Core database tables and permissions",
+  run:async()=>{
+   const {data:{session},error:sessionError}=await db.auth.getSession();
+   if(sessionError||!session?.user)throw new Error(sessionError?.message||"Owner session unavailable.");
+   const tables=[
+    ["Watch history","got_anime_watch_history","id"],
+    ["Reaction links","got_anime_episode_links","id"],
+    ["Pending reaction links","got_anime_pending_episode_links","id"],
+    ["Visitor reports","got_site_reports","id"],
+    ["Notifications","got_notifications","id"],
+    ["Notification read receipts","got_notification_reads","notification_id"]
+   ];
+   const checks=await Promise.all(tables.map(async([label,table,column])=>{
+    const query=db.from(table).select(column,{count:"exact",head:true});
+    const scoped=table==="got_notification_reads"?query.eq("user_id",session.user.id):query;
+    try{
+     const result=await fullDiagWithTimeout(scoped,table+" permission probe",10000);
+     if(result.error)throw new Error(result.error.message);
+     return {label,count:result.count??0};
+    }catch(error){return {label,error:error.message||"Query failed"};}
+   }));
+   const failed=checks.filter(x=>x.error);
+   if(failed.length)throw new Error(failed.map(x=>x.label+": "+x.error).join(" · "));
+   return fullDiagResult("Core database tables and permissions","pass",checks.length+" table reads succeeded · "+checks.map(x=>x.label+": "+x.count).join(" · "));
+  }
+ },
+ {
+  name:"Watch history and anime reaction-link integrity",
+  run:async()=>{
+   const [watchResult,linkResult]=await Promise.all([
+    fullDiagReadAll("got_anime_watch_history","id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,platform,watched_at,created_at"),
+    fullDiagReadAll("got_anime_episode_links","id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type,created_at")
+   ]);
+   const watch=watchResult.rows,links=linkResult.rows;
+   const badWatchRanges=watch.filter(row=>!Number.isInteger(Number(row.episode_start))||!Number.isInteger(Number(row.episode_end))||Number(row.episode_start)<1||Number(row.episode_end)<Number(row.episode_start)).length;
+   const weakWatchIdentity=watch.filter(row=>!row.anime_title||!row.anilist_id).length;
+   const badLinkRanges=links.filter(row=>!Number.isInteger(Number(row.episode_start))||!Number.isInteger(Number(row.episode_end))||Number(row.episode_start)<1||Number(row.episode_end)<Number(row.episode_start)).length;
+   const noLink=links.filter(row=>!row.youtube_url&&!row.patreon_url).length;
+   const badYoutube=links.filter(row=>row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
+   const badPatreon=links.filter(row=>row.patreon_url&&!fullDiagSafeUrl(row.patreon_url,["patreon.com"])).length;
+   const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&!row.youtube_url)||(row.link_type==="patreon"&&!row.patreon_url)).length;
+   const warnings=[];
+   if(weakWatchIdentity)warnings.push(weakWatchIdentity+" watch records missing an anime title or AniList ID");
+   if(watchResult.truncated||linkResult.truncated)warnings.push("the 25,000-row safety scan limit was reached");
+   const failures=[];
+   if(badWatchRanges)failures.push(badWatchRanges+" invalid watch-history episode ranges");
+   if(badLinkRanges)failures.push(badLinkRanges+" invalid reaction-link episode ranges");
+   if(noLink)failures.push(noLink+" reaction links have no destination URL");
+   if(badYoutube)failures.push(badYoutube+" invalid YouTube URLs");
+   if(badPatreon)failures.push(badPatreon+" invalid Patreon URLs");
+   if(wrongProvider)failures.push(wrongProvider+" provider type/URL mismatches");
+   const detail=watch.length+" watch-history rows scanned · "+links.length+" reaction-link rows scanned · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link problems"+(warnings.length?" · "+warnings.join(" · "):"");
+   if(failures.length)throw new Error(failures.join(" · "));
+   return fullDiagResult("Watch history and anime reaction-link integrity",warnings.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"Notifications, reports, and review queues",
+  run:async()=>{
+   const [notificationResult,reportResult,pendingResult]=await Promise.all([
+    fullDiagReadAll("got_notifications","id,kind,title,href,created_at,metadata"),
+    fullDiagReadAll("got_site_reports","id,status"),
+    fullDiagReadAll("got_anime_pending_episode_links","id,status,confidence")
+   ]);
+   const notifications=notificationResult.rows,reports=reportResult.rows,pending=pendingResult.rows;
+   const badNotifications=notifications.filter(row=>!row.title||!["episode","announcement","system"].includes(row.kind)).length;
+   const badTargets=notifications.filter(row=>row.href&&!/^(index|anime|notifications|profile|player-directory|nexus)\\.html(?:[?#].*)?$/.test(row.href)).length;
+   const badReportStatuses=reports.filter(row=>!["new","reviewing","fixed","dismissed"].includes(row.status)).length;
+   const badQueueStatuses=pending.filter(row=>!["pending","needs_checking","approved","ignored"].includes(row.status)).length;
+   const problems=[];
+   if(badNotifications)problems.push(badNotifications+" notifications missing titles or valid types");
+   if(badTargets)problems.push(badTargets+" notifications have unexpected destinations");
+   if(badReportStatuses)problems.push(badReportStatuses+" reports have unknown statuses");
+   if(badQueueStatuses)problems.push(badQueueStatuses+" pending-link records have unknown statuses");
+   if(notificationResult.truncated||reportResult.truncated||pendingResult.truncated)problems.push("the 25,000-row safety scan limit was reached");
+   if(problems.length)return fullDiagResult("Notifications, reports, and review queues","warning",notifications.length+" notifications · "+reports.length+" reports · "+pending.length+" pending-link records · "+problems.join(" · "));
+   return fullDiagResult("Notifications, reports, and review queues","pass",notifications.length+" notifications · "+reports.length+" reports · "+pending.length+" pending-link records · record structures and workflow statuses look valid");
+  }
+ }
+];
+
+async function runFullDiagnostics(){
+ if(fullDiagRunning)return;
+ if(!await verifyOwner())return;
+ fullDiagRunning=true;
+ const button=$("runFullDiagnostics");
+ button.disabled=true;
+ button.textContent="Diagnostics running…";
+ fullDiagSetState("running","RUNNING");
+ $("fullDiagTerminal").replaceChildren();
+ $("fullDiagResults").replaceChildren();
+ $("fullDiagSummary").textContent="The system audit is running. Checks are read-only.";
+ fullDiagRows=[];
+ const total=fullDiagnosticSteps.length;
+ fullDiagSetProgress(0,total);
+ fullDiagLogLine("G.O.T GAMES // SYSTEM DIAGNOSTICS v1.0","good");
+ fullDiagLogLine("AUTHENTICATED OWNER SESSION · READ-ONLY AUDIT","dim");
+ await fullDiagSleep(180);
+ for(let index=0;index<total;index++){
+  const step=fullDiagnosticSteps[index];
+  $("fullDiagCurrentStep").textContent="Checking: "+step.name;
+  await fullDiagTypeLine(step.name,index+1,total);
+  fullDiagLogLine("  executing checks…","dim");
+  await fullDiagSleep(100);
+  let result;
+  try{result=await step.run();}
+  catch(error){result=fullDiagResult(step.name,"fail",error?.message||String(error));}
+  fullDiagRows.push(result);
+  const label=result.status==="pass"?"PASS":result.status==="warning"?"WARNING":"FAILED";
+  fullDiagLogLine("  ["+label+"] "+result.detail,result.status==="pass"?"good":result.status==="warning"?"warn":"fail");
+  fullDiagRenderResults();
+  fullDiagSetProgress(index+1,total);
+  await fullDiagSleep(180);
+ }
+ const failures=fullDiagRows.filter(row=>row.status==="fail").length;
+ const warnings=fullDiagRows.filter(row=>row.status==="warning").length;
+ const passed=fullDiagRows.length-failures-warnings;
+ $("fullDiagCurrentStep").textContent="Diagnostics finished · "+new Date().toLocaleString();
+ if(failures){fullDiagSetState("error","ISSUES FOUND");fullDiagLogLine("AUDIT COMPLETE · "+failures+" FAILURE(S) · "+warnings+" WARNING(S)","fail");}
+ else if(warnings){fullDiagSetState("done","WARNINGS FOUND");fullDiagLogLine("AUDIT COMPLETE · "+passed+" PASSED · "+warnings+" WARNING(S)","warn");}
+ else{fullDiagSetState("done","ALL CLEAR");fullDiagLogLine("AUDIT COMPLETE · ALL "+passed+" CHECKS PASSED","good");}
+ $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failures+" failures · "+(failures?"Review the failed checks above.":warnings?"Review the warnings above.":"No issues detected in the tested systems.");
+ button.disabled=false;
+ button.textContent="Run diagnostics again";
+ fullDiagRunning=false;
+}
+$("runFullDiagnostics").addEventListener("click",runFullDiagnostics);
+
 function renderReports(){
  const filter=$("reportFilter").value;
  const query=$("reportSearch").value.trim().toLowerCase();
