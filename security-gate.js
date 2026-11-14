@@ -79,19 +79,6 @@
       return String(payload.session_id || "");
     } catch (_) { return ""; }
   }
-  function savePendingEmail(challengeId, enrollment) {
-    try {
-      const session = db.auth.getSession();
-      session.then(({data}) => {
-        if (!data.session) return;
-        localStorage.setItem("gotSecurityPendingEmailV1", JSON.stringify({
-          challengeId, enrollment: !!enrollment,
-          originalSessionId: sessionIdFromClientSession(data.session),
-          savedAt: Date.now()
-        }));
-      });
-    } catch (_) {}
-  }
   function readPendingEmail() {
     try {
       const value = JSON.parse(localStorage.getItem("gotSecurityPendingEmailV1") || "null");
@@ -133,8 +120,8 @@
       enrollment ? "Confirm your email" : "Email verification",
       enrollment
         ? "Before setting your security question, confirm you own this account."
-        : "The security answer wasn't accepted or you chose email verification. We'll send a one-time code to:",
-      '<div class="got-security-email">' + escapeText(maskedEmail(email)) + '</div><label for="gotSecurityOtp">6-digit email code</label><input id="gotSecurityOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"><button id="gotSecuritySend">Send code</button><button id="gotSecurityVerify">Verify code</button>'
+        : "The security answer wasn't accepted or you chose email verification. Check your inbox for a six-digit code, or open the sign-in link in this same browser.",
+      '<div class="got-security-email">' + escapeText(maskedEmail(email)) + '</div><label for="gotSecurityOtp">6-digit email code (if shown)</label><input id="gotSecurityOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code"><button id="gotSecuritySend">Send code</button><button id="gotSecurityVerify">Verify code</button>'
     );
     const sendButton = overlay.querySelector("#gotSecuritySend");
     const verifyButton = overlay.querySelector("#gotSecurityVerify");
