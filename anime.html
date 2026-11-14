@@ -422,8 +422,7 @@
       place-items: center;
       padding: 24px;
       overflow: hidden;
-      /* Fully opaque so the page underneath never shows through. */
-      background: #10100e;
+      background: #08090d;
       color: var(--text);
       text-align: center;
       isolation: isolate;
@@ -433,55 +432,113 @@
     .page-loader::after {
       content: "";
       position: absolute;
-      inset: -35%;
+      inset: -30%;
       z-index: -1;
       pointer-events: none;
-      border-radius: 50%;
     }
+    /* Manga-style radial speed lines behind the loading emblem. */
     .page-loader::before {
       background:
-        radial-gradient(ellipse at 50% 45%, rgba(239,189,50,.16), transparent 27%),
-        radial-gradient(ellipse at 18% 24%, rgba(239,189,50,.09), transparent 22%),
-        radial-gradient(ellipse at 82% 76%, rgba(239,189,50,.08), transparent 24%);
-      animation: page-loader-glow 5s ease-in-out infinite alternate;
+        repeating-conic-gradient(from -12deg at 50% 50%,
+          transparent 0deg 5deg,
+          rgba(239,189,50,.11) 5.2deg 5.7deg,
+          transparent 6deg 12deg);
+      -webkit-mask-image: radial-gradient(ellipse, transparent 0 18%, #000 47% 100%);
+      mask-image: radial-gradient(ellipse, transparent 0 18%, #000 47% 100%);
+      animation: page-loader-rays 32s linear infinite;
     }
     .page-loader::after {
-      inset: 8%;
-      border: 1px solid rgba(239,189,50,.10);
-      box-shadow:
-        0 0 55px rgba(239,189,50,.06),
-        inset 0 0 55px rgba(239,189,50,.04);
-      animation: page-loader-orbit 18s linear infinite;
+      inset: -15%;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(239,189,50,.2), transparent 22%),
+        radial-gradient(circle at 22% 28%, rgba(67,137,255,.12), transparent 18%),
+        radial-gradient(circle at 78% 72%, rgba(239,89,89,.10), transparent 18%);
+      animation: page-loader-aura 4s ease-in-out infinite alternate;
     }
     .page-loader-content {
       position: relative;
       z-index: 1;
       display: grid;
       justify-items: center;
-      gap: 14px;
+      gap: 13px;
+      width: min(420px, 100%);
+      padding: 34px 26px;
+      border: 1px solid rgba(239,189,50,.24);
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(19,21,29,.94), rgba(8,9,13,.92));
+      box-shadow: 0 0 70px rgba(239,189,50,.10), 0 24px 80px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
     }
-    .page-loader-spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid rgba(239,189,50,.18);
+    .page-loader-emblem {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 112px;
+      height: 112px;
+      margin-bottom: 5px;
+    }
+    .page-loader-ring {
+      position: absolute;
+      inset: 3px;
+      border: 2px solid transparent;
       border-top-color: var(--accent);
-      border-right-color: rgba(239,189,50,.7);
+      border-right-color: rgba(239,189,50,.5);
+      border-bottom-color: rgba(75,145,255,.55);
       border-radius: 50%;
-      box-shadow: 0 0 24px rgba(239,189,50,.2);
-      animation: page-loader-spin .8s linear infinite;
+      filter: drop-shadow(0 0 9px rgba(239,189,50,.45));
+      animation: page-loader-spin 2.4s linear infinite;
     }
-    .page-loader-title { font: 800 18px var(--display); }
-    .page-loader-detail { color: var(--muted); font-size: 13px; }
+    .page-loader-ring.inner {
+      inset: 13px;
+      border-width: 1px;
+      border-top-color: rgba(255,255,255,.85);
+      border-left-color: rgba(239,189,50,.7);
+      border-right-color: transparent;
+      animation-direction: reverse;
+      animation-duration: 1.6s;
+    }
+    .page-loader-mark {
+      font: 800 25px var(--display);
+      letter-spacing: -1.5px;
+      color: #fff7df;
+      text-shadow: 0 0 18px rgba(239,189,50,.65);
+    }
+    .page-loader-mark span { color: var(--accent); }
+    .page-loader-title {
+      font: 800 20px var(--display);
+      letter-spacing: .02em;
+    }
+    .page-loader-detail { color: #c1bdaf; font-size: 13px; line-height: 1.5; }
+    .page-loader-track {
+      width: min(230px, 80%);
+      height: 4px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255,255,255,.10);
+    }
+    .page-loader-track::after {
+      content: "";
+      display: block;
+      width: 38%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #efbd32, #fff0ad, #5c9cff);
+      box-shadow: 0 0 12px rgba(239,189,50,.7);
+      animation: page-loader-progress 1.35s ease-in-out infinite;
+    }
     @keyframes page-loader-spin { to { transform: rotate(360deg); } }
-    @keyframes page-loader-glow {
-      from { transform: scale(.94) rotate(-5deg); opacity: .65; }
-      to { transform: scale(1.08) rotate(5deg); opacity: 1; }
+    @keyframes page-loader-rays { to { transform: rotate(360deg); } }
+    @keyframes page-loader-aura {
+      from { transform: scale(.88); opacity: .55; }
+      to { transform: scale(1.12); opacity: 1; }
     }
-    @keyframes page-loader-orbit { to { transform: rotate(360deg); } }
+    @keyframes page-loader-progress {
+      from { transform: translateX(-110%); }
+      to { transform: translateX(280%); }
+    }
     @media (prefers-reduced-motion: reduce) {
-      .page-loader-spinner,
-      .page-loader::before,
-      .page-loader::after { animation-duration: 8s; }
+      .page-loader-ring, .page-loader::before, .page-loader::after,
+      .page-loader-track::after { animation-duration: 8s; }
     }
 
     .watch-error {
@@ -791,9 +848,14 @@
 <body>
   <div class="page-loader" id="pageLoader" role="status" aria-live="polite">
     <div class="page-loader-content">
-      <span class="page-loader-spinner" aria-hidden="true"></span>
-      <span class="page-loader-title">Loading anime corner…</span>
-      <span class="page-loader-detail">Getting seasons, covers, and watch history ready.</span>
+      <div class="page-loader-emblem" aria-hidden="true">
+        <span class="page-loader-ring"></span>
+        <span class="page-loader-ring inner"></span>
+        <span class="page-loader-mark">G.O.T<span>!</span></span>
+      </div>
+      <span class="page-loader-title">Entering the anime zone</span>
+      <span class="page-loader-detail">Gathering anime, seasons, covers, and episode details…</span>
+      <span class="page-loader-track" aria-hidden="true"></span>
     </div>
   </div>
 
@@ -2900,26 +2962,26 @@
         `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}.`
       );
 
-      // Show AniList results immediately. Junban is enrichment only, so a
-      // slow season lookup must never keep the whole page behind its loader.
-      render(displayedItems);
-      pageLoader.hidden = true;
+      // Keep the full-screen anime-style loader visible while Junban adds
+      // the complete season structure. This prevents the page from briefly
+      // showing an incomplete first render and then rearranging a few seconds later.
+      const loaderDetail = pageLoader.querySelector(".page-loader-detail");
+      if (loaderDetail) {
+        loaderDetail.textContent = "Finding connected seasons and episode counts…";
+      }
 
-      // Enrich in the background, then refresh the cards if this search is
-      // still current. If Junban is unavailable, keep the AniList results.
       try {
         await loadJunbanFullSeasonGroups(displayedItems, controller.signal);
-
       } catch (junbanError) {
-        if (junbanError.name !== "AbortError") {
-          console.warn("Junban season data unavailable; keeping AniList grouping.", junbanError);
-        }
+        if (junbanError.name === "AbortError") throw junbanError;
+        console.warn("Junban season data unavailable; using AniList results.", junbanError);
       }
 
       if (controller.signal.aborted || requestController !== controller) {
         return;
       }
 
+      // Render once, after season enrichment has completed or safely fallen back.
       render(displayedItems);
 
     } catch (error) {
