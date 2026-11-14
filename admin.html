@@ -81,6 +81,11 @@ input,select,textarea{accent-color:var(--got-gold)}
 ::selection{background:rgba(242,189,85,.3);color:#fff}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
+
+.announcement-panel{margin:18px 0 24px;border-left:3px solid #f2bd55}
+.announcement-panel h2{margin:0 0 6px}.announcement-panel p{margin:0 0 14px}
+.announcement-panel label{display:block;margin-top:9px;color:var(--muted);font-size:13px;font-weight:700}
+.announcement-panel input,.announcement-panel textarea,.announcement-panel select{margin:5px 0 8px}
 </style></head>
 <body>
 <header class="site-header">
@@ -102,6 +107,19 @@ input,select,textarea{accent-color:var(--got-gold)}
 <form id="loginForm"><input id="email" type="email" placeholder="Owner email" autocomplete="username" required><input id="password" type="password" placeholder="Password" autocomplete="current-password" required><button type="submit">Sign in</button></form>
 </section>
 <section id="dashboard" hidden>
+ <section class="panel announcement-panel" aria-labelledby="announcementTitle">
+  <h2 id="announcementTitle">Publish a G.O.T alert</h2>
+  <p class="muted">Send an in-app announcement to signed-in users. New approved reaction links are announced automatically.</p>
+  <form id="announcementForm">
+   <label for="announcementHeading">Title</label>
+   <input id="announcementHeading" maxlength="140" required placeholder="A short announcement title">
+   <label for="announcementBody">Message</label>
+   <textarea id="announcementBody" maxlength="500" rows="3" required placeholder="What should everyone know?"></textarea>
+   <label for="announcementLink">Open destination</label>
+   <select id="announcementLink"><option value="notifications.html">Notification center</option><option value="index.html">Weekly schedule</option><option value="anime.html">Anime catalogue</option><option value="player-directory.html">Fanbase</option></select>
+   <div class="row"><button type="submit" id="announcementSubmit">Publish alert</button><span class="muted" id="announcementMessage" role="status" aria-live="polite"></span></div>
+  </form>
+ </section>
 <div class="section-head"><h2>System status</h2><div><button class="secondary" id="refresh">Refresh status</button><button class="secondary" id="logout">Log out</button></div></div>
 <div class="grid">
 <article class="status-card"><span class="dot" id="anilistDot"></span>AniList<strong id="anilistStatus">Checking…</strong><span class="muted" id="anilistDetail">Anime catalogue API</span></article>
@@ -338,5 +356,30 @@ async function refreshAll(){if(!await verifyOwner())return;await Promise.all([he
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){$("authMessage").textContent="Sign-in is unavailable because the authentication library did not load.";return;}$("authMessage").textContent="Signing in…";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("password").value="";if(error){$("authMessage").textContent="Sign-in failed: "+error.message;return;}await refreshAll();});
 $("logout").onclick=async()=>{if(!db)return;await db.auth.signOut();await verifyOwner();};
 $("refresh").onclick=refreshAll;$("reportFilter").onchange=renderReports;$("reportSearch").addEventListener("input",renderReports);
+const announcementForm=$("announcementForm");
+announcementForm.addEventListener("submit",async event=>{
+ event.preventDefault();
+ if(!db)return;
+ const submit=$("announcementSubmit"),message=$("announcementMessage");
+ submit.disabled=true;message.textContent="Publishing…";
+ try{
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!session?.user?.id)throw new Error("Your owner session expired. Please sign in again.");
+  const {error}=await db.from("got_notifications").insert({
+   kind:"announcement",
+   title:$("announcementHeading").value.trim(),
+   message:$("announcementBody").value.trim(),
+   href:$("announcementLink").value,
+   created_by:session.user.id
+  });
+  if(error)throw error;
+  announcementForm.reset();
+  message.textContent="Alert published. It is now in the notification center.";
+ }catch(error){message.textContent="Couldn't publish: "+(error.message||"Please retry.");}
+ finally{submit.disabled=false;}
+});
 refreshAll();
-</script></body></html>
+</script>
+<script src="notifications.js"></script>
+</body></html>
