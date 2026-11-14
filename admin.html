@@ -537,7 +537,7 @@ function fullDiagReportText(status){
   lines.push("   "+String(result.detail||"No additional details."));
   lines.push("");
  });
- return lines.join("\\n");
+ return lines.join("\n");
 }
 function fullDiagCopyFallback(value,button,resetText){
  const field=document.createElement("textarea");
@@ -564,7 +564,7 @@ async function fullDiagCopyText(value,button,resetText){
 function fullDiagCopyReport(){
  const lines=["G.O.T GAMES FULL DIAGNOSTICS",new Date().toLocaleString(),$("fullDiagSummary").textContent,""];
  fullDiagRows.forEach(result=>lines.push("["+result.status.toUpperCase()+"] "+result.name+" — "+result.detail));
- fullDiagCopyText(lines.join("\\n"),$("copyFullDiagReport"),"Copy full report");
+ fullDiagCopyText(lines.join("\n"),$("copyFullDiagReport"),"Copy full report");
 }
 function fullDiagSaveText(status){
  const value=fullDiagReportText(status);
