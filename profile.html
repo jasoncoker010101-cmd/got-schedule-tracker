@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#12110f">
-  <title>Player Profile | G.O.T. Games</title>
+  <title>Player Profile | G.O.T Games</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -294,7 +294,7 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
+  <a class="logo" href="index.html">G.O.T <span>Games</span></a>
   <nav class="site-nav" aria-label="Main navigation">
       <a href="index.html">Schedule</a>
       <a href="profile.html" class="active" aria-current="page">Profile</a>
@@ -316,9 +316,9 @@
           </div>
           <div class="profile-info">
             <h1 id="username" class="username"></h1>
-            <div id="profileLabel" class="profile-label">G.O.T. Games Player</div>
+            <div id="profileLabel" class="profile-label">G.O.T Games Player</div>
             <div id="roleList" class="role-list"></div>
-            <div id="founderLabel" class="founder-label hidden">♛ &nbsp;Top Fan of G.O.T. Games</div>
+            <div id="founderLabel" class="founder-label hidden">♛ &nbsp;Top Fan of G.O.T Games</div>
           </div>
         </div>
         <button id="editButton" class="button edit-button hidden" type="button">Edit Profile</button>
@@ -345,7 +345,7 @@
   </div>
   <section id="editor" class="editor hidden">
     <h2>Edit Profile</h2>
-    <p class="editor-description">Customize how other players see you on G.O.T. Games.</p>
+    <p class="editor-description">Customize how other players see you on G.O.T Games.</p>
     <form id="profileForm">
       <div class="form-group">
         <label for="editUsername">Username</label>
@@ -382,7 +382,7 @@
     </form>
   </section>
 </main>
-<footer><div class="footer-brand">G.O.T. GAMES</div>G.O.T. Games is an unofficial fan site.</footer>
+<footer><div class="footer-brand">G.O.T GAMES</div>G.O.T Games is an unofficial fan site.</footer>
 <script>
   const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
   const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
@@ -441,7 +441,7 @@
     avatarFrame.classList.toggle("owner",isOwner);
     ownerCrown.classList.toggle("hidden",!isOwner);
     founderLabel.classList.toggle("hidden",!isOwner);
-    profileLabel.textContent = isOwner ? "G.O.T. Games Founder" : "G.O.T. Games Player";
+    profileLabel.textContent = isOwner ? "G.O.T Games Founder" : "G.O.T Games Player";
   }
   async function loadProfileRoles(userId) {
     const {data,error} = await supabaseClient.from("user_roles").select("role").eq("user_id",userId);
@@ -505,7 +505,7 @@
       : "";
     renderRoles(roles);
     renderSocialLinks(profile);
-    document.title = `${profile.username} | G.O.T. Games`;
+    document.title = `${profile.username} | G.O.T Games`;
     editButton.classList.toggle("hidden",!(currentUser && currentUser.id === profile.id));
     loading.classList.add("hidden");
     notFound.classList.add("hidden");
