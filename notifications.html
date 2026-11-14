@@ -246,6 +246,9 @@ async function loadNotices(){
       const {error:markError} = await gotClient.from("got_notification_reads").insert(rows);
       if(markError) throw markError;
       for(const item of unreadNotices) readIds.add(item.id);
+      // Keep the shared navigation badge in sync after the inbox auto-read.
+      window.GOT_NOTIFICATIONS_READ_SYNC_PENDING = true;
+      window.dispatchEvent(new Event("got:notifications-read"));
     }
     const unread = notices.filter(item=>!readIds.has(item.id)).length;
     $("inboxStatus").textContent = unread ? unread + " unread · " + notices.length + " recent notifications" : notices.length + " recent notifications · all caught up";
