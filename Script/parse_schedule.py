@@ -13,7 +13,7 @@ DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
 MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
 # What each icon on the image means. Change the names here if one is wrong.
 LABELS = {"patreon": "Patreon", "twitch": "Twitch", "rumble": "Rumble",
-          "g_gold": "G.O.T. Games", "g_green": "G.O.T. Games"}
+          "g_gold": "G.O.T Games", "g_green": "G.O.T Games"}
 ROW_H = 57  # pixels between rows when the image is 1152 px wide
 
 
