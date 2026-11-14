@@ -1333,15 +1333,30 @@ const fullDiagnosticSteps=[
  {
   name:"Edge Function availability and browser CORS contracts",
   run:async()=>{
-   const slugs=["audit-youtube-playlist","game-cover-lookup"];
-   const checks=await Promise.all(slugs.map(async slug=>{
-    try{
-     const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"OPTIONS",headers:{Origin:location.origin,"Access-Control-Request-Method":"POST","Access-Control-Request-Headers":"authorization,content-type,apikey"}},9000);
-     return {slug,ok:response.ok,status:response.status,allow:response.headers.get("access-control-allow-origin")};
-    }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
-   }));
+   const {data:{session},error:sessionError}=await db.auth.getSession();
+   if(sessionError||!session?.access_token)throw new Error("Could not obtain the active owner session for browser-origin tests.");
+   const checks=await Promise.all([
+    (async()=>{
+     const slug="audit-youtube-playlist";
+     try{
+      const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY},body:JSON.stringify({action:"scan",playlist_url:"",anime_title:"",anilist_id:0})},10000);
+      const allow=response.headers.get("access-control-allow-origin");
+      const payload=await response.json().catch(()=>null);
+      return {slug,ok:!!allow,status:response.status,allow,detail:payload?.error||""};
+     }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
+    })(),
+    (async()=>{
+     const slug="thegamesdb-game-cover";
+     try{
+      const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:"Super Mario Bros."})},10000);
+      const allow=response.headers.get("access-control-allow-origin");
+      const payload=await response.json().catch(()=>null);
+      return {slug,ok:!!allow,status:response.status,allow,detail:payload?.error||""};
+     }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
+    })()
+   ]);
    const failed=checks.filter(item=>!item.ok);
-   const details=checks.map(item=>item.slug+": "+(item.ok?"HTTP "+item.status+" · CORS "+(item.allow||"header absent"):(item.detail||"HTTP "+item.status))).join(" · ");
+   const details=checks.map(item=>item.slug+": "+(item.ok?"browser POST HTTP "+item.status+" · CORS "+item.allow+(item.detail?" · "+item.detail:""):(item.detail||"CORS/browser request failed"))).join(" · ");
    return fullDiagResult("Edge Function availability and browser CORS contracts",failed.length?"warning":"pass",details);
   }
  }
