@@ -213,9 +213,9 @@
           setMessage("Verified. Opening your account…");
           window.location.reload();
         } else if (result.status === "email_required") {
-          const email = await emailForSession();
+          const email = await sendEmailCode(challengeId, false);
           renderEmailCode(email, false, challengeId);
-          setMessage("Use the code sent to your account email.");
+          setMessage("Code sent. Check your inbox and spam folder.");
         } else if (result.status === "wrong_answer") {
           setMessage("That answer wasn't correct. " + result.remaining + " attempt(s) before email verification.");
         } else if (result.status === "temporarily_blocked") {
@@ -232,7 +232,7 @@
       setBusy(true);
       try {
         const email = await sendEmailCode(challengeId, false);
-        renderEmailCode(email, false);
+        renderEmailCode(email, false, challengeId);
         setMessage("Code sent. Check your inbox and spam folder.");
       } catch (error) { setMessage("Email could not be sent: " + (error.message || "Please retry.")); }
       finally { setBusy(false); }
@@ -282,7 +282,7 @@
         const email = result.email || session.user?.email || "";
         renderEmailCode(email, true, result.challengeId);
         try {
-          await sendEmailCode();
+          await sendEmailCode(result.challengeId, true);
           setMessage("A verification code was sent to " + maskedEmail(email) + ".");
         } catch (error) {
           setMessage("Couldn't send the email code: " + (error.message || "Please retry using Send code."));
