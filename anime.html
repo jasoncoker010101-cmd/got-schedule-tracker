@@ -264,6 +264,14 @@
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       gap: 18px;
       min-width: 0;
+      align-items: start;
+    }
+
+    /* Keep short neighboring season cards from stretching beside an
+       expanded card with a long episode list. */
+    .series-group > .card {
+      align-self: start;
+      height: fit-content;
     }
 
     .card {
@@ -462,6 +470,12 @@
       color: var(--green);
       font-size: 10px;
       font-weight: 700;
+    }
+
+    .episode-chip.unwatched {
+      border-color: var(--line);
+      background: rgba(255,255,255,.025);
+      color: var(--muted);
     }
 
     .episode-chip.youtube-link {
@@ -1454,9 +1468,9 @@
     }
   }
 
-  function getHistoryForAnime(anime) {
+  function getHistoryForAnime(anime, seasonNumber = null) {
     const aliases = getAnimeAliases(anime);
-    const matchingRows = [];
+    let matchingRows = [];
     const seenRows = new Set();
 
     for (const alias of aliases) {
@@ -1477,6 +1491,23 @@
 
         seenRows.add(identity);
         matchingRows.push(row);
+      }
+    }
+
+    // The search result is a single season card, so only count rows recorded
+    // for that exact season. Never repeat the whole franchise total on every
+    // season card.
+    if (seasonNumber != null && Number.isInteger(Number(seasonNumber))) {
+      matchingRows = matchingRows.filter(row =>
+        row.season_number != null &&
+        Number(row.season_number) === Number(seasonNumber)
+      );
+    } else {
+      const knownSeasons = new Set(matchingRows.map(row =>
+        row.season_number == null ? "overall" : String(row.season_number)
+      ));
+      if (knownSeasons.size > 1) {
+        matchingRows = matchingRows.filter(row => row.season_number == null);
       }
     }
 
@@ -1639,91 +1670,114 @@
   // EXPANDABLE EPISODE LIST
   // =========================================================
 
-  function makeEpisodeList(groups, anime) {
+  function makeEpisodeList(historyGroups, anime, seasonNumber) {
     const list = document.createElement("div");
     list.className = "episode-list";
     list.hidden = true;
 
-    for (const group of groups) {
-      const seasonSection = document.createElement("section");
-      seasonSection.className = "episode-season";
+    const episodeCount = Number(anime.episodes);
+    const hasEpisodeCount = Number.isInteger(episodeCount) &&
+      episodeCount > 0 && episodeCount <= 1000;
+    const seasonKey = seasonNumber == null ? "overall" : String(seasonNumber);
+    const watchedRanges = historyGroups
+      .filter(group => String(group.season) === seasonKey)
+      .flatMap(group => group.ranges);
 
-      const seasonTitle = document.createElement("div");
-      seasonTitle.className = "episode-season-title";
-      seasonTitle.textContent = group.season === "overall"
-        ? "Overall episodes"
-        : `Season ${group.season}`;
+    const displayRanges = hasEpisodeCount
+      ? [{ start: 1, end: episodeCount }]
+      : watchedRanges;
 
-      const chips = document.createElement("div");
-      chips.className = "episode-chips";
+    const seasonSection = document.createElement("section");
+    seasonSection.className = "episode-season";
 
-      for (const range of group.ranges) {
-        for (let episode = range.start; episode <= range.end; episode++) {
-          const reactionLink = getEpisodeReactionLink(
-            anime,
-            group.season,
+    const seasonTitle = document.createElement("div");
+    seasonTitle.className = "episode-season-title";
+    seasonTitle.textContent = seasonNumber == null
+      ? "Episodes"
+      : `Season ${seasonNumber}`;
+
+    const chips = document.createElement("div");
+    chips.className = "episode-chips";
+
+    for (const range of displayRanges) {
+      for (let episode = range.start; episode <= range.end; episode++) {
+        const reactionLink = getEpisodeReactionLink(
+          anime,
+          seasonKey,
+          episode
+        );
+
+        const isWatched = watchedRanges.some(watched =>
+          episode >= watched.start && episode <= watched.end
+        );
+
+        let chip;
+
+        if (reactionLink?.link_type === "patreon") {
+          chip = window.GOTPatreonLinks.createEpisodeLink(
+            reactionLink,
             episode
           );
+        } else if (reactionLink?.link_type === "youtube" || reactionLink?.youtube_url) {
+          chip = document.createElement("a");
+          chip.href = reactionLink.youtube_url;
+          chip.target = "_blank";
+          chip.rel = "noopener noreferrer";
+          chip.className = "episode-chip youtube-link";
 
-          let chip;
+          const videoTitle = safeText(reactionLink.video_title);
 
-          if (reactionLink?.link_type === "patreon") {
-            chip = window.GOTPatreonLinks.createEpisodeLink(
-              reactionLink,
-              episode
-            );
-          } else if (reactionLink?.link_type === "youtube" || reactionLink?.youtube_url) {
-            chip = document.createElement("a");
-            chip.href = reactionLink.youtube_url;
-            chip.target = "_blank";
-            chip.rel = "noopener noreferrer";
-            chip.className = "episode-chip youtube-link";
+          chip.title = videoTitle
+            ? `Watch G.O.T.'s reaction: ${videoTitle}`
+            : `Watch G.O.T.'s reaction to episode ${episode}`;
 
-            const videoTitle = safeText(reactionLink.video_title);
-
-            chip.title = videoTitle
-              ? `Watch G.O.T.'s reaction: ${videoTitle}`
-              : `Watch G.O.T.'s reaction to episode ${episode}`;
-
-            chip.setAttribute(
-              "aria-label",
-              `Episode ${episode}. Open G.O.T.'s YouTube reaction in a new tab.`
-            );
-            chip.textContent = `EP ${episode}`;
-          } else {
-            chip = document.createElement("span");
-            chip.className = "episode-chip";
-            chip.title = `Episode ${episode}`;
-            chip.textContent = `EP ${episode}`;
-          }
-
-          chips.append(chip);
+          chip.setAttribute(
+            "aria-label",
+            `Episode ${episode}. Open G.O.T.'s YouTube reaction in a new tab.`
+          );
+          chip.textContent = `EP ${episode}`;
+        } else {
+          chip = document.createElement("span");
+          chip.className = isWatched
+            ? "episode-chip"
+            : "episode-chip unwatched";
+          chip.title = isWatched
+            ? `Episode ${episode} recorded in G.O.T.'s watch history`
+            : `Episode ${episode} not recorded as watched`;
+          chip.textContent = `EP ${episode}`;
         }
-      }
 
+        chips.append(chip);
+      }
+    }
+
+    if (displayRanges.length) {
       seasonSection.append(seasonTitle, chips);
       list.append(seasonSection);
+    } else {
+      const unavailable = document.createElement("div");
+      unavailable.className = "episode-note";
+      unavailable.textContent = "Episode count is not available for this entry yet.";
+      list.append(unavailable);
     }
 
     const patreonLinksForAnime = [];
     const seenPatreonUrls = new Set();
 
-    for (const group of groups) {
-      for (const range of group.ranges) {
-        for (let episode = range.start; episode <= range.end; episode++) {
-          const reactionLink = getEpisodeReactionLink(
-            anime,
-            group.season,
-            episode
-          );
+    for (const range of displayRanges) {
+      for (let episode = range.start; episode <= range.end; episode++) {
+        const reactionLink = getEpisodeReactionLink(
+          anime,
+          seasonKey,
+          episode
+        );
 
-          if (
-            reactionLink?.link_type === "patreon" &&
-            !seenPatreonUrls.has(reactionLink.patreon_url)
-          ) {
-            seenPatreonUrls.add(reactionLink.patreon_url);
-            patreonLinksForAnime.push(reactionLink);
-          }
+        if (
+          reactionLink?.link_type === "patreon" &&
+          !seenPatreonUrls.has(reactionLink.patreon_url)
+        ) {
+          seenPatreonUrls.add(reactionLink.patreon_url);
+          patreonLinksForAnime.push(reactionLink);
         }
       }
     }
@@ -1737,8 +1791,8 @@
     const note = document.createElement("div");
     note.className = "episode-note";
     note.textContent = episodeLinksLoaded
-      ? "Green episodes are recorded in G.O.T.'s watch history. Gold episodes link to YouTube reactions; Patreon-exclusive episodes are marked separately."
-      : "Only episodes recorded in G.O.T.'s watch history are shown.";
+      ? "Green episodes are recorded as watched. Gray episodes have no watch record. Gold links open G.O.T.'s YouTube reactions; Patreon-exclusive episodes are marked separately."
+      : "Watch history and reaction links are still loading.";
 
     list.append(note);
 
@@ -1749,7 +1803,7 @@
   // WATCH HISTORY CARD DISPLAY
   // =========================================================
 
-  function makeWatchBox(anime) {
+  function makeWatchBox(anime, seasonNumber = null) {
     const box = document.createElement("div");
     box.className = "watch-box";
 
@@ -1768,20 +1822,7 @@
       return box;
     }
 
-    const history = getHistoryForAnime(anime);
-
-    if (!history.total) {
-      const label = document.createElement("div");
-      label.className = "watch-label";
-      label.textContent = "G.O.T. watch history";
-
-      const empty = document.createElement("div");
-      empty.className = "watch-empty";
-      empty.textContent = "No episodes recorded yet.";
-
-      box.append(label, empty);
-      return box;
-    }
+    const history = getHistoryForAnime(anime, seasonNumber);
 
     const top = document.createElement("div");
     top.className = "watch-top";
@@ -1797,24 +1838,36 @@
     top.append(label, number);
 
     const detail = document.createElement("div");
-    detail.className = "watch-detail";
+    detail.className = history.total ? "watch-detail" : "watch-empty";
 
-    const groupDescriptions = history.groups.map(group => {
-      const rangeText = formatRanges(group.ranges);
+    if (history.total) {
+      detail.textContent = history.groups.map(group => {
+        const rangeText = formatRanges(group.ranges);
+        return group.season === "overall"
+          ? rangeText
+          : `Season ${group.season}: ${rangeText}`;
+      }).join(" · ");
+    } else {
+      detail.textContent = "No episodes recorded yet.";
+    }
 
-      return group.season === "overall"
-        ? rangeText
-        : `Season ${group.season}: ${rangeText}`;
-    });
+    const episodeCount = Number(anime.episodes);
+    const hasEpisodes = Number.isInteger(episodeCount) &&
+      episodeCount > 0 && episodeCount <= 1000;
 
-    detail.textContent = groupDescriptions.join(" · ");
+    box.append(top, detail);
 
-    const latest = document.createElement("div");
-    latest.className = "watch-detail";
-    latest.style.marginTop = "6px";
-    latest.textContent = history.latestRow
-      ? `Last recorded: ${formatDate(history.latestRow.watched_at)}`
-      : "Watch date unavailable";
+    if (history.latestRow) {
+      const latest = document.createElement("div");
+      latest.className = "watch-detail";
+      latest.style.marginTop = "6px";
+      latest.textContent = `Last recorded: ${formatDate(history.latestRow.watched_at)}`;
+      box.append(latest);
+    }
+
+    if (!hasEpisodes && !history.total) {
+      return box;
+    }
 
     const toggle = document.createElement("button");
     toggle.className = "episode-toggle";
@@ -1831,7 +1884,7 @@
 
     toggle.append(toggleText, arrow);
 
-    const episodeList = makeEpisodeList(history.groups, anime);
+    const episodeList = makeEpisodeList(history.groups, anime, seasonNumber);
 
     toggle.addEventListener("click", () => {
       const isOpen = toggle.getAttribute("aria-expanded") === "true";
@@ -1841,7 +1894,7 @@
       toggleText.textContent = isOpen ? "View episodes" : "Hide episodes";
     });
 
-    box.append(top, detail, latest, toggle, episodeList);
+    box.append(toggle, episodeList);
 
     return box;
   }
@@ -1850,7 +1903,7 @@
   // ANIME CARDS
   // =========================================================
 
-  function makeCard(anime, seasonLabel = "") {
+  function makeCard(anime, seasonLabel = "", seasonNumber = null) {
     const card = document.createElement("article");
     card.className = "card";
 
@@ -1926,7 +1979,7 @@
       safeText(anime.description) || "No description available.";
 
     body.append(description);
-    body.append(makeWatchBox(anime));
+    body.append(makeWatchBox(anime, seasonNumber));
 
     card.append(coverWrap, body);
 
@@ -2130,7 +2183,8 @@
       if (unique.length === 1) {
         results.append(makeCard(
           unique[0].anime,
-          seasonLabel(unique[0], 0)
+          seasonLabel(unique[0], 0),
+          unique[0].seasonNumber
         ));
         continue;
       }
@@ -2139,7 +2193,7 @@
       group.className = "series-group";
       group.setAttribute("aria-label", "Related anime seasons");
       unique.forEach((entry, index) => {
-        group.append(makeCard(entry.anime, seasonLabel(entry, index)));
+        group.append(makeCard(entry.anime, seasonLabel(entry, index), entry.seasonNumber));
       });
       results.append(group);
     }
