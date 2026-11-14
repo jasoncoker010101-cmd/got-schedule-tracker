@@ -2784,7 +2784,9 @@ input,select,textarea{accent-color:var(--got-gold)}
 
   async function loadTaizenFullSeasonGroups(items, signal) {
     const tvdbIds = [...new Set(items
-      .map(item => Number(item.externalIds?.theTvdb))
+      .map(item => ["TV", "TV_SHORT"].includes(item.format)
+        ? Number(item.externalIds?.theTvdb)
+        : NaN)
       .filter(id => Number.isInteger(id) && id > 0)
       .map(String)
     )];
@@ -2971,7 +2973,9 @@ input,select,textarea{accent-color:var(--got-gold)}
       const id = Number(anime.id);
       if (claimed.has(id)) continue;
 
-      const tvdbId = anime.externalIds?.theTvdb;
+      const tvdbId = ["TV", "TV_SHORT"].includes(anime.format)
+        ? anime.externalIds?.theTvdb
+        : null;
       const fullSeasonList = tvdbId == null
         ? null
         : taizenFullSeasonCache.get(String(tvdbId));
