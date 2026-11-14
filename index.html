@@ -1033,6 +1033,13 @@ nav[aria-label="Main navigation"] a[aria-current="page"]{
 footer.site-foot{border-top:1px solid rgba(142,220,224,.12);padding-top:20px}
 .links a{border-radius:3px 9px 3px 9px}
 
+/* Owner-only welcome mascot replay control. */
+.mascot-replay-button{border:1px solid rgba(0,224,255,.42);border-radius:3px 10px 3px 10px;padding:9px 12px;background:linear-gradient(120deg,rgba(0,224,255,.13),rgba(242,189,85,.14));color:#e9faff;font:800 .78rem var(--font);letter-spacing:.04em;cursor:pointer;box-shadow:0 0 18px rgba(0,224,255,.08);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.mascot-replay-button:hover{transform:translateY(-2px);border-color:#00e0ff;box-shadow:0 0 22px rgba(0,224,255,.2)}
+.mascot-replay-button:active{transform:scale(.97)}
+@media(max-width:600px){.mascot-replay-button{font-size:.68rem;padding:8px 9px}}
+@media(prefers-reduced-motion:reduce){.mascot-replay-button{transition:none}.mascot-replay-button:hover{transform:none}}
+
 /* Account controls and modal inherit the same signal-room language. */
 .account-button{
   border-radius:3px 10px 3px 10px;
@@ -1442,6 +1449,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
         <a href="anime.html">Anime</a>
         <a href="notifications.html" data-got-alert-link>Alerts <span class="got-alert-count" hidden></span></a>
       <div class="account-area">
+        <button class="mascot-replay-button" id="mascotReplayButton" type="button" hidden title="Replay the welcome mascot animation">✦ Replay Mascot</button>
         <button class="account-button" id="accountButton" type="button">
           <img class="account-avatar" id="accountAvatar" alt="">
           <span id="accountButtonText">Log In / Sign Up</span>
@@ -1620,7 +1628,27 @@ let currentProfile = null;
 let authMode = "login";
 
 const accountButton = document.getElementById("accountButton");
+const mascotReplayButton = document.getElementById("mascotReplayButton");
 const accountButtonText = document.getElementById("accountButtonText");
+let canReplayMascot = false;
+
+async function refreshMascotOwnerAccess(){
+  canReplayMascot = false;
+  if(mascotReplayButton) mascotReplayButton.hidden = true;
+  if(!currentUser || !mascotReplayButton) return;
+  try{
+    const {data,error} = await supabaseClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id",currentUser.id)
+      .eq("role","owner")
+      .maybeSingle();
+    canReplayMascot = !error && !!data;
+  }catch(error){
+    canReplayMascot = false;
+  }
+  mascotReplayButton.hidden = !canReplayMascot;
+}
 const accountAvatar = document.getElementById("accountAvatar");
 const accountMenu = document.getElementById("accountMenu");
 const authBackdrop = document.getElementById("authBackdrop");
@@ -1707,6 +1735,7 @@ async function loadMyProfile(){
   }
 
   updateAccountButton();
+  await refreshMascotOwnerAccess();
 }
 
 async function refreshAuthState(){
@@ -1755,6 +1784,8 @@ document.getElementById("logoutButton").addEventListener("click", async ()=>{
   accountMenu.hidden = true;
   currentUser = null;
   currentProfile = null;
+  canReplayMascot = false;
+  if(mascotReplayButton) mascotReplayButton.hidden = true;
   updateAccountButton();
 });
 
@@ -1855,6 +1886,49 @@ supabaseClient.auth.onAuthStateChange((_event, session)=>{
 });
 
 refreshAuthState();
+
+/* Owner-only replay of the first-visit mascot welcome animation. */
+function replayWelcomeMascot(){
+  if(!canReplayMascot || !currentUser) return;
+  const oldIntro=document.getElementById("gotWelcomeIntro");
+  if(oldIntro) oldIntro.remove();
+
+  const intro=document.createElement("div");
+  intro.className="got-intro-screen";
+  intro.id="gotWelcomeIntro";
+  intro.setAttribute("role","status");
+  intro.setAttribute("aria-label","Welcome to G.O.T Games Schedule");
+
+  const mascot=document.createElement("img");
+  mascot.className="got-intro-mascot";
+  mascot.src="got-mascot.svg";
+  mascot.alt="";
+
+  const heading=document.createElement("h1");
+  heading.className="got-intro-welcome";
+  heading.append(document.createTextNode("Welcome to G.O.T Games Schedule"));
+  const subtitle=document.createElement("span");
+  subtitle.textContent="The hub for every stream, upload and update";
+  heading.append(subtitle);
+  intro.append(mascot,heading);
+
+  document.body.insertBefore(intro,document.body.firstChild);
+  document.documentElement.classList.add("got-intro-pending");
+  // Force a fresh animation timeline every time the owner presses the button.
+  void intro.offsetWidth;
+
+  const reduced=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.setTimeout(()=>{
+    intro.classList.add("is-leaving");
+    window.setTimeout(()=>{
+      intro.remove();
+      document.documentElement.classList.remove("got-intro-pending");
+    },reduced?180:900);
+  },reduced?1100:4700);
+}
+if(mascotReplayButton){
+  mascotReplayButton.addEventListener("click",replayWelcomeMascot);
+}
 
 /* Existing schedule code */
 const BASE_TZ = "Europe/London";
