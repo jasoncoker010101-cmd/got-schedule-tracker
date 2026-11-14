@@ -881,6 +881,10 @@ const fullDiagnosticSteps=[
    if(!games.response.ok)throw new Error("games.json returned HTTP "+games.response.status);
    if(!games.payload||!games.payload.games||typeof games.payload.games!=="object")throw new Error("Game catalogue has an unexpected structure; games{} is missing.");
    const events=schedule.payload.events;
+   const rumbleEvents=events.filter(event=>event&&(String(event.platform||"").toLowerCase()==="rumble"||(Array.isArray(event.labels)&&event.labels.some(label=>/rumble/i.test(String(label))))));
+   const missingPatreonChecks=rumbleEvents.filter(event=>!event.patreon_check||!["verified","partial","pending"].includes(event.patreon_check.status)||!event.patreon_check.checked_at||Number.isNaN(Date.parse(event.patreon_check.checked_at))).length;
+   const patreonSummary=schedule.payload.patreonCheckSummary||{};
+   const patreonSummaryValid=Number.isInteger(patreonSummary.posts_scanned)&&patreonSummary.posts_scanned>=5&&patreonSummary.events_checked===rumbleEvents.length&&["verified","partial","pending"].every(key=>Number.isInteger(patreonSummary[key])&&patreonSummary[key]>=0);
    const malformedEvents=events.filter(event=>!event||typeof event!=="object"||!String(event.title||"").trim()||!String(event.platform||"").trim()||!event.start||Number.isNaN(Date.parse(event.start))).length;
    const keys=events.map(event=>event&&[String(event.title||"").trim().toLowerCase(),String(event.platform||"").toLowerCase(),String(event.start||"")].join("|"));
    const duplicateEvents=keys.length-new Set(keys).size;
@@ -902,6 +906,7 @@ const fullDiagnosticSteps=[
    const issues=[];
    if(malformedEvents)issues.push(malformedEvents+" malformed schedule events");
    if(duplicateEvents)issues.push(duplicateEvents+" duplicate schedule entries");
+   if(rumbleEvents.length&&(!patreonSummaryValid||missingPatreonChecks))issues.push("Patreon verification is missing or out of date for "+missingPatreonChecks+" Rumble events");
    if(!events.length)issues.push("schedule has no events");
    if(missingLiveStates)issues.push(missingLiveStates+" missing/invalid live platform states");
    if(malformedLiveDetails)issues.push(malformedLiveDetails+" malformed live platform detail records");
@@ -923,7 +928,8 @@ const fullDiagnosticSteps=[
      }
     }catch(_){issues.push("schedule artwork path is invalid");}
    }
-   const detail=events.length+" schedule events · "+platforms+" live-state flags · "+showRows.length+" show entries · "+gameRows.length+" game entries · "+malformedEvents+" malformed events · "+(malformedShows+malformedGames)+" malformed catalogue entries · "+artwork+(issues.length?" · "+issues.join(" · "):"");
+   const patreonDetail=rumbleEvents.length?"Patreon: "+rumbleEvents.length+" Rumble checks ("+(patreonSummary.verified||0)+" verified, "+(patreonSummary.partial||0)+" partial, "+(patreonSummary.pending||0)+" pending)":"no Rumble events to verify";
+   const detail=events.length+" schedule events · "+platforms+" live-state flags · "+showRows.length+" show entries · "+gameRows.length+" game entries · "+patreonDetail+" · "+malformedEvents+" malformed events · "+(malformedShows+malformedGames)+" malformed catalogue entries · "+artwork+(issues.length?" · "+issues.join(" · "):"");
    return fullDiagResult("Schedule, live status, show catalogue, and artwork",issues.length?"warning":"pass",detail);
   }
  },
