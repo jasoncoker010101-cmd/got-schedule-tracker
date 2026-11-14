@@ -1455,7 +1455,8 @@
       anime.title?.english,
       anime.title?.romaji,
       anime.title?.native,
-      ...(Array.isArray(anime.synonyms) ? anime.synonyms : [])
+      ...(Array.isArray(anime.synonyms) ? anime.synonyms : []),
+      ...(Array.isArray(anime.historyAliases) ? anime.historyAliases : [])
     ];
 
     return [...new Set(
@@ -2303,7 +2304,22 @@
           relations: { edges: [] }
         };
 
-        return { anime, seasonNumber, junbanSeasonId: season.id };
+        // Every season card also needs the parent series/franchise titles.
+        // G.O.T. watch-history rows are commonly stored under the main series
+        // title (for example "Attack on Titan"), not each AniList season title.
+        const historyAliases = [
+          series.title,
+          series.title_english,
+          series.title_romaji,
+          series.title_native,
+          franchise.name
+        ].filter(Boolean);
+
+        return {
+          anime: { ...anime, historyAliases },
+          seasonNumber,
+          junbanSeasonId: season.id
+        };
       }));
 
       junbanFullSeasonCache.set(key, entries);
