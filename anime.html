@@ -157,6 +157,26 @@
       font-size: 12px;
     }
 
+    .anime-filters { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 18px; }
+    .anime-filters select { min-width:135px; flex:1; background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:9px; padding:11px; }
+    .continue-section { margin:20px 0 28px; padding:18px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+    .continue-heading { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+    .continue-heading h2 { margin:0; font:800 21px var(--display); }
+    .continue-heading span,.continue-item small { color:var(--muted); font-size:12px; }
+    .continue-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin-top:12px; }
+    .continue-item { text-align:left; border:1px solid var(--line); border-radius:10px; padding:13px; background:var(--raised); color:var(--text); }
+    .continue-item strong,.continue-item small { display:block; }
+    .continue-item strong { margin-bottom:5px; }
+    .report-dialog { width:min(540px,calc(100% - 24px)); max-height:90vh; overflow:auto; border:1px solid var(--line); border-radius:16px; padding:0; background:var(--surface); color:var(--text); }
+    .report-dialog::backdrop { background:rgba(0,0,0,.78); backdrop-filter:blur(5px); }
+    .report-form { padding:22px; display:grid; gap:12px; }
+    .report-head { display:flex; justify-content:space-between; align-items:center; }
+    .report-head h2 { margin:0; font:800 24px var(--display); }
+    .report-form label { display:grid; gap:6px; color:var(--muted); font-size:13px; font-weight:700; }
+    .report-form input,.report-form select,.report-form textarea { width:100%; border:1px solid var(--line); border-radius:9px; padding:11px; background:#10100e; color:var(--text); font:inherit; }
+    .report-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .dialog-close { border:1px solid var(--line); background:var(--raised); color:var(--text); border-radius:9px; padding:5px 12px; font-size:22px; }
+    @media(max-width:600px){.report-pair{grid-template-columns:1fr}}
     .history-connection {
       display: flex;
       align-items: center;
@@ -904,6 +924,11 @@
       <span id="connectionText">Connecting to G.O.T. watch history…</span>
     </div>
 
+    <section class="continue-section" aria-label="Continue watching">
+      <div class="continue-heading"><h2>Continue Watching</h2><span>Recently recorded episodes</span></div>
+      <div id="continueWatching" class="continue-list"><p class="muted">Loading your recent watch history…</p></div>
+    </section>
+
     <section aria-label="Anime search and favorites">
       <div class="toolbar">
         <label class="search-wrap" for="searchInput">
@@ -928,6 +953,15 @@
         </div>
       </div>
 
+      <div class="anime-filters" aria-label="Filter anime">
+        <select id="genreFilter" aria-label="Filter by genre"><option value="">All genres</option></select>
+        <select id="yearFilter" aria-label="Filter by release year"><option value="">Any year</option></select>
+        <select id="formatFilter" aria-label="Filter by format"><option value="">All formats</option><option value="TV">TV</option><option value="TV_SHORT">TV Short</option><option value="MOVIE">Movie</option><option value="OVA">OVA</option><option value="ONA">ONA</option><option value="SPECIAL">Special</option></select>
+        <select id="statusFilter" aria-label="Filter by release status"><option value="">Any status</option><option value="FINISHED">Completed</option><option value="RELEASING">Airing</option><option value="NOT_YET_RELEASED">Upcoming</option></select>
+        <select id="seasonFilter" aria-label="Filter by number of related entries"><option value="">Any season count</option><option value="1">Single entry</option><option value="2">2+ related entries</option><option value="4">4+ related entries</option></select>
+        <button class="page-button" id="reportOpen" type="button">Report a problem</button>
+      </div>
+
       <p class="status" id="status" role="status" aria-live="polite">
         Loading popular anime…
       </p>
@@ -941,6 +975,32 @@
       </div>
     </section>
   </main>
+
+  <dialog id="reportDialog" class="report-dialog">
+    <form id="reportForm" class="report-form">
+      <div class="report-head"><h2>Report a problem</h2><button type="button" class="dialog-close" id="reportClose" aria-label="Close">×</button></div>
+      <p>Tell us what's wrong. Your report will go straight into the private G.O.T. Games admin inbox.</p>
+      <label>Problem type
+        <select id="reportCategory" required>
+          <option value="missing_anime">Anime is missing</option>
+          <option value="missing_cover">Missing or broken cover</option>
+          <option value="wrong_season">Wrong season grouping</option>
+          <option value="wrong_episode_count">Incorrect episode count</option>
+          <option value="broken_link">Broken reaction link</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label>Anime title (optional)<input id="reportAnime" maxlength="200" placeholder="Anime title"></label>
+      <div class="report-pair">
+        <label>Season (optional)<input id="reportSeason" maxlength="80" placeholder="Season / part"></label>
+        <label>Episode (optional)<input id="reportEpisode" maxlength="80" placeholder="Episode number"></label>
+      </div>
+      <label>What happened?<textarea id="reportDetails" minlength="8" maxlength="2000" rows="4" required placeholder="Describe the problem…"></textarea></label>
+      <label>Contact (optional)<input id="reportContact" maxlength="200" placeholder="Email or username"></label>
+      <p id="reportStatus" role="status" aria-live="polite"></p>
+      <button type="submit" class="page-button" id="reportSubmit">Send report</button>
+    </form>
+  </dialog>
 
   <!-- OWNER-ONLY PENDING LINKS REVIEW -->
   <section class="owner-tools" aria-label="Owner tools">
@@ -1053,6 +1113,7 @@
         format
         averageScore
         genres
+        status
         relations {
           edges {
             relationType
@@ -1083,6 +1144,15 @@
   const status = document.getElementById("status");
   const pagination = document.getElementById("pagination");
   const favoriteCount = document.getElementById("favoriteCount");
+  const genreFilter = document.getElementById("genreFilter");
+  const yearFilter = document.getElementById("yearFilter");
+  const formatFilter = document.getElementById("formatFilter");
+  const statusFilter = document.getElementById("statusFilter");
+  const seasonFilter = document.getElementById("seasonFilter");
+  const continueWatching = document.getElementById("continueWatching");
+  const reportDialog = document.getElementById("reportDialog");
+  const reportForm = document.getElementById("reportForm");
+
 
   const totalWatchedElement = document.getElementById("totalWatched");
   const animeWatchedElement = document.getElementById("animeWatched");
@@ -1903,6 +1973,7 @@
       historyError = false;
 
       updateOverview();
+      updateContinueWatching();
 
       setConnection(
         true,
@@ -1924,6 +1995,7 @@
       );
 
       updateOverview();
+      updateContinueWatching();
       renderLastResults();
     }
   }
@@ -2829,11 +2901,71 @@
       });
     }
   }
+  function getFilteredAnime(items) {
+    const groups = getSeasonGroups(items);
+    const groupSizeById = new Map();
+    for (const group of groups) {
+      for (const entry of group.items) groupSizeById.set(String(entry.anime.id), group.items.length);
+    }
+    return items.filter(anime => {
+      if (genreFilter.value && !(anime.genres || []).includes(genreFilter.value)) return false;
+      if (yearFilter.value && String(anime.seasonYear || "") !== yearFilter.value) return false;
+      if (formatFilter.value && anime.format !== formatFilter.value) return false;
+      if (statusFilter.value && anime.status !== statusFilter.value) return false;
+      const groupSize = groupSizeById.get(String(anime.id)) || 1;
+      if (seasonFilter.value === "1" && groupSize !== 1) return false;
+      if (seasonFilter.value === "2" && groupSize < 2) return false;
+      if (seasonFilter.value === "4" && groupSize < 4) return false;
+      return true;
+    });
+  }
+
+  function updateFilterOptions(items) {
+    const genres = [...new Set(items.flatMap(item => item.genres || []))].sort();
+    const years = [...new Set(items.map(item => item.seasonYear).filter(Boolean))].sort((a,b)=>b-a);
+    const keepGenre = genreFilter.value, keepYear = yearFilter.value;
+    genreFilter.replaceChildren(new Option("All genres",""), ...genres.map(v=>new Option(v,v)));
+    yearFilter.replaceChildren(new Option("Any year",""), ...years.map(v=>new Option(String(v),String(v))));
+    genreFilter.value = genres.includes(keepGenre) ? keepGenre : "";
+    yearFilter.value = years.some(v=>String(v)===keepYear) ? keepYear : "";
+  }
+
+  function updateContinueWatching() {
+    continueWatching.replaceChildren();
+    if (!historyLoaded) {
+      continueWatching.textContent = historyError ? "Watch history is unavailable right now." : "Loading your recent watch history…";
+      return;
+    }
+    const latestByTitle = new Map();
+    for (const row of watchHistory) {
+      const key = normalizeTitle(row.anime_title);
+      if (!key) continue;
+      const previous = latestByTitle.get(key);
+      if (!previous || new Date(row.watched_at || row.created_at).getTime() > new Date(previous.watched_at || previous.created_at).getTime()) {
+        latestByTitle.set(key,row);
+      }
+    }
+    const latest = [...latestByTitle.values()].sort((a,b)=>new Date(b.watched_at||b.created_at)-new Date(a.watched_at||a.created_at)).slice(0,4);
+    if (!latest.length) { continueWatching.textContent = "No watched episodes recorded yet."; return; }
+    for (const row of latest) {
+      const button = document.createElement("button");
+      button.type = "button"; button.className = "continue-item";
+      const title = document.createElement("strong"); title.textContent = row.anime_title || "Anime";
+      const ep = document.createElement("small");
+      const season = row.season_number == null ? "" : "Season " + row.season_number + " · ";
+      const start = row.episode_start, end = row.episode_end;
+      ep.textContent = season + (start == null ? "Episode not specified" : start === end ? "Episode " + start : "Episodes " + start + "–" + end);
+      button.append(title,ep);
+      button.addEventListener("click",()=>{searchInput.value=row.anime_title||"";page=1;setMode("discover");searchAnime();});
+      continueWatching.append(button);
+    }
+  }
+
   function renderLastResults() {
     render(
       mode === "favorites"
         ? getFilteredFavorites()
-        : displayedItems
+        : getFilteredAnime(displayedItems)
     );
   }
 
@@ -2998,6 +3130,7 @@
       }
 
       displayedItems = pageData.media || [];
+      updateFilterOptions(displayedItems);
       hasNextPage = Boolean(pageData.pageInfo?.hasNextPage);
 
       pagination.hidden = false;
@@ -3404,6 +3537,33 @@
   // =========================================================
   // EVENTS
   // =========================================================
+
+  [genreFilter,yearFilter,formatFilter,statusFilter,seasonFilter].forEach(control => {
+    control.addEventListener("change", renderLastResults);
+  });
+
+  document.getElementById("reportOpen").addEventListener("click",()=>reportDialog.showModal());
+  document.getElementById("reportClose").addEventListener("click",()=>reportDialog.close());
+  reportDialog.addEventListener("click",event=>{if(event.target===reportDialog)reportDialog.close();});
+  reportForm.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const submit=document.getElementById("reportSubmit");
+    const reportStatus=document.getElementById("reportStatus");
+    submit.disabled=true;reportStatus.textContent="Sending report…";
+    const {error}=await authClient.from("got_site_reports").insert({
+      category:document.getElementById("reportCategory").value,
+      page_url:location.href.slice(0,500),
+      anime_title:document.getElementById("reportAnime").value.trim(),
+      season_label:document.getElementById("reportSeason").value.trim(),
+      episode_label:document.getElementById("reportEpisode").value.trim(),
+      details:document.getElementById("reportDetails").value.trim(),
+      contact:document.getElementById("reportContact").value.trim()
+    });
+    submit.disabled=false;
+    if(error){reportStatus.textContent="Couldn't send report: "+error.message;return;}
+    reportStatus.textContent="Report sent! Thank you for helping improve G.O.T. Games.";
+    reportForm.reset();
+  });
 
   searchInput.addEventListener("input", () => {
     page = 1;
