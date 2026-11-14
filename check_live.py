@@ -173,21 +173,34 @@ def normalized_channel_path(value):
     return parts.path.rstrip("/").lower()
 
 
+def normalized_channel_name(value):
+    """Normalize a channel name so harmless spacing/punctuation differences do not matter."""
+    return "".join(
+        character for character in str(value or "").casefold()
+        if character.isalnum()
+    )
+
+
 def is_target_rumble_stream(stream):
-    """Match the stream's nested channel URL to the G.O.T Games channel."""
+    """
+    Match by canonical channel URL OR exact normalized channel name.
+
+    Rumble/API.SH may expose a channel URL alias that differs from the public
+    /c/GOTGames URL. A non-matching URL must not suppress a valid name match.
+    """
     channel = stream.get("channel")
     if not isinstance(channel, dict):
         channel = {}
 
     wanted_path = normalized_channel_path(RUMBLE_CHANNEL_URL)
     returned_path = normalized_channel_path(channel.get("url"))
+    if returned_path == wanted_path:
+        return True
 
-    if returned_path:
-        return returned_path == wanted_path
-
-    # Name fallback is used only when the API did not provide a channel URL.
-    channel_name = str(channel.get("name") or "").strip().casefold()
-    return channel_name in {"got games", "gotgames"}
+    # Check the name even when a URL is present: Rumble channel URLs can have
+    # aliases or alternate canonical paths.
+    channel_name = normalized_channel_name(channel.get("name"))
+    return channel_name in {"gotgames", "gotgamesofficial"}
 
 
 def next_page_number(value):
@@ -223,7 +236,13 @@ def check_rumble_page(api_key, page):
                 continue
 
             status = str(stream.get("status") or "").strip().lower()
-            is_live = bool(stream.get("live")) or status == "live"
+            live_value = stream.get("live")
+            live_flag = (
+                live_value is True
+                or (isinstance(live_value, str) and live_value.strip().lower() in {"true", "1", "yes"})
+                or (isinstance(live_value, int) and not isinstance(live_value, bool) and live_value == 1)
+            )
+            is_live = live_flag or status in {"live", "streaming", "on air", "on_air"}
 
             if is_live and is_target_rumble_stream(stream):
                 channel = stream.get("channel")
@@ -235,16 +254,40 @@ def check_rumble_page(api_key, page):
                     "title": stream.get("title", ""),
                     "url": stream.get("url", RUMBLE_CHANNEL_URL),
                     "channel_url": channel.get("url", RUMBLE_CHANNEL_URL),
+                    "channel_name": channel.get("name", ""),
                     "viewers": stream.get("watching_now"),
                     "page_checked": page,
                     "next_page": following_page,
                 }
+
+        # Keep compact rejection diagnostics so the admin page/logs can show
+        # whether the page contained live streams under a different channel URL.
+        live_candidates = []
+        for candidate in streams:
+            if not isinstance(candidate, dict):
+                continue
+            candidate_status = str(candidate.get("status") or "").strip().lower()
+            candidate_live = candidate.get("live") is True or (
+                isinstance(candidate.get("live"), str)
+                and candidate.get("live").strip().lower() in {"true", "1", "yes"}
+            ) or candidate_status in {"live", "streaming", "on air", "on_air"}
+            if candidate_live:
+                candidate_channel = candidate.get("channel")
+                if not isinstance(candidate_channel, dict):
+                    candidate_channel = {}
+                live_candidates.append({
+                    "title": candidate.get("title", ""),
+                    "channel_name": candidate_channel.get("name", ""),
+                    "channel_url": candidate_channel.get("url", ""),
+                })
 
         return {
             "ok": True,
             "live": False,
             "page_checked": page,
             "next_page": following_page,
+            "streams_scanned": len(streams),
+            "live_candidates": live_candidates[:5],
         }
 
     except Exception as error:
