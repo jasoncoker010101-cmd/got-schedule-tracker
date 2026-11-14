@@ -2037,12 +2037,51 @@ function renderPlaylistReviewQueue(){
   actions.append(add,del);card.append(heading,meta,note,link,fields,actions);root.append(card);
  }
 }
+async function resolvePendingAnimeDetails(row){
+ if(row.anilist_id||!row.anime_title)return row;
+ const title=String(row.anime_title||"").trim();
+ const videoTitle=String(row.video_title||"");
+ const normalized=normalizeAniListTitle(title+" "+videoTitle);
+ let identity=null;
+ // Steel Ball Run is Part 7. Its first-stage AniList entry is a single
+ // long episode; numbered reaction episodes belong to the 2nd & 3rd STAGE entry.
+ if(normalized.includes("steel ball run")){
+  const firstStage=/\\b1st\\s*stage\\b/i.test(videoTitle);
+  const episode=Number(row.episode_start||0);
+  if(firstStage){
+   identity={anilist_id:190327,season_number:7};
+  }else if(episode>1||/\\b(?:2nd|3rd)\\s*stage\\b/i.test(videoTitle)){
+   identity={anilist_id:210482,season_number:7};
+  }
+ }
+ // For other titles, only fill an AniList ID when the catalogue returns one
+ // unambiguous exact title or synonym match. Similar titles are never guessed.
+ if(!identity){
+  try{
+   const lookup=await resolveAniListTitle(title);
+   if(lookup.exact.length===1)identity={anilist_id:Number(lookup.exact[0].id)};
+  }catch(error){console.warn("Pending anime identity lookup failed for "+title+":",error);}
+ }
+ if(!identity)return row;
+ const {error}=await db.from("got_anime_pending_episode_links").update(identity).eq("id",row.id).in("status",["pending","needs_checking"]);
+ if(error){console.warn("Could not save pending anime identity for review #"+row.id+":",error.message);return row;}
+ return {...row,...identity};
+}
+
 async function loadPlaylistReviewQueue(){
  if(!db)return;
  $("playlistReviewMessage").textContent="Loading saved review items…";
  const {data,error}=await db.from("got_anime_pending_episode_links").select("*").in("status",["pending","needs_checking"]).order("detected_at",{ascending:false}).limit(500);
  if(error){$("playlistReviewMessage").textContent="Could not load review queue: "+error.message;return;}
  currentPlaylistReviewRows=data||[];
+ // Fill missing anime identities before rendering the queue. This is safe:
+ // exact AniList matches only, plus the known Steel Ball Run stage mapping.
+ for(let i=0;i<currentPlaylistReviewRows.length;i++){
+  const row=currentPlaylistReviewRows[i];
+  if(!row.anilist_id&&row.anime_title){
+   currentPlaylistReviewRows[i]=await resolvePendingAnimeDetails(row);
+  }
+ }
  const now=Date.now(),recent=currentPlaylistReviewRows.filter(row=>{
   const timestamp=Date.parse(row.detected_at||row.created_at||row.uploaded_at||"");
   return Number.isFinite(timestamp)&&timestamp>=now-14*24*60*60*1000;
