@@ -803,22 +803,22 @@ const fullDiagnosticSteps=[
  {
   name:"Game cover lookup Edge Function",
   run:async()=>{
-   const response=await fullDiagWithTimeout(fetch("https://tzgxkiucsjampbresqkw.supabase.co/functions/v1/rawg-game-cover",{
+   const response=await fullDiagWithTimeout(fetch("https://tzgxkiucsjampbresqkw.supabase.co/functions/v1/thegamesdb-game-cover",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({title:"Wuthering Waves"})
+    body:JSON.stringify({title:"Super Mario Bros."})
    }),"Game cover Edge Function",12000);
    const payload=await response.json().catch(()=>null);
-   if(!response.ok&&/RAWG_API_KEY has not been configured/i.test(String(payload?.error||""))){
-    return fullDiagResult("Game cover lookup Edge Function","fail","Missing Supabase Edge Function secrets: RAWG_API_KEY · configure them in Supabase Edge Function secrets · never put these credentials in website JavaScript");
+   if(!response.ok&&/THEGAMESDB_API_KEY has not been configured/i.test(String(payload?.error||""))){
+    return fullDiagResult("Game cover lookup Edge Function","fail","Missing Supabase Edge Function secrets: THEGAMESDB_API_KEY · configure them in Supabase Edge Function secrets · never put these credentials in website JavaScript");
    }
-   if(!response.ok)throw new Error("RAWG game-cover function returned HTTP "+response.status+(payload?.error?": "+payload.error:""));
+   if(!response.ok)throw new Error("TheGamesDB game-cover function returned HTTP "+response.status+(payload?.error?": "+payload.error:""));
    if(!payload||typeof payload!=="object")throw new Error("Game-cover function returned an unexpected response.");
    if(payload.error)throw new Error(String(payload.error));
    if(payload.game?.poster&&/^https:\/\//i.test(payload.game.poster)){
-    return fullDiagResult("Game cover lookup Edge Function","pass","Function responded successfully · poster URL returned for Wuthering Waves");
+    return fullDiagResult("Game cover lookup Edge Function","pass","Function responded successfully · poster URL returned for Super Mario Bros.");
    }
-   if(payload.notFound)return fullDiagResult("Game cover lookup Edge Function","warning","Function is reachable, but the Wuthering Waves lookup returned no poster.");
+   if(payload.notFound)return fullDiagResult("Game cover lookup Edge Function","warning","Function is reachable, but the Super Mario Bros. lookup returned no poster.");
    return fullDiagResult("Game cover lookup Edge Function","warning","Function responded, but returned no valid game poster payload.");
   }
  },
