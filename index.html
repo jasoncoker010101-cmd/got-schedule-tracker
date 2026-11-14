@@ -1360,6 +1360,33 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
 }
 @media print{.activity-feed{display:none!important}}
 
+
+/* G.O.T. mascot loading indicator */
+.got-mascot-loader{
+  display:none;width:42px;height:42px;flex:0 0 42px;object-fit:contain;
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.22));
+  transform-origin:50% 88%;
+}
+#scheduleIndicator[data-state="loading"] .got-mascot-loader{
+  display:block;animation:gotMascotBounce .82s cubic-bezier(.36,.07,.19,.97) infinite;
+}
+@keyframes gotMascotBounce{
+  0%,100%{transform:translateY(0) scale(1,1)}
+  38%{transform:translateY(-10px) scale(.97,1.04)}
+  58%{transform:translateY(0) scale(1.08,.91)}
+  72%{transform:translateY(-3px) scale(.99,1.02)}
+}
+.activity-feed-state[data-state="loading"]::before{
+  content:"";display:inline-block;width:27px;height:27px;vertical-align:middle;margin-right:7px;
+  background:url("got-mascot.svg") center/contain no-repeat;
+  animation:gotMascotBounce .82s cubic-bezier(.36,.07,.19,.97) infinite;
+  transform-origin:50% 88%;
+}
+@media(prefers-reduced-motion:reduce){
+  #scheduleIndicator[data-state="loading"] .got-mascot-loader,
+  .activity-feed-state[data-state="loading"]::before{animation:none}
+}
+
 </style>
 </head>
 <body>
@@ -1404,7 +1431,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
     </div>
     <div class="schedule-status-bar" role="status" aria-live="polite">
       <div class="schedule-status-main" id="scheduleIndicator" data-state="loading">
-        <i class="schedule-status-led" aria-hidden="true"></i>
+        <img class="got-mascot-loader" src="got-mascot.svg" alt="" aria-hidden="true" width="42" height="42"><i class="schedule-status-led" aria-hidden="true"></i>
         <span class="schedule-status-text" id="scheduleStatusText">Loading schedule…</span>
         <span id="scheduleStatusDetail"></span>
       </div>
