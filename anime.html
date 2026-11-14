@@ -435,6 +435,77 @@
       line-height: 1.5;
     }
 
+    .series-progress {
+      margin-top: 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .series-season-heading {
+      margin: 16px 0 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .13em;
+    }
+
+    .series-season-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .series-season {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .series-season > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      cursor: pointer;
+      list-style: none;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .series-season > summary::-webkit-details-marker { display: none; }
+    .series-season > summary::after {
+      content: "+";
+      color: var(--accent);
+      font-size: 18px;
+      line-height: 1;
+    }
+    .series-season[open] > summary::after { content: "−"; }
+
+    .series-season-meta {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .series-season-content {
+      padding: 0 12px 12px;
+    }
+
+    .series-season-content h3 {
+      margin: 2px 0 8px;
+      font: 700 13px var(--display);
+      color: var(--muted);
+    }
+
+    .series-season-anchor {
+      display: block;
+      height: 0;
+      scroll-margin-top: 24px;
+    }
+
     .watch-box {
       margin-top: 12px;
       padding: 11px;
@@ -1254,7 +1325,7 @@ input,select,textarea{accent-color:var(--got-gold)}
     <a href="https://anilist.co/" target="_blank" rel="noopener noreferrer">AniList</a>.
     Favorites are stored locally in your browser.
     Watch history is provided by G.O.T Games.
-    Season grouping data is provided by <a href="https://junban.moe/api" target="_blank" rel="noopener noreferrer">Junban</a> and manami-project (ODbL).
+    Anime catalogue and season mappings are provided by <a href="https://taizen.moe/" target="_blank" rel="noopener noreferrer">Taizen</a>, using AniList IDs and shared TheTVDB series mappings. Artwork is mirrored by Taizen from <a href="https://fanart.tv/" target="_blank" rel="noopener noreferrer">fanart.tv</a>.
   </footer>
 
 <script src="patreon-links.js"></script>
@@ -1263,13 +1334,8 @@ input,select,textarea{accent-color:var(--got-gold)}
   // CONFIGURATION
   // =========================================================
 
-  const API_URL = "https://graphql.anilist.co";
-  const JUNBAN_API_URL = "https://junban.moe/api/v1";
-  const junbanFullSeasonCache = new Map();
-  const junbanTitleMediaCache = new Map();
-  // Serialize every AniList request so parallel season lookups cannot burst.
-  let aniListRequestQueue = Promise.resolve();
-  let lastAniListRequestAt = 0;
+  const TAIZEN_API_URL = "https://taizen.moe/api/graphql";
+  const taizenFullSeasonCache = new Map();
 
   const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 
@@ -1308,7 +1374,7 @@ input,select,textarea{accent-color:var(--got-gold)}
         currentPage
         hasNextPage
       }
-      media(type: ANIME, search: $search, sort: POPULARITY_DESC) {
+      media(type: ANIME, search: $search, sort: POPULARITY_DESC, isAdult: false) {
         id
         title {
           romaji
@@ -1316,6 +1382,9 @@ input,select,textarea{accent-color:var(--got-gold)}
           native
         }
         synonyms
+        externalIds {
+          theTvdb
+        }
         coverImage {
           large
         }
@@ -1333,6 +1402,7 @@ input,select,textarea{accent-color:var(--got-gold)}
               id
               title { romaji english native }
               synonyms
+              externalIds { theTvdb }
               coverImage { large }
               description(asHtml: false)
               episodes
@@ -1413,7 +1483,8 @@ input,select,textarea{accent-color:var(--got-gold)}
   let episodeLinks = [];
   let episodeLinksLoaded = false;
   let episodeLinksBySeason = new Map();
-  const junbanLookupCache = new Map();
+  // Full sibling-season lists keyed by the shared TheTVDB series id.
+  const taizenFullSeasonCache = new Map();
 
   // Owner review state
   let ownerSession = null;
@@ -1532,95 +1603,44 @@ input,select,textarea{accent-color:var(--got-gold)}
     }
   }
 
-  async function waitForAniListSlot(signal) {
-    // AniList currently documents a 30-requests/minute degraded limit.
-    // Keep a little margin and serialize requests across all lookup paths.
-    const minimumInterval = 2200;
-    const storageKey = "gotAnimeLastAniListRequest";
-    let savedTime = lastAniListRequestAt;
-
-    try {
-      savedTime = Math.max(
-        savedTime,
-        Number(sessionStorage.getItem(storageKey)) || 0
-      );
-    } catch {
-      // The in-memory timestamp still protects this page if storage is blocked.
+  async function fetchTaizenGraphQL(query, variables = {}, signal, forcePost = false) {
+    const url = new URL(TAIZEN_API_URL);
+    url.searchParams.set("query", query);
+    if (variables && Object.keys(variables).length) {
+      url.searchParams.set("variables", JSON.stringify(variables));
     }
 
-    const waitMs = Math.max(0, minimumInterval - (Date.now() - savedTime));
-    if (waitMs) await waitForRetry(waitMs, signal);
+    const useGet = !forcePost && url.toString().length < 7000;
+    const options = useGet
+      ? { headers: { "Accept": "application/json" }, signal }
+      : {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ query, variables }),
+          signal
+        };
 
-    if (signal?.aborted) {
-      throw new DOMException("Request was cancelled.", "AbortError");
+    const response = await fetchWithTimeout(
+      useGet ? url.toString() : TAIZEN_API_URL,
+      options,
+      12000
+    );
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const detail = payload?.errors?.[0]?.message || payload?.error || "";
+      throw new Error("Taizen request failed (" + response.status + ")" + (detail ? ": " + detail : "."));
     }
-
-    lastAniListRequestAt = Date.now();
-    try {
-      sessionStorage.setItem(storageKey, String(lastAniListRequestAt));
-    } catch {
-      // Storage is optional; the in-memory limiter remains active.
+    if (!payload || payload.errors?.length) {
+      throw new Error(payload?.errors?.[0]?.message || "Taizen returned an unexpected GraphQL response.");
     }
-  }
-
-  function scheduleAniListSlot(signal) {
-    const scheduled = aniListRequestQueue.then(() => waitForAniListSlot(signal));
-    aniListRequestQueue = scheduled.catch(() => {});
-    return scheduled;
-  }
-
-  async function fetchAniListWithRetry(url, options, maxAttempts = 2) {
-    let lastError;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      if (options.signal?.aborted) {
-        throw new DOMException("Request was cancelled.", "AbortError");
-      }
-
-      try {
-        // Every request and retry passes through the same serialized limiter.
-        await scheduleAniListSlot(options.signal);
-        const response = await fetchWithTimeout(url, options, 12000);
-
-        if (response.ok) return response;
-
-        const temporary = [408, 425, 429, 500, 502, 503, 504].includes(response.status);
-        if (!temporary || attempt === maxAttempts - 1) {
-          if (response.status === 429) {
-            throw new Error("AniList rate limit reached. Wait about a minute, then try Discover again.");
-          }
-          throw new Error(`AniList request failed (${response.status}).`);
-        }
-
-        const retryAfter = Number(response.headers.get("Retry-After"));
-        const resetAt = Number(response.headers.get("X-RateLimit-Reset"));
-        const resetDelay = resetAt > Date.now() / 1000
-          ? (resetAt - Date.now() / 1000) * 1000
-          : 0;
-        const delay = response.status === 429
-          ? Math.min(Math.max(retryAfter * 1000, resetDelay, 6000), 65000)
-          : (Number.isFinite(retryAfter) && retryAfter > 0
-            ? Math.min(retryAfter * 1000, 12000)
-            : Math.min(1200 * (2 ** attempt), 6000));
-
-        await waitForRetry(delay, options.signal);
-      } catch (error) {
-        if (error.name === "AbortError") throw error;
-
-        lastError = error;
-        const retryableNetworkError =
-          error instanceof TypeError ||
-          /failed to fetch|network|connection|timed out/i.test(error.message || "");
-
-        if (!retryableNetworkError || attempt === maxAttempts - 1) {
-          throw error;
-        }
-
-        await waitForRetry(Math.min(1200 * (2 ** attempt), 6000), options.signal);
-      }
+    if (!payload.data) {
+      throw new Error("Taizen returned no catalogue data.");
     }
-
-    throw lastError || new Error("AniList is temporarily unavailable.");
+    return payload.data;
   }
 
   function normalizeTitle(title) {
@@ -2142,7 +2162,7 @@ input,select,textarea{accent-color:var(--got-gold)}
       }
     }
 
-    // Junban can number split cours as separate cards. G.O.T history uses
+    // Taizen can list split cours as separate entries. G.O.T history uses
     // conventional season numbers, so use the resolved season and episode span.
     const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
     if (historySeason != null && Number.isInteger(Number(historySeason))) {
@@ -2736,326 +2756,118 @@ input,select,textarea{accent-color:var(--got-gold)}
     );
   }
 
-  function getJunbanLookupRows(payload) {
-    if (Array.isArray(payload)) return payload;
-    if (!payload || typeof payload !== "object") return [];
+  function normalizeTaizenAnime(record) {
+    const id = Number(record?.id);
+    if (!Number.isInteger(id) || id <= 0) return null;
 
-    for (const key of ["results", "lookups", "items", "data"]) {
-      const value = payload[key];
-      if (Array.isArray(value)) return value;
-      if (value && typeof value === "object") {
-        const rows = Object.values(value).filter(entry =>
-          entry && typeof entry === "object" && entry.id != null
-        );
-        if (rows.length) return rows;
-      }
-    }
-
-    if (payload.type && payload.id != null) return [payload];
-
-    return Object.values(payload).filter(entry =>
-      entry && typeof entry === "object" && entry.type && entry.id != null
-    );
-  }
-
-  async function loadJunbanLookups(items, signal) {
-    const ids = [...new Set(items.map(item => String(item.id)))];
-    const missingIds = ids.filter(id => !junbanLookupCache.has(id));
-    if (!missingIds.length) return;
-
-    const url = new URL(JUNBAN_API_URL + "/lookup");
-    url.searchParams.set("site", "anilist");
-    url.searchParams.set("ids", missingIds.join(","));
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: { "Accept": "application/json" },
-      signal
-    });
-
-    if (!response.ok) {
-      throw new Error("Junban lookup failed (" + response.status + ").");
-    }
-
-    const payload = await response.json();
-    const rows = getJunbanLookupRows(payload);
-
-    for (const row of rows) {
-      const id = String(row.id ?? row.anilist_id ?? "");
-      if (id && missingIds.includes(id)) {
-        junbanLookupCache.set(id, row);
-      }
-    }
-
-    // Cache misses too, so a title not listed in Junban is not requested
-    // again every time the user changes pages or searches.
-    for (const id of missingIds) {
-      if (!junbanLookupCache.has(id)) junbanLookupCache.set(id, null);
-    }
-  }
-
-  async function findAniListMediaForSeason(title, signal) {
-    const normalized = normalizeTitle(title);
-    if (!normalized) return null;
-    if (junbanTitleMediaCache.has(normalized)) {
-      return junbanTitleMediaCache.get(normalized);
-    }
-
-    const query = `query ($search: String) {
-      Page(perPage: 10) {
-        media(type: ANIME, search: $search, sort: SEARCH_MATCH) {
-          id
-          title { romaji english native }
-          synonyms
-          coverImage { large }
-          description(asHtml: false)
-          episodes
-          seasonYear
-          format
-          averageScore
-          genres
-          relations {
-            edges {
-              relationType
-              node {
-                id
-                title { romaji english native }
-                synonyms
-                coverImage { large }
-                description(asHtml: false)
-                episodes
-                seasonYear
-                format
-                averageScore
-              }
-            }
-          }
-        }
-      }
-    }`;
-
-    const response = await fetchAniListWithRetry(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
+    const title = record.title || {};
+    return {
+      id,
+      title: {
+        english: title.english || title.preferred || title.romaji || "",
+        romaji: title.romaji || title.preferred || "",
+        native: title.native || ""
       },
-      body: JSON.stringify({ query, variables: { search: title } }),
-      signal
-    });
-    if (!response.ok) return null;
-
-    const payload = await response.json();
-    const candidates = payload.data?.Page?.media || [];
-    const exact = candidates.find(media => {
-      const names = [
-        media.title?.english,
-        media.title?.romaji,
-        media.title?.native,
-        ...(Array.isArray(media.synonyms) ? media.synonyms : [])
-      ];
-      return names.some(name => normalizeTitle(name) === normalized);
-    }) || null;
-
-    junbanTitleMediaCache.set(normalized, exact);
-    return exact;
+      synonyms: Array.isArray(record.synonyms) ? record.synonyms : [],
+      coverImage: record.coverImage || { large: null },
+      description: record.description || "",
+      episodes: record.episodes ?? null,
+      seasonYear: record.seasonYear ?? null,
+      format: record.format || "",
+      averageScore: record.averageScore ?? null,
+      genres: Array.isArray(record.genres)
+        ? record.genres.map(item => typeof item === "string" ? item : item?.name).filter(Boolean)
+        : [],
+      status: record.status || "",
+      externalIds: record.externalIds || {},
+      relations: { edges: [] }
+    };
   }
 
-  async function loadJunbanFullSeasonGroups(items, signal) {
-    await loadJunbanLookups(items, signal);
+  async function loadTaizenFullSeasonGroups(items, signal) {
+    const tvdbIds = [...new Set(items
+      .map(item => Number(item.externalIds?.theTvdb))
+      .filter(id => Number.isInteger(id) && id > 0)
+      .map(String)
+    )];
+    const missing = tvdbIds.filter(id => !taizenFullSeasonCache.has(id));
+    if (!missing.length) return;
 
-    const lookupGroups = new Map();
-    for (const anime of items) {
-      const lookup = junbanLookupCache.get(String(anime.id));
-      if (
-        lookup?.type !== "season" ||
-        lookup.series?.id == null ||
-        lookup.franchise?.id == null
-      ) continue;
+    // Batch TheTVDB lookups. Each result contains all AniList entries that
+    // share one TheTVDB series id, even when AniList split them into seasons.
+    const pending = new Set(missing);
+    const collected = new Map(missing.map(id => [id, []]));
+    let page = 1;
 
-      const key = String(lookup.franchise.id) + "|" + String(lookup.series.id);
-      if (!lookupGroups.has(key)) {
-        lookupGroups.set(key, {
-          franchiseId: lookup.franchise.id,
-          seriesId: lookup.series.id
-        });
-      }
+    while (pending.size && page <= 5) {
+      const batch = [...pending].slice(0, 8);
+      const aliases = batch.map((id, index) =>
+        `series${index}: animePage(page: ${page}, perPage: 50, filter: { tvdbId: ${Number(id)} }) {
+          pageInfo { hasNextPage }
+          items {
+            id
+            title { preferred romaji english native }
+            synonyms
+            description
+            format
+            seasonYear
+            episodes
+            coverImage { large }
+            averageScore
+            genres { name }
+            status
+            externalIds { theTvdb theTvdbSeason }
+          }
+        }`
+      );
+      const query = "query GOTTaizenSeriesGroups {\n" + aliases.join("\n") + "\n}";
+      const data = await fetchTaizenGraphQL(query, {}, signal, true);
+
+      batch.forEach((id, index) => {
+        const result = data["series" + index];
+        if (!result || !Array.isArray(result.items)) {
+          throw new Error("Taizen did not return a valid season list for TheTVDB series " + id + ".");
+        }
+        collected.get(id).push(...result.items);
+        if (!result.pageInfo?.hasNextPage) pending.delete(id);
+      });
+      page++;
     }
 
-    for (const [key, ids] of lookupGroups) {
-      if (junbanFullSeasonCache.has(key)) continue;
-
-      const response = await fetch(
-        JUNBAN_API_URL + "/franchises/" + encodeURIComponent(ids.franchiseId),
-        { headers: { "Accept": "application/json" }, signal }
-      );
-      if (!response.ok) {
-        throw new Error("Junban franchise request failed (" + response.status + ").");
+    for (const id of missing) {
+      const unique = new Map();
+      for (const record of collected.get(id) || []) {
+        const anime = normalizeTaizenAnime(record);
+        if (!anime || !["TV", "TV_SHORT"].includes(anime.format)) continue;
+        unique.set(String(anime.id), anime);
       }
 
-      const franchise = await response.json();
-      const series = (franchise.series || []).find(entry =>
-        String(entry.id) === String(ids.seriesId)
+      const seasons = [...unique.values()].sort((left, right) =>
+        (Number(left.externalIds?.theTvdbSeason) || Number.MAX_SAFE_INTEGER) -
+          (Number(right.externalIds?.theTvdbSeason) || Number.MAX_SAFE_INTEGER) ||
+        (Number(left.seasonYear) || Number.MAX_SAFE_INTEGER) -
+          (Number(right.seasonYear) || Number.MAX_SAFE_INTEGER) ||
+        Number(left.id) - Number(right.id)
       );
-      if (!series || !Array.isArray(series.seasons)) {
-        junbanFullSeasonCache.set(key, []);
-        continue;
+
+      if (seasons.length > 1) {
+        const sharedAliases = [...new Set(seasons.flatMap(anime => [
+          titleFor(anime),
+          anime.title?.romaji,
+          anime.title?.native,
+          ...(anime.synonyms || [])
+        ]).map(normalizeTitle).filter(Boolean))];
+
+        const entries = seasons.map((anime, index) => ({
+          anime: { ...anime, historyAliases: sharedAliases },
+          // TheTVDB's season number is closest to G.O.T's saved convention.
+          // Title parsing below still handles split cours and special cases.
+          seasonNumber: Number(anime.externalIds?.theTvdbSeason) || index + 1
+        }));
+        taizenFullSeasonCache.set(id, resolveHistoryMappings(entries));
+      } else {
+        taizenFullSeasonCache.set(id, []);
       }
-
-      const seasonRows = series.seasons.slice().sort((a, b) =>
-        Number(a.number === 0) - Number(b.number === 0) ||
-        Number(a.number) - Number(b.number)
-      );
-      const anilistIds = [...new Set(seasonRows
-        .map(season => String(season.external_ids?.anilist || ""))
-        .filter(id => /^\d+$/.test(id))
-      )];
-
-      const mediaById = new Map();
-      const searchMediaById = new Map(
-        items.map(item => [String(item.id), item])
-      );
-      if (anilistIds.length) {
-        try {
-          const mediaQuery = `query ($ids: [Int]) {
-            Page(perPage: 50) {
-              media(id_in: $ids, type: ANIME) {
-                id
-                title { romaji english native }
-                synonyms
-                coverImage { large }
-                description(asHtml: false)
-                episodes
-                seasonYear
-                format
-                averageScore
-                genres
-                relations {
-                  edges {
-                    relationType
-                    node {
-                      id
-                      title { romaji english native }
-                      synonyms
-                      coverImage { large }
-                      description(asHtml: false)
-                      episodes
-                      seasonYear
-                      format
-                      averageScore
-                    }
-                  }
-                }
-              }
-            }
-          }`;
-
-          const mediaResponse = await fetchAniListWithRetry(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify({
-              query: mediaQuery,
-              variables: { ids: anilistIds.map(Number) }
-            }),
-            signal
-          });
-
-          if (mediaResponse.ok) {
-            const mediaPayload = await mediaResponse.json();
-            for (const media of mediaPayload.data?.Page?.media || []) {
-              mediaById.set(String(media.id), media);
-            }
-          }
-        } catch (error) {
-          if (error.name === "AbortError") throw error;
-          console.warn("AniList season details unavailable; using Junban season data.", error);
-        }
-      }
-
-      const entries = await Promise.all(seasonRows.map(async season => {
-        const anilistId = String(season.external_ids?.anilist || "");
-        let media = mediaById.get(anilistId) || searchMediaById.get(anilistId) || null;
-        const seasonNumber = Number(season.number);
-        const fallbackTitle = season.title || series.title || franchise.name || "Anime season";
-        if (!media) {
-          try {
-            media = await findAniListMediaForSeason(fallbackTitle, signal);
-          } catch (error) {
-            if (error.name === "AbortError") throw error;
-            console.warn("Could not retrieve AniList details for season:", fallbackTitle, error);
-          }
-        }
-
-        let parentMedia = null;
-        const parentTitle = series.title || franchise.name;
-
-        // A season may have a valid AniList record but no cover of its own.
-        // In that case, still look up the parent series for usable artwork.
-        if ((!media || !media.coverImage?.large) && parentTitle &&
-            normalizeTitle(parentTitle) !== normalizeTitle(fallbackTitle)) {
-          try {
-            parentMedia = await findAniListMediaForSeason(parentTitle, signal);
-          } catch (error) {
-            if (error.name === "AbortError") throw error;
-            console.warn("Could not retrieve parent-series artwork:", parentTitle, error);
-          }
-        }
-
-        const parentCover = parentMedia?.coverImage?.large || null;
-        if (media && !media.coverImage?.large && parentCover) {
-          media = {
-            ...media,
-            coverImage: { ...(media.coverImage || {}), large: parentCover },
-            description: media.description || parentMedia?.description || ""
-          };
-        }
-
-        const fallbackYear = String(season.first_aired || series.first_aired || "").slice(0, 4);
-
-        const anime = media || {
-          id: /^\d+$/.test(anilistId) ? Number(anilistId) : -Number(season.id),
-          title: {
-            english: fallbackTitle,
-            romaji: season.title || series.title_romaji || fallbackTitle,
-            native: series.title_native || null
-          },
-          synonyms: [],
-          coverImage: { large: parentCover },
-          fallbackCoverImage: null,
-          description: series.synopsis?.text || parentMedia?.description || "",
-          episodes: Number(season.episode_count) || null,
-          seasonYear: /^\d{4}$/.test(fallbackYear) ? Number(fallbackYear) : null,
-          format: series.type || "TV",
-          averageScore: parentMedia?.averageScore || null,
-          genres: [],
-          relations: { edges: [] }
-        };
-        if (media && parentCover && media.coverImage?.large !== parentCover) {
-          anime.fallbackCoverImage = parentCover;
-        }
-
-        // Every season card also needs the parent series/franchise titles.
-        // G.O.T watch-history rows are commonly stored under the main series
-        // title (for example "Attack on Titan"), not each AniList season title.
-        const historyAliases = [
-          series.title,
-          series.title_english,
-          series.title_romaji,
-          series.title_native,
-          franchise.name
-        ].filter(Boolean);
-
-        return {
-          anime: { ...anime, historyAliases },
-          seasonNumber,
-          junbanSeasonId: season.id
-        };
-      }));
-
-      junbanFullSeasonCache.set(key, entries);
     }
   }
 
@@ -3160,35 +2972,29 @@ input,select,textarea{accent-color:var(--got-gold)}
       const id = Number(anime.id);
       if (claimed.has(id)) continue;
 
-      const lookup = junbanLookupCache.get(String(anime.id));
-      if (
-        lookup?.type === "season" &&
-        lookup.series?.id != null &&
-        lookup.franchise?.id != null
-      ) {
-        const key = String(lookup.franchise.id) + "|" + String(lookup.series.id);
-        const fullSeasonList = junbanFullSeasonCache.get(key);
-        if (Array.isArray(fullSeasonList) && fullSeasonList.length) {
-          const ordered = fullSeasonList.slice().sort((a, b) =>
-            a.seasonNumber - b.seasonNumber ||
-            Number(a.anime.id) - Number(b.anime.id)
-          );
-          const mapped = resolveHistoryMappings(ordered);
-          mapped.forEach(entry => claimed.add(Number(entry.anime.id)));
-          groups.push({ items: mapped, source: "junban-franchise" });
-          continue;
-        }
+      const tvdbId = anime.externalIds?.theTvdb;
+      const fullSeasonList = tvdbId == null
+        ? null
+        : taizenFullSeasonCache.get(String(tvdbId));
+
+      if (Array.isArray(fullSeasonList) && fullSeasonList.length > 1) {
+        const ordered = fullSeasonList.slice().sort((a, b) =>
+          (a.historyMapping?.seasonNumber ?? a.seasonNumber ?? 999) -
+            (b.historyMapping?.seasonNumber ?? b.seasonNumber ?? 999) ||
+          Number(a.anime.id) - Number(b.anime.id)
+        );
+        ordered.forEach(entry => claimed.add(Number(entry.anime.id)));
+        groups.push({ items: ordered, source: "taizen-tvdb" });
+        continue;
       }
 
-      // Fallback for anime not yet mapped in Junban. Walk the connected
-      // PREQUEL/SEQUEL TV entries already returned by AniList, rather than
-      // grouping only one neighboring season. This keeps split cours together.
+      // Fallback for entries without a TheTVDB mapping. Walk only confirmed
+      // PREQUEL/SEQUEL links returned by Taizen's AniList-compatible schema.
       const seasons = new Map([[id, anime]]);
       const queue = [anime];
 
       while (queue.length) {
         const current = queue.shift();
-
         for (const edge of current.relations?.edges || []) {
           if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
           const related = edge.node;
@@ -3200,16 +3006,13 @@ input,select,textarea{accent-color:var(--got-gold)}
 
           const fullRelated = byId.get(relatedId) || related;
           seasons.set(relatedId, fullRelated);
-
-          // Only full search results have their own relation edges. A related
-          // node not present in this page is still shown, but remains a leaf.
           if (byId.has(relatedId)) queue.push(fullRelated);
         }
       }
 
       const ordered = [...seasons.values()].sort((a, b) =>
         (Number(a.seasonYear) || Number.MAX_SAFE_INTEGER) -
-        (Number(b.seasonYear) || Number.MAX_SAFE_INTEGER) ||
+          (Number(b.seasonYear) || Number.MAX_SAFE_INTEGER) ||
         Number(a.id) - Number(b.id)
       );
       ordered.forEach(item => claimed.add(Number(item.id)));
@@ -3219,11 +3022,177 @@ input,select,textarea{accent-color:var(--got-gold)}
       }));
       groups.push({
         items: resolveHistoryMappings(fallbackEntries),
-        source: "anilist"
+        source: "taizen-relations"
       });
     }
 
     return groups;
+  }
+
+  function makeSeriesCard(entries) {
+    const ordered = entries.slice().sort((a, b) =>
+      (a.historyMapping?.seasonNumber ?? a.seasonNumber ?? 1) -
+        (b.historyMapping?.seasonNumber ?? b.seasonNumber ?? 1) ||
+      (Number(a.anime.seasonYear) || Number.MAX_SAFE_INTEGER) -
+        (Number(b.anime.seasonYear) || Number.MAX_SAFE_INTEGER) ||
+      Number(a.anime.id) - Number(b.anime.id)
+    );
+    const primary = ordered[0];
+    const primaryAnime = primary.anime;
+    const card = document.createElement("article");
+    card.className = "card series-card";
+    card.style.position = "relative";
+
+    const coverWrap = document.createElement("div");
+    coverWrap.className = "cover-wrap";
+    const cover = document.createElement("img");
+    cover.className = "cover";
+    cover.alt = "Cover art for " + titleFor(primaryAnime);
+    cover.loading = "lazy";
+    cover.referrerPolicy = "no-referrer";
+    cover.src = primaryAnime.coverImage?.large || "";
+    if (!cover.src) {
+      const fallback = document.createElement("div");
+      fallback.className = "cover-placeholder";
+      fallback.textContent = "Cover unavailable";
+      coverWrap.append(fallback);
+    } else {
+      cover.onerror = () => {
+        cover.remove();
+        const fallback = document.createElement("div");
+        fallback.className = "cover-placeholder";
+        fallback.textContent = "Cover unavailable";
+        coverWrap.prepend(fallback);
+      };
+      coverWrap.append(cover);
+    }
+
+    const favoriteIds = ordered.map(entry => String(entry.anime.id));
+    const isFavorite = favoriteIds.some(id => Boolean(favorites[id]));
+    const favoriteButton = document.createElement("button");
+    favoriteButton.className = "favorite";
+    favoriteButton.type = "button";
+    favoriteButton.textContent = isFavorite ? "♥" : "♡";
+    favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+    favoriteButton.setAttribute(
+      "aria-label",
+      (isFavorite ? "Remove " : "Add ") + titleFor(primaryAnime) + " " +
+      (isFavorite ? "from" : "to") + " favorites"
+    );
+    favoriteButton.addEventListener("click", () => {
+      const remove = favoriteIds.some(id => Boolean(favorites[id]));
+      for (const entry of ordered) {
+        const id = String(entry.anime.id);
+        if (remove) delete favorites[id];
+        else favorites[id] = entry.anime;
+      }
+      saveFavorites();
+      renderLastResults();
+    });
+    coverWrap.append(favoriteButton);
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+    const heading = document.createElement("h2");
+    heading.textContent = titleFor(primaryAnime);
+    body.append(heading);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const totalEpisodes = ordered.reduce((sum, entry) =>
+      sum + (Number(entry.anime.episodes) || 0), 0
+    );
+    const watchedTotal = ordered.reduce((sum, entry) =>
+      sum + (historyLoaded
+        ? getHistoryForAnime(entry.anime, entry.seasonNumber, entry.historyMapping).total
+        : 0), 0
+    );
+    const metaLabels = [
+      ordered.length + (ordered.length === 1 ? " season" : " seasons"),
+      totalEpisodes ? totalEpisodes.toLocaleString() + " episodes" : "",
+      primaryAnime.seasonYear || "",
+      primaryAnime.averageScore ? "★ " + primaryAnime.averageScore + "%" : ""
+    ].filter(Boolean);
+    for (const value of metaLabels) {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = value;
+      meta.append(chip);
+    }
+    body.append(meta);
+
+    const description = document.createElement("p");
+    description.className = "description";
+    description.textContent = safeText(primaryAnime.description) || "No description available.";
+    body.append(description);
+
+    const seriesProgress = document.createElement("div");
+    seriesProgress.className = "series-progress";
+    seriesProgress.textContent = historyLoaded
+      ? "G.O.T watched " + watchedTotal.toLocaleString() + " episode" +
+        (watchedTotal === 1 ? "" : "s") + " across this series"
+      : "Loading G.O.T watch history…";
+    body.append(seriesProgress);
+
+    const seasonHeading = document.createElement("div");
+    seasonHeading.className = "series-season-heading";
+    seasonHeading.textContent = "SEASONS";
+    body.append(seasonHeading);
+
+    const seasonList = document.createElement("div");
+    seasonList.className = "series-season-list";
+
+    ordered.forEach((entry, index) => {
+      const anime = entry.anime;
+      const canonicalSeason = entry.historyMapping?.seasonNumber ??
+        entry.seasonNumber ?? (index + 1);
+      const partNumber = entry.historyMapping?.partNumber;
+      const isSpecial = entry.isSpecial || entry.seasonNumber === 0;
+
+      for (const alias of getAnimeAliases(anime)) {
+        const slug = String(alias || "").toLowerCase()
+          .replace(/&/g, " and ")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+        if (!slug) continue;
+        const anchor = document.createElement("span");
+        anchor.id = "anime-title-" + slug + "-season-" + canonicalSeason;
+        anchor.className = "series-season-anchor";
+        anchor.setAttribute("aria-hidden", "true");
+        seasonList.append(anchor);
+      }
+
+      const details = document.createElement("details");
+      details.className = "series-season";
+      const summary = document.createElement("summary");
+      const seasonTitle = document.createElement("span");
+      const seasonName = isSpecial
+        ? "Specials"
+        : "Season " + canonicalSeason + (partNumber ? " · Part " + partNumber : "");
+      seasonTitle.textContent = seasonName;
+
+      const seasonMeta = document.createElement("span");
+      seasonMeta.className = "series-season-meta";
+      const yearText = anime.seasonYear ? String(anime.seasonYear) : "";
+      const episodeText = anime.episodes ? Number(anime.episodes) + " eps" : "Episode count unknown";
+      seasonMeta.textContent = [yearText, episodeText].filter(Boolean).join(" · ");
+      summary.append(seasonTitle, seasonMeta);
+
+      const content = document.createElement("div");
+      content.className = "series-season-content";
+      if (titleFor(anime) !== titleFor(primaryAnime)) {
+        const subheading = document.createElement("h3");
+        subheading.textContent = titleFor(anime);
+        content.append(subheading);
+      }
+      content.append(makeWatchBox(anime, entry.seasonNumber, entry.historyMapping));
+      details.append(summary, content);
+      seasonList.append(details);
+    });
+
+    body.append(seasonList);
+    card.append(coverWrap, body);
+    return card;
   }
 
   function render(items) {
@@ -3242,67 +3211,26 @@ input,select,textarea{accent-color:var(--got-gold)}
       Number(hasRecordedReactionLinks(b)) - Number(hasRecordedReactionLinks(a))
     );
     const groups = getSeasonGroups(orderedItems);
-
-    // Keep episode offsets scoped to each franchise/series group. Never let
-    // unrelated anime with the same season number affect one another.
-    for (const group of groups) {
-      group.items.sort((a, b) =>
-        Number(Boolean(a.isSpecial || a.seasonNumber === 0)) -
-        Number(Boolean(b.isSpecial || b.seasonNumber === 0))
-      );
-    }
-
     const regularGroups = groups.filter(group =>
       !group.items.every(entry => entry.isSpecial || entry.seasonNumber === 0)
     );
     const specialsGroups = groups.filter(group =>
       group.items.every(entry => entry.isSpecial || entry.seasonNumber === 0)
     );
-    const renderGroups = [...regularGroups, ...specialsGroups];
-    const rendered = new Set();
 
-    for (const seasonGroup of renderGroups) {
-      const unique = seasonGroup.items.filter(entry => {
+    for (const group of [...regularGroups, ...specialsGroups]) {
+      const unique = [];
+      const localSeen = new Set();
+      for (const entry of group.items) {
         const id = Number(entry.anime.id);
-        if (rendered.has(id)) return false;
-        rendered.add(id);
-        return true;
-      });
-      if (!unique.length) continue;
-
-      const seasonLabel = (entry, index) => {
-        if (entry.isSpecial || entry.seasonNumber === 0) return "Specials";
-        const canonicalSeason = entry.historyMapping?.seasonNumber ?? entry.seasonNumber;
-        const partNumber = entry.historyMapping?.partNumber;
-        if (Number.isFinite(canonicalSeason)) {
-          return "Season " + canonicalSeason +
-            (partNumber ? " Part " + partNumber : "");
-        }
-        return unique.length > 1 ? "Season " + (index + 1) : "";
-      };
-
-      if (unique.length === 1) {
-        results.append(makeCard(
-          unique[0].anime,
-          seasonLabel(unique[0], 0),
-          unique[0].seasonNumber,
-          unique[0].historyMapping
-        ));
-        continue;
+        if (!Number.isFinite(id) || localSeen.has(id)) continue;
+        localSeen.add(id);
+        unique.push(entry);
       }
-
-      // Keep related seasons adjacent, but let every card participate in the
-      // same page grid. Nested full-width grids left large empty areas.
-      unique.forEach((entry, index) => {
-        results.append(makeCard(
-          entry.anime,
-          seasonLabel(entry, index),
-          entry.seasonNumber,
-          entry.historyMapping
-        ));
-      });
+      if (unique.length) results.append(makeSeriesCard(unique));
     }
   }
+
   function getFilteredAnime(items) {
     const groups = getSeasonGroups(items);
     const groupSizeById = new Map();
@@ -3449,36 +3377,23 @@ input,select,textarea{accent-color:var(--got-gold)}
     // the whole page while the user is typing or browsing.
     pageLoader.hidden = true;
     resultsLoading.hidden = false;
-    setStatus("Searching AniList…");
+    setStatus("Searching Taizen…");
     pagination.hidden = true;
 
     try {
-      const requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          query: QUERY,
-          variables: {
-            page,
-            search: searchInput.value.trim() || null
-          }
-        }),
-        signal: controller.signal
-      };
-
-      // One bounded request flow: two attempts, each with a real abortable
-      // timeout. This prevents nested retries from running longer than the
-      // full-screen loader's failsafe.
       const loaderDetail = pageLoader.querySelector(".page-loader-detail");
       if (loaderDetail) {
-        loaderDetail.textContent = "Connecting to AniList and gathering your anime…";
+        loaderDetail.textContent = "Connecting to Taizen and gathering your anime…";
       }
 
-      const response = await fetchAniListWithRetry(API_URL, requestOptions, 2);
-      const payload = await response.json();
+      const payload = await fetchTaizenGraphQL(
+        QUERY,
+        {
+          page,
+          search: searchInput.value.trim() || null
+        },
+        controller.signal
+      );
 
       if (controller.signal.aborted || requestController !== controller) {
         return;
@@ -3512,32 +3427,31 @@ input,select,textarea{accent-color:var(--got-gold)}
         `${searchInput.value.trim() ? ` for “${searchInput.value.trim()}”` : ""}.`
       );
 
-      // Keep the full-screen anime-style loader visible while Junban adds
-      // the complete season structure. This prevents the page from briefly
-      // showing an incomplete first render and then rearranging a few seconds later.
+      // Keep the full-screen anime-style loader visible while Taizen resolves
+      // the complete shared-series season list.
       if (loaderDetail) {
         loaderDetail.textContent = "Finding connected seasons and episode counts…";
       }
 
-      const junbanController = new AbortController();
-      const abortJunban = () => junbanController.abort();
-      controller.signal.addEventListener("abort", abortJunban, { once: true });
+      const taizenController = new AbortController();
+      const abortTaizen = () => taizenController.abort();
+      controller.signal.addEventListener("abort", abortTaizen, { once: true });
 
       try {
         await withLoadingTimeout(
-          loadJunbanFullSeasonGroups(displayedItems, junbanController.signal),
+          loadTaizenFullSeasonGroups(displayedItems, taizenController.signal),
           9000,
-          "Season lookup timed out. Showing the AniList catalogue instead.",
-          junbanController
+          "Taizen season mapping timed out. Showing the available catalogue results instead.",
+          taizenController
         );
-      } catch (junbanError) {
-        if (junbanError.name === "AbortError" && controller.signal.aborted) throw junbanError;
-        console.warn("Junban season data unavailable; using AniList results.", junbanError);
+      } catch (taizenError) {
+        if (taizenError.name === "AbortError" && controller.signal.aborted) throw taizenError;
+        console.warn("Taizen season mapping unavailable; using catalogue relation results.", taizenError);
         if (loaderDetail) {
-          loaderDetail.textContent = "Season lookup is slow. Showing available anime now…";
+          loaderDetail.textContent = "Season mapping is slow. Showing available anime now…";
         }
       } finally {
-        controller.signal.removeEventListener("abort", abortJunban);
+        controller.signal.removeEventListener("abort", abortTaizen);
       }
 
       if (controller.signal.aborted || requestController !== controller) {
@@ -3559,7 +3473,7 @@ input,select,textarea{accent-color:var(--got-gold)}
       }
 
       setStatus(
-        `${error.message || "Couldn't connect to AniList."} Automatic retries are finished. Check your connection and tap Discover to try again.`,
+        `${error.message || "Couldn't connect to Taizen."} Check your connection and tap Discover to try again.`,
         true
       );
 
