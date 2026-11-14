@@ -51,11 +51,27 @@ button.secondary{background:var(--raised);color:var(--text);border:1px solid var
 <script>
 const SUPABASE_URL="https://tzgxkiucsjampbresqkw.supabase.co";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6Z3hraXVjc2phbXBicmVzcWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0Mzg5NjIsImV4cCI6MjExMDAxNDk2Mn0.O63F1TtK7tISlSBEvjixN283emRPDTtsS8taVEyK3co";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+// The admin UI should fail clearly instead of throwing if the auth CDN is unavailable.
+const db=(window.supabase && typeof window.supabase.createClient==="function")
+  ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+  : null;
 const $=id=>document.getElementById(id);let currentReports=[];
 function setHealth(name,ok,value,detail){$(name+"Dot").className="dot "+(ok?"ok":"bad");$(name+"Status").textContent=value;$(name+"Detail").textContent=detail;}
 async function verifyOwner(){
- const {data:{session}}=await db.auth.getSession();
+ if(!db){
+  $("dashboard").hidden=true;
+  $("login").hidden=false;
+  $("authMessage").textContent="Owner sign-in is temporarily unavailable because the authentication library did not load. Refresh to retry.";
+  return false;
+ }
+ const {data,error:sessionError}=await db.auth.getSession();
+ const session=data?.session;
+ if(sessionError){
+  $("authMessage").textContent="Could not check your sign-in: "+sessionError.message;
+  $("dashboard").hidden=true;
+  $("login").hidden=false;
+  return false;
+ }
  if(!session){$("dashboard").hidden=true;$("login").hidden=false;return false;}
  const {data:role,error}=await db.from("user_roles").select("role").eq("user_id",session.user.id).eq("role","owner").maybeSingle();
  if(error||!role){$("authMessage").textContent="This account does not have owner access.";$("dashboard").hidden=true;$("login").hidden=false;return false;}
@@ -63,8 +79,23 @@ async function verifyOwner(){
 }
 async function health(){
  setHealth("anilist",false,"Checking…","AniList catalogue API");
- try{const r=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:"{ Page(page:1,perPage:1){ pageInfo { total } } }"})});if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("anilist",true,"Online","Catalogue query succeeded");}catch(e){setHealth("anilist",false,"Unavailable",e.message);}
- try{const r=await fetch("https://junban.moe/api/v1/lookup?site=anilist&id=16498");if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("junban",true,"Online","Lookup request succeeded");}catch(e){setHealth("junban",false,"Unavailable",e.message);}
+ try{
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),8000);
+  const r=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:"{ Page(page:1,perPage:1){ pageInfo { total } } }"}),signal:controller.signal});
+  clearTimeout(timer);if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("anilist",true,"Online","Catalogue query succeeded");
+ }catch(e){setHealth("anilist",false,"Unavailable",e.name==="AbortError"?"Request timed out":e.message);}
+ try{
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),8000);
+  const r=await fetch("https://junban.moe/api/v1/lookup?site=anilist&id=16498",{signal:controller.signal});
+  clearTimeout(timer);if(!r.ok)throw Error("HTTP "+r.status);await r.json();setHealth("junban",true,"Online","Lookup request succeeded");
+ }catch(e){setHealth("junban",false,"Unavailable",e.name==="AbortError"?"Request timed out":e.message);}
+ if(!db){
+  setHealth("supabase",false,"Unavailable","Authentication library did not load");
+  setHealth("links",false,"Unavailable","Database client unavailable");
+  $("watchedCount").textContent="—";$("pendingLinks").textContent="—";
+  $("newReports").textContent="—";
+  return;
+ }
  const {count:watched,error:wErr}=await db.from("got_anime_watch_history").select("id",{count:"exact",head:true});
  const {count:links,error:lErr}=await db.from("got_anime_episode_links").select("id",{count:"exact",head:true});
  const {count:pending,error:pErr}=await db.from("got_anime_pending_episode_links").select("id",{count:"exact",head:true}).in("status",["pending","needs_checking"]);
@@ -96,8 +127,8 @@ async function loadReports(){
  $("reportMessage").textContent=currentReports.length+" report(s) loaded.";renderReports();
 }
 async function refreshAll(){if(!await verifyOwner())return;await Promise.all([health(),loadReports()]);}
-$("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("authMessage").textContent="Signing in…";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("password").value="";if(error){$("authMessage").textContent="Sign-in failed: "+error.message;return;}await refreshAll();});
-$("logout").onclick=async()=>{await db.auth.signOut();await verifyOwner();};
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){$("authMessage").textContent="Sign-in is unavailable because the authentication library did not load.";return;}$("authMessage").textContent="Signing in…";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("password").value="";if(error){$("authMessage").textContent="Sign-in failed: "+error.message;return;}await refreshAll();});
+$("logout").onclick=async()=>{if(!db)return;await db.auth.signOut();await verifyOwner();};
 $("refresh").onclick=refreshAll;$("reportFilter").onchange=renderReports;
 refreshAll();
 </script></body></html>
