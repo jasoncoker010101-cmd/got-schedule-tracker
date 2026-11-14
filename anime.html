@@ -879,6 +879,22 @@
     </div>
   </div>
 
+  <script>
+    // Independent safety net: even if the main catalogue script stalls,
+    // never leave the full-screen loader covering the page indefinitely.
+    window.setTimeout(function () {
+      var loader = document.getElementById("pageLoader");
+      if (loader && !loader.hidden) {
+        loader.hidden = true;
+        var status = document.getElementById("status");
+        if (status) {
+          status.textContent = "The catalogue is taking longer than expected. You can still use the page or tap Discover to retry.";
+          status.setAttribute("data-error", "true");
+        }
+      }
+    }, 30000);
+  </script>
+
   <header class="topbar">
     <a class="logo" href="index.html">G.O.T. <span>Games</span></a>
 
