@@ -1,35 +1,327 @@
-PROPRIETARY LICENSE
-Copyright (c) 2026 jasoncoker010101-cmd. All rights reserved.
+PROPRIETARY SOFTWARE AND CONTENT LICENSE
+ALL RIGHTS RESERVED
 
-1. OWNERSHIP
-The source code and original materials in this repository are owned by
-jasoncoker010101-cmd, except for third-party materials that remain owned by
-their respective rights holders.
+Copyright (c) 2026 jasoncoker010101-cmd.
+All rights reserved.
 
-2. LIMITED PERMISSION FOR G.O.T. GAMES
-G.O.T. Games is granted permission to access, use, run, and display this
-project, including its website, for its own operations and community
-activities. This permission is non-exclusive and does not transfer ownership.
+IMPORTANT: This is a proprietary, restrictive license notice. It is not an
+open-source license and does not grant the public permission to reuse the
+Project. Read the complete terms below.
 
-3. NO PERMISSION FOR OTHERS
-No other person or organization is granted permission to copy, reproduce,
-modify, adapt, redistribute, publish, host, sublicense, sell, or otherwise
-use this project's source code or original materials, in whole or in part,
-without prior written permission from the copyright holder.
+1. DEFINITIONS
 
-4. NO TRANSFER OF OWNERSHIP
-This license does not transfer copyright or any other ownership rights.
-G.O.T. Games may not grant these permissions to another person or
-organization.
+1.1 "Copyright Holder" means jasoncoker010101-cmd, the GitHub account
+identified as the owner of this repository, and the person or entity that
+owns the applicable rights in the Original Materials.
 
-5. THIRD-PARTY MATERIALS
-This license does not change the terms governing third-party libraries,
-services, images, fonts, trademarks, or other materials included or
-referenced by the project. Those materials remain subject to their own
-licenses and terms.
+1.2 "Project" means the G.O.T. Games schedule tracker project maintained in
+the repository at:
+https://github.com/jasoncoker010101-cmd/got-schedule-tracker
+including its source code, scripts, configuration, original documentation,
+original designs, original graphics, original text, original database
+structures, and other materials authored by the Copyright Holder and
+included in or specifically created for the Project.
 
-6. RESERVATION OF RIGHTS
-All rights not expressly granted above are reserved by the copyright holder.
+1.3 "Original Materials" means only those parts of the Project in which the
+Copyright Holder owns or controls copyright or other applicable rights.
+Original Materials do not include Third-Party Materials, User Content, or
+materials owned by another person or organization.
 
-For permission beyond the limited permission granted to G.O.T. Games, obtain
-prior written authorization from jasoncoker010101-cmd.
+1.4 "G.O.T. Games" means the G.O.T. Games project, website, community, and
+the people authorized by the Copyright Holder to operate them under the
+limited permission in Section 4. This definition does not declare that the
+Copyright Holder owns any third-party name, brand, logo, show, game, anime,
+character, video, music, image, or other intellectual property associated
+with G.O.T. Games.
+
+1.5 "Third-Party Materials" means software, libraries, frameworks, APIs,
+services, fonts, images, videos, music, logos, trademarks, datasets, and
+other materials owned by or licensed from someone other than the Copyright
+Holder.
+
+1.6 "You" means any individual, company, organization, website operator, or
+other legal person accessing or using the Project or any Original Materials.
+
+2. OWNERSHIP AND RIGHTS RESERVED
+
+2.1 The Copyright Holder reserves all rights, title, and interest in the
+Original Materials, including applicable copyrights and other intellectual
+property rights.
+
+2.2 No ownership of the Project or Original Materials is transferred to You
+by viewing the repository, visiting the website, downloading a publicly
+accessible file, interacting with the website, or receiving a copy through
+any means.
+
+2.3 Except for the narrow permission expressly granted to G.O.T. Games in
+Section 4, no permission or license is granted to You, whether expressly,
+implicitly, by implication, by estoppel, or otherwise.
+
+2.4 All rights not expressly granted in this document are reserved by the
+Copyright Holder.
+
+2.5 The Copyright Holder may continue developing, changing, licensing,
+withholding, or discontinuing the Project, subject to rights belonging to
+other parties.
+
+3. NO PUBLIC LICENSE OR GENERAL PERMISSION
+
+3.1 This Project is proprietary. It is not released under the MIT License,
+Apache License, GNU General Public License, BSD License, Creative Commons,
+or any other public, open-source, or permissive license unless a separate
+license file or notice expressly says otherwise for a specific component.
+
+3.2 The fact that a repository, website, page, script, or file is publicly
+accessible does not mean that it is free to copy, reuse, modify, publish,
+host, or redistribute.
+
+3.3 No person or organization other than G.O.T. Games, within the limited
+scope of Section 4, is authorized to use the Original Materials without
+prior written permission from the Copyright Holder.
+
+4. LIMITED PERMISSION GRANTED TO G.O.T. GAMES
+
+4.1 The Copyright Holder grants G.O.T. Games a limited, non-exclusive,
+non-transferable, non-sublicensable, revocable permission to access, use,
+run, maintain, and publicly display the Project as part of the G.O.T. Games
+website, service, and community operations.
+
+4.2 This permission includes the practical use reasonably necessary to
+deploy and operate the existing G.O.T. Games website, display its intended
+features to visitors, maintain its schedule and related functionality,
+troubleshoot it, and make operational changes for G.O.T. Games.
+
+4.3 G.O.T. Games may allow its personnel and service providers to access
+the Project only when reasonably necessary to perform work on behalf of
+G.O.T. Games. Such access does not grant those people an independent right
+to reuse, publish, distribute, or exploit the Original Materials for
+themselves or for another client or organization.
+
+4.4 G.O.T. Games may not sell, sublicense, assign, transfer, publish as a
+template, release as a downloadable source-code package, or otherwise
+provide the Original Materials to another person or organization for
+independent use without the Copyright Holder's prior written permission.
+
+4.5 G.O.T. Games may not claim ownership of the Original Materials, register
+them in its own name, remove or alter ownership notices, or authorize any
+third party to do any of those things.
+
+4.6 This permission does not grant ownership of the Project to G.O.T.
+Games. It does not create an exclusive license, partnership, employment
+relationship, joint venture, or transfer of intellectual property.
+
+4.7 The permission in this Section applies only to the G.O.T. Games use
+described above. Any materially different use requires separate written
+permission.
+
+5. RESTRICTED ACTIVITIES FOR EVERYONE ELSE
+
+Unless the Copyright Holder gives You prior written permission, You may
+not, to the extent such restriction is permitted by applicable law:
+
+5.1 Copy, reproduce, download for reuse, duplicate, or republish the
+Original Materials or a substantial part of them.
+
+5.2 Modify, adapt, translate, port, refactor, customize, or create
+derivative works based on the Original Materials.
+
+5.3 Redistribute, transmit, sell, rent, lease, sublicense, publish, share,
+or otherwise make the Original Materials available to another person.
+
+5.4 Host, mirror, clone, fork, rebrand, or operate a copy of the Project or
+a substantially similar implementation made by copying the Original
+Materials.
+
+5.5 Use the Original Materials in another website, application, product,
+service, repository, business, school project distributed to others, or
+commercial or non-commercial project.
+
+5.6 Remove, hide, change, or obscure copyright notices, license notices,
+attribution, source references, or other ownership information.
+
+5.7 Claim that You created, own, authored, maintain, or are officially
+authorized to distribute the Original Materials when that is not true.
+
+5.8 Circumvent or interfere with technical access controls or security
+measures protecting non-public parts of the Project.
+
+5.9 Use the Original Materials to create, train, fine-tune, benchmark, or
+improve a machine-learning or artificial-intelligence model or dataset,
+except where such use is independently permitted by applicable law or
+separately authorized in writing.
+
+5.10 Use the Project or Original Materials as a template, starter kit,
+boilerplate, or substantial source of code for another project.
+
+5.11 Encourage, assist, or knowingly enable another person to do any of
+the activities prohibited by this Section.
+
+6. PUBLIC WEBSITE ACCESS IS NOT SOURCE-CODE PERMISSION
+
+6.1 Visitors may access and use the public-facing G.O.T. Games website for
+its ordinary intended functionality.
+
+6.2 Permission to visit, view, navigate, or interact with the website is
+not permission to copy its source code, reproduce its design or original
+content, extract protected materials for reuse, or create a competing copy.
+
+6.3 Some client-side code, network requests, page structure, and other
+technical details may necessarily be delivered to a visitor's browser.
+Their technical visibility does not by itself grant a reuse license.
+
+6.4 Nothing in this license prohibits activity that applicable law
+affirmatively protects or that cannot legally be restricted by a private
+license.
+
+7. THIRD-PARTY MATERIALS, TRADEMARKS, AND EXTERNAL SERVICES
+
+7.1 Third-Party Materials are not owned by the Copyright Holder merely
+because they appear in, are used by, or are referenced by the Project.
+
+7.2 Third-Party Materials remain subject to their own licenses, terms,
+permissions, and rights. If a third-party license grants You rights in a
+component, those rights come from that third-party license, not from this
+document.
+
+7.3 You are responsible for identifying and complying with the terms that
+apply to Third-Party Materials and external services.
+
+7.4 This license does not grant permission to use any third-party
+trademark, logo, character, show title, game title, artwork, video,
+music, image, API, or service beyond the permission granted by its
+respective owner or provider.
+
+7.5 Names, logos, and marks belonging to G.O.T. Games or other parties may
+be protected separately. No trademark license is granted by this document.
+
+7.6 Where this license conflicts with a mandatory third-party license
+applicable to a component, the applicable third-party license controls
+that component to the extent of the conflict.
+
+8. CONTRIBUTIONS AND MATERIALS FROM OTHER PEOPLE
+
+8.1 This license does not claim ownership of code, content, suggestions,
+artwork, or other materials created and owned by another contributor.
+
+8.2 A contribution is not automatically transferred to the Copyright
+Holder merely because it is submitted, discussed, or included in the
+Project. Any separate contribution agreement or applicable law governs
+ownership and permissions for that contribution.
+
+8.3 The Copyright Holder's rights in the Original Materials do not extend
+to materials that the Copyright Holder does not own or have authority to
+license.
+
+9. NO WARRANTY
+
+9.1 To the maximum extent permitted by applicable law, the Project and
+Original Materials are provided "AS IS" and "AS AVAILABLE", without
+warranties or conditions of any kind, whether express, implied, or
+statutory.
+
+9.2 To the maximum extent permitted by applicable law, the Copyright
+Holder disclaims implied warranties including merchantability, fitness
+for a particular purpose, title, and non-infringement.
+
+9.3 The Copyright Holder does not promise that the Project will be
+available, uninterrupted, secure, accurate, error-free, compatible with
+every system, or suitable for a particular purpose.
+
+10. LIMITATION OF LIABILITY
+
+10.1 To the maximum extent permitted by applicable law, the Copyright
+Holder will not be liable for indirect, incidental, special, exemplary,
+punitive, or consequential damages, or for loss of data, revenue, profits,
+goodwill, or business interruption arising from use of or inability to
+use the Project.
+
+10.2 Nothing in this document excludes or limits liability where doing so
+would be unlawful, including liability that cannot legally be excluded or
+limited.
+
+11. TERMINATION AND BREACH
+
+11.1 The limited permission granted to G.O.T. Games may be suspended or
+terminated by the Copyright Holder through written notice.
+
+11.2 The permission ends automatically if G.O.T. Games materially exceeds
+the scope of the permission or transfers, sublicenses, or distributes
+rights in violation of this license, subject to any notice or cure rights
+required by applicable law.
+
+11.3 When permission ends, G.O.T. Games must stop the uses that are no
+longer authorized and, where legally and technically practicable, stop
+making unauthorized copies or distributions.
+
+11.4 Termination does not remove rights or obligations that accrued before
+termination and does not affect rights that must survive by law.
+
+11.5 A person who has no permission under this license does not acquire
+permission by violating it, and continued access to a public website does
+not cure an unauthorized use.
+
+12. ENFORCEMENT AND RESERVATION OF REMEDIES
+
+12.1 The Copyright Holder reserves all remedies available under applicable
+law for infringement or other unauthorized use.
+
+12.2 Nothing in this document guarantees that a particular claim will
+succeed, that a particular remedy will be available, or that every
+restriction will be enforceable in every jurisdiction.
+
+12.3 The Copyright Holder may seek appropriate legal or platform remedies
+where legally available.
+
+13. WRITTEN PERMISSION
+
+13.1 Any permission beyond the express G.O.T. Games permission in Section 4
+must be obtained in advance and in writing from the Copyright Holder.
+
+13.2 A request, discussion, public comment, issue, pull request, message,
+or failure to respond is not permission.
+
+13.3 Any additional permission should identify the person or organization
+receiving it, the specific materials covered, the permitted activities,
+the purpose, and the duration or other applicable conditions.
+
+13.4 Permission granted to one person or organization does not grant
+permission to any other person or organization.
+
+14. GENERAL TERMS
+
+14.1 Severability: If a provision is held unenforceable, it will be
+limited or severed only to the extent necessary, and the remaining
+provisions will continue to apply to the extent permitted by law.
+
+14.2 No waiver: Failure to enforce a provision on one occasion does not
+waive the right to enforce it later.
+
+14.3 No implied amendment: This license may be changed only by a written
+notice or replacement license issued by the Copyright Holder.
+
+14.4 Entire license: This document states the permissions granted by the
+Copyright Holder for the Original Materials, subject to applicable law
+and any separate written agreement.
+
+14.5 Applicable law: Applicable law and the proper forum will be
+determined by the laws and rules that govern the relevant claim. This
+document does not attempt to displace mandatory consumer, privacy,
+copyright, or other protections that cannot legally be waived.
+
+15. CONTACT AND PERMISSION REQUESTS
+
+For permission to use Original Materials beyond the limited permission
+granted to G.O.T. Games, contact the Copyright Holder through the GitHub
+account:
+
+GitHub: https://github.com/jasoncoker010101-cmd
+
+Do not assume permission has been granted until the Copyright Holder has
+provided clear written authorization.
+
+END OF LICENSE
+
+This license applies only to rights the Copyright Holder owns or is
+authorized to license. It does not replace third-party licenses or
+override rights that applicable law does not permit the Copyright Holder
+to restrict.
