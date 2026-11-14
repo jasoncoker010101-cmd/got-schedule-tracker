@@ -117,6 +117,25 @@ jobs:
           print(f"Checked {len(pages)} HTML pages and {checked_scripts} inline JavaScript blocks.")
           PY
 
+      - name: Validate standalone JavaScript files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          files = sorted(Path(".").rglob("*.js"))
+          for path in files:
+              result = subprocess.run(
+                  ["node", "--check", str(path)],
+                  text=True,
+                  capture_output=True
+              )
+              if result.returncode:
+                  raise SystemExit(f"{path} failed JavaScript syntax check:\\n{result.stderr}")
+          print(f"Validated {len(files)} standalone JavaScript files.")
+          PY
+
       - name: Validate JSON data files
         shell: bash
         run: |
