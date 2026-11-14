@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 :root{color-scheme:dark;--bg:#11110f;--surface:#191916;--raised:#22211c;--text:#f7f4ec;--muted:#aaa69a;--accent:#efbd32;--line:rgba(245,235,206,.13);--green:#82d6a0;--red:#ff8585;--display:"Bricolage Grotesque",sans-serif;--body:"DM Sans",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important}
@@ -114,9 +114,25 @@ footer{margin-top:24px;color:#647887;letter-spacing:.12em;font-size:.66rem}
 @media(max-width:560px){.shell{width:calc(100% - 18px);padding-top:10px}header{padding:22px 16px 16px;border-radius:16px}header:after{right:16px;top:18px;font-size:.58rem}h1{font-size:clamp(2.45rem,13vw,3.7rem);margin-top:16px}.lead{font-size:.86rem}.site-nav{margin-top:18px}.site-nav a{flex:1 1 28%;font-size:.68rem}.hub-layout{gap:12px;margin-top:14px}.rooms{border-radius:14px}.room-list{grid-template-columns:1fr 1fr;gap:5px}.room-button{grid-template-columns:32px minmax(0,1fr);gap:8px;padding:9px 7px}.room-icon{width:32px;height:32px;font-size:1rem}.room-name{font-size:.76rem}.room-desc{font-size:.62rem}.room-arrow{display:none}.rooms-note{font-size:.7rem;padding:10px 5px}.chat-panel{min-height:590px;border-radius:14px}.chat-head{padding:13px 12px}.chat-room-icon{width:40px;height:40px}.chat-room-title{gap:9px}.chat-room-title h2{font-size:1.08rem}.chat-room-title p{font-size:.68rem}.live-state{padding:5px 7px;font-size:.62rem}.chat-guidelines{padding:9px 12px;font-size:.68rem}.messages{padding:15px 11px;max-height:52vh;min-height:300px}.chat-message{grid-template-columns:34px minmax(0,1fr);gap:9px}.avatar{width:34px;height:34px}.message-body{font-size:.85rem}.composer{padding:11px}.composer-row{gap:6px}.composer .btn{min-width:64px;padding:9px 10px}.composer textarea{font-size:.84rem;min-height:44px}.composer-foot{font-size:.63rem}}
 @media(prefers-reduced-motion:reduce){body:before{display:none}}
 
+body.nexus-closed{min-height:100vh;display:grid;place-items:center;padding:24px}
+body.nexus-closed .shell,body.nexus-closed .modal-backdrop{display:none!important}
+.nexus-maintenance{width:min(680px,100%);padding:clamp(26px,6vw,52px);border:1px solid rgba(239,189,50,.25);border-radius:24px;background:linear-gradient(145deg,rgba(239,189,50,.09),transparent 55%),#191916;box-shadow:0 24px 80px rgba(0,0,0,.35);text-align:center}
+.nexus-maintenance .mark{width:58px;height:58px;margin:0 auto 20px;display:grid;place-items:center;border:1px solid rgba(239,189,50,.35);border-radius:18px;background:rgba(239,189,50,.1);font-size:27px}
+.nexus-maintenance .eyebrow{margin:0 0 10px}
+.nexus-maintenance h1{font-size:clamp(2.2rem,8vw,3.7rem);margin:0 0 14px}
+.nexus-maintenance p{max-width:490px;margin:0 auto;color:var(--muted);font-size:1rem}
+.nexus-maintenance .status{display:inline-flex;align-items:center;gap:8px;margin-top:24px;padding:8px 13px;border:1px solid var(--line);border-radius:999px;color:#e8d9ad;font-size:.78rem;font-weight:800;letter-spacing:.04em}
+.nexus-maintenance .status:before{content:"";width:8px;height:8px;border-radius:50%;background:#d6a34d;box-shadow:0 0 12px rgba(214,163,77,.35)}
 </style>
 </head>
-<body>
+<body class="nexus-closed">
+<section class="nexus-maintenance" role="status" aria-live="polite">
+  <div class="mark" aria-hidden="true">✦</div>
+  <p class="eyebrow">G.O.T. GAMES · COMMUNITY</p>
+  <h1>The <span style="color:var(--accent)">Nexus</span> is taking a break.</h1>
+  <p>The community hub is temporarily closed while we work on it. Your account and existing community data are being kept intact. Please check back later.</p>
+  <div class="status">Temporarily unavailable</div>
+</section>
 <div class="shell">
 <header>
   <div class="eyebrow">G.O.T / community network</div>
@@ -179,7 +195,7 @@ const GOT_SUPABASE_URL="https://tzgxkiucsjampbresqkw.supabase.co";
 const GOT_SUPABASE_KEY="sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
 window.GOT_SUPABASE=window.supabase.createClient(GOT_SUPABASE_URL,GOT_SUPABASE_KEY);
 </script>
-<script src="nexus.js"></script>
+
 <script src="notifications.js"></script>
 </body>
 </html>
