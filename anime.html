@@ -845,6 +845,7 @@
 
   const API_URL = "https://graphql.anilist.co";
   const JUNBAN_API_URL = "https://junban.moe/api/v1";
+  const junbanFullSeasonCache = new Map();
 
   const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 
@@ -2069,28 +2070,152 @@
     }
   }
 
-  function getSeasonGroups(items) {
-    const groups = [];
-    const claimed = new Set();
-    const byId = new Map(items.map(item => [Number(item.id), item]));
-    const junbanGroups = new Map();
+  async function loadJunbanFullSeasonGroups(items, signal) {
+    await loadJunbanLookups(items, signal);
 
+    const lookupGroups = new Map();
     for (const anime of items) {
       const lookup = junbanLookupCache.get(String(anime.id));
       if (
         lookup?.type !== "season" ||
         lookup.series?.id == null ||
-        lookup.season?.number == null
+        lookup.franchise?.id == null
       ) continue;
 
-      const franchiseId = lookup.franchise?.id ?? "no-franchise";
-      const key = String(franchiseId) + "|" + String(lookup.series.id);
-      if (!junbanGroups.has(key)) junbanGroups.set(key, []);
-      junbanGroups.get(key).push({
-        anime,
-        seasonNumber: Number(lookup.season.number)
-      });
+      const key = String(lookup.franchise.id) + "|" + String(lookup.series.id);
+      if (!lookupGroups.has(key)) {
+        lookupGroups.set(key, {
+          franchiseId: lookup.franchise.id,
+          seriesId: lookup.series.id
+        });
+      }
     }
+
+    for (const [key, ids] of lookupGroups) {
+      if (junbanFullSeasonCache.has(key)) continue;
+
+      const response = await fetch(
+        JUNBAN_API_URL + "/franchises/" + encodeURIComponent(ids.franchiseId),
+        { headers: { "Accept": "application/json" }, signal }
+      );
+      if (!response.ok) {
+        throw new Error("Junban franchise request failed (" + response.status + ").");
+      }
+
+      const franchise = await response.json();
+      const series = (franchise.series || []).find(entry =>
+        String(entry.id) === String(ids.seriesId)
+      );
+      if (!series || !Array.isArray(series.seasons)) {
+        junbanFullSeasonCache.set(key, []);
+        continue;
+      }
+
+      const seasonRows = series.seasons.slice().sort((a, b) =>
+        Number(a.number) - Number(b.number)
+      );
+      const anilistIds = [...new Set(seasonRows
+        .map(season => String(season.external_ids?.anilist || ""))
+        .filter(id => /^\d+$/.test(id))
+      )];
+
+      const mediaById = new Map();
+      if (anilistIds.length) {
+        try {
+          const mediaQuery = `query ($ids: [Int]) {
+            Page(perPage: 50) {
+              media(id_in: $ids, type: ANIME) {
+                id
+                title { romaji english native }
+                synonyms
+                coverImage { large }
+                description(asHtml: false)
+                episodes
+                seasonYear
+                format
+                averageScore
+                genres
+                relations {
+                  edges {
+                    relationType
+                    node {
+                      id
+                      title { romaji english native }
+                      synonyms
+                      coverImage { large }
+                      description(asHtml: false)
+                      episodes
+                      seasonYear
+                      format
+                      averageScore
+                    }
+                  }
+                }
+              }
+            }
+          }`;
+
+          const mediaResponse = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              query: mediaQuery,
+              variables: { ids: anilistIds.map(Number) }
+            }),
+            signal
+          });
+
+          if (mediaResponse.ok) {
+            const mediaPayload = await mediaResponse.json();
+            for (const media of mediaPayload.data?.Page?.media || []) {
+              mediaById.set(String(media.id), media);
+            }
+          }
+        } catch (error) {
+          if (error.name === "AbortError") throw error;
+          console.warn("AniList season details unavailable; using Junban season data.", error);
+        }
+      }
+
+      const entries = seasonRows.map(season => {
+        const anilistId = String(season.external_ids?.anilist || "");
+        const media = mediaById.get(anilistId);
+        const seasonNumber = Number(season.number);
+        const fallbackTitle = season.title || series.title || franchise.name || "Anime season";
+        const fallbackYear = String(season.first_aired || series.first_aired || "").slice(0, 4);
+
+        const anime = media || {
+          id: /^\d+$/.test(anilistId) ? Number(anilistId) : -Number(season.id),
+          title: {
+            english: fallbackTitle,
+            romaji: season.title || series.title_romaji || fallbackTitle,
+            native: series.title_native || null
+          },
+          synonyms: [],
+          coverImage: { large: null },
+          description: series.synopsis?.text || "",
+          episodes: Number(season.episode_count) || null,
+          seasonYear: /^\d{4}$/.test(fallbackYear) ? Number(fallbackYear) : null,
+          format: series.type || "TV",
+          averageScore: null,
+          genres: [],
+          relations: { edges: [] }
+        };
+
+        return { anime, seasonNumber, junbanSeasonId: season.id };
+      });
+
+      junbanFullSeasonCache.set(key, entries);
+    }
+  }
+
+  function getSeasonGroups(items) {
+    const groups = [];
+    const claimed = new Set();
+    const byId = new Map(items.map(item => [Number(item.id), item]));
 
     for (const anime of items) {
       const id = Number(anime.id);
@@ -2100,21 +2225,22 @@
       if (
         lookup?.type === "season" &&
         lookup.series?.id != null &&
-        lookup.season?.number != null
+        lookup.franchise?.id != null
       ) {
-        const key = String(lookup.franchise?.id ?? "no-franchise") +
-          "|" + String(lookup.series.id);
-        const ordered = (junbanGroups.get(key) || []).slice().sort((a, b) =>
-          a.seasonNumber - b.seasonNumber ||
-          Number(a.anime.id) - Number(b.anime.id)
-        );
-        ordered.forEach(entry => claimed.add(Number(entry.anime.id)));
-        groups.push({ items: ordered, source: "junban" });
-        continue;
+        const key = String(lookup.franchise.id) + "|" + String(lookup.series.id);
+        const fullSeasonList = junbanFullSeasonCache.get(key);
+        if (Array.isArray(fullSeasonList) && fullSeasonList.length) {
+          const ordered = fullSeasonList.slice().sort((a, b) =>
+            a.seasonNumber - b.seasonNumber ||
+            Number(a.anime.id) - Number(b.anime.id)
+          );
+          ordered.forEach(entry => claimed.add(Number(entry.anime.id)));
+          groups.push({ items: ordered, source: "junban-franchise" });
+          continue;
+        }
       }
 
-      // Keep the previous AniList relation grouping as a fallback whenever
-      // Junban has no verified mapping for a result.
+      // Fallback for anime not yet mapped in Junban.
       const seasons = new Map([[id, anime]]);
       for (const edge of anime.relations?.edges || []) {
         if (!["PREQUEL", "SEQUEL"].includes(edge.relationType)) continue;
@@ -2123,7 +2249,6 @@
         if (!["TV", "TV_SHORT"].includes(related.format)) continue;
         const relatedId = Number(related.id);
         if (claimed.has(relatedId)) continue;
-        if (junbanLookupCache.get(String(relatedId))?.type === "season") continue;
         seasons.set(relatedId, byId.get(relatedId) || related);
       }
 
@@ -2334,7 +2459,7 @@
       // Enrich the already-rendered results with Junban season numbers.
       // If Junban is unavailable, the page keeps using AniList relations.
       try {
-        await loadJunbanLookups(displayedItems, controller.signal);
+        await loadJunbanFullSeasonGroups(displayedItems, controller.signal);
         if (!controller.signal.aborted && requestController === controller) {
           render(displayedItems);
         }
