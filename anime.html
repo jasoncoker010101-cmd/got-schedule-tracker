@@ -2905,7 +2905,7 @@
     pagination.hidden = true;
 
     try {
-      const response = await fetchAniListWithRetry(API_URL, {
+      const requestOptions = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -2919,14 +2919,51 @@
           }
         }),
         signal: controller.signal
-      });
+      };
 
-      if (!response.ok) {
-        throw new Error(
-          response.status === 429
-            ? "AniList is receiving too many requests. Please wait a moment and try again."
-            : `AniList request failed (${response.status}).`
-        );
+      // A full page refresh is not needed when AniList briefly drops a request.
+      // Retry the search itself a few times while keeping the anime loader up.
+      let response = null;
+      let lastConnectionError = null;
+      const loaderDetail = pageLoader.querySelector(".page-loader-detail");
+
+      for (let recoveryAttempt = 0; recoveryAttempt < 3; recoveryAttempt++) {
+        if (controller.signal.aborted || requestController !== controller) return;
+
+        try {
+          if (loaderDetail) {
+            loaderDetail.textContent = recoveryAttempt === 0
+              ? "Connecting to AniList and gathering your anime…"
+              : `Connection interrupted. Reconnecting automatically (${recoveryAttempt}/2)…`;
+          }
+
+          response = await fetchAniListWithRetry(API_URL, requestOptions);
+          if (!response.ok) {
+            throw new Error(response.status === 429
+              ? "AniList is receiving too many requests."
+              : `AniList request failed (${response.status}).`);
+          }
+          lastConnectionError = null;
+          break;
+        } catch (requestError) {
+          if (requestError.name === "AbortError") throw requestError;
+          lastConnectionError = requestError;
+
+          const canRetry = recoveryAttempt < 2 &&
+            (requestError instanceof TypeError ||
+             /fetch|network|connection|timed out|temporarily unavailable|429|5\\d\\d/i.test(requestError.message || ""));
+
+          if (!canRetry) throw requestError;
+
+          if (loaderDetail) {
+            loaderDetail.textContent = "The connection dropped. G.O.T. is trying again…";
+          }
+          await waitForRetry(recoveryAttempt === 0 ? 2200 : 5000, controller.signal);
+        }
+      }
+
+      if (!response) {
+        throw lastConnectionError || new Error("AniList is temporarily unavailable.");
       }
 
       const payload = await response.json();
@@ -2988,15 +3025,15 @@
       if (error.name === "AbortError") return;
       if (controller !== requestController) return;
 
-      // Keep any already-visible cards if a later search fails temporarily.
-      // On a fresh page there are no previous cards, so show the clear error.
+      // If automatic recovery is exhausted, keep the page usable and explain
+      // that the user can retry manually instead of looping forever.
       if (!displayedItems.length) {
         render([]);
         pagination.hidden = true;
       }
 
       setStatus(
-        `${error.message || "Couldn't connect to AniList."} Check your connection and try again.`,
+        `${error.message || "Couldn't connect to AniList."} Automatic retries are finished. Check your connection and tap Discover to try again.`,
         true
       );
 
