@@ -90,7 +90,7 @@ async function openRoom(id){
   .subscribe(status=>{const ok=status==="SUBSCRIBED";setLive(ok,ok?"Live":"Reconnecting");});
 }
 async function fetchMessages(initial){
- if(!activeRoom)return;const wasBottom=nearBottom();
+ if(!activeRoom)return;const wasBottom=nearBottom();const previousScrollTop=messages.scrollTop;
  const {data,error}=await db.from("got_chat_messages").select("id,room_id,author_id,body,created_at,deleted_at,deleted_by").eq("room_id",activeRoom.id).is("deleted_at",null).order("created_at",{ascending:false}).limit(80);
  if(error){console.error("Nexus messages:",error);messages.textContent="Messages couldn't load. Please refresh the room.";return;}
  const rows=(data||[]).reverse();messageCache=rows;
@@ -98,6 +98,7 @@ async function fetchMessages(initial){
  if(ids.length){const {data:people,error:peopleError}=await db.from("profiles").select("id,username,avatar_url").in("id",ids);if(!peopleError)(people||[]).forEach(p=>profileMap[p.id]=p);}
  renderMessages(rows,profileMap);
  if(initial||wasBottom)messages.scrollTop=messages.scrollHeight;
+ else messages.scrollTop=previousScrollTop;
 }
 function handleRealtime(row){
  if(!activeRoom||row.room_id!==activeRoom.id)return;
