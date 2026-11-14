@@ -685,6 +685,20 @@
       color: var(--muted);
     }
 
+    .episode-chip.missing-reaction {
+      border-color: rgba(239,189,50,.35);
+      background: rgba(239,189,50,.08);
+      color: var(--text);
+      gap: 5px;
+    }
+
+    .episode-chip .missing-reaction-label {
+      color: var(--accent);
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+
     .episode-chip.youtube-link {
       border-color: rgba(239,189,50,.4);
       background: rgba(239,189,50,.12);
@@ -2259,6 +2273,21 @@
             ? `Episode ${episode} recorded in G.O.T.'s watch history`
             : `Episode ${episode} not recorded as watched`;
           chip.textContent = `EP ${episode}`;
+
+          const isMhaSeasonThreeEpisodeTwenty =
+            String(reactionSeasonKey) === "3" &&
+            episode + reactionEpisodeOffset === 20 &&
+            getAnimeAliases(anime).includes(normalizeTitle("My Hero Academia"));
+
+          if (isMhaSeasonThreeEpisodeTwenty) {
+            chip.classList.add("missing-reaction");
+            chip.title = "No G.O.T. Games reaction for this episode has been found.";
+            chip.setAttribute("aria-label", "Episode 20. No reaction found.");
+            const label = document.createElement("small");
+            label.className = "missing-reaction-label";
+            label.textContent = "NO REACTION FOUND";
+            chip.append(label);
+          }
         }
 
         chips.append(chip);
