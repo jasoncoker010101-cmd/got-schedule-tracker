@@ -1,15 +1,14 @@
 {
-  "updated": "2026-11-14T21:22:35.222479Z",
+  "updated": "2026-11-14T22:45:15.342263Z",
   "platforms": {
-    "twitch": true,
+    "twitch": false,
     "youtube": false,
-    "rumble": true
+    "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": true,
-      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
+      "live": false,
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
@@ -19,29 +18,26 @@
     },
     "rumble": {
       "ok": true,
-      "live": true,
-      "title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6",
+      "live": false,
+      "skipped": "Twitch stream ended",
       "url": "https://rumble.com/v7icoik--the-anme-reactor-king-of-the-world-is-here-.html",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "channel_name": "G.O.T Games",
-      "viewers": 68,
-      "page_checked": 2,
-      "next_page": 3,
-      "session_state": "live",
-      "message": "Rumble is live."
+      "session_state": "ended",
+      "message": "The Twitch stream ended, so this Rumble event is marked ended."
     }
   },
   "rumble_session": {
     "event_key": "2026-11-14T20:30:00Z|rumble|Hell's Paradise S2 E7-10",
     "title": "Hell's Paradise S2 E7-10",
     "scheduled_start": "2026-11-14T20:30:00Z",
-    "state": "live",
+    "state": "ended",
     "twitch_seen_live": true,
     "rumble_seen_live": true,
     "rumble_page": 3,
-    "next_rumble_check_at": "2026-11-14T21:27:35.222479Z",
-    "message": "Rumble is live.",
+    "next_rumble_check_at": null,
+    "message": "The Twitch stream ended, so this Rumble event is marked ended.",
     "rumble_stream_url": "https://rumble.com/v7icoik--the-anme-reactor-king-of-the-world-is-here-.html",
-    "rumble_stream_title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6"
+    "rumble_stream_title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6",
+    "ended_at": "2026-11-14T22:45:15.342263Z"
   }
 }
