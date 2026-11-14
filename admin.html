@@ -166,7 +166,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 .diag-summary{padding:12px 14px;border:1px solid rgba(142,220,224,.15);border-radius:8px;background:rgba(5,12,19,.45);line-height:1.6}
 @media(max-width:700px){#fullDiagSearch{order:2;flex-basis:100%;max-width:none}.diag-result{grid-template-columns:minmax(0,1fr) auto}.diag-result-detail{grid-column:1/-1;grid-row:2}.diag-result-status{grid-column:2;grid-row:1}}
 
-</style></head>
+.playlist-auditor-panel .playlist-audit-apply-row{margin-top:12px;align-items:center}.playlist-auditor-panel #playlistAuditApply{background:linear-gradient(110deg,#f4d28b,#f2bd55);font-weight:900}.playlist-auditor-panel #playlistAuditApply[hidden]{display:none}.playlist-auditor-panel #playlistAuditApplyNote{font-size:12px;line-height:1.5;max-width:620px}</style></head>
 <body>
 <header class="site-header">
   <a class="logo" href="index.html">G.O.T <span>Games</span><small>ADMIN</small></a>
@@ -214,6 +214,7 @@ input,select,textarea{accent-color:var(--got-gold)}
    <div class="row"><button type="submit" id="playlistAuditRun">Scan playlist</button><span class="muted" id="playlistAuditMessage" role="status" aria-live="polite">Ready to scan. Only owner accounts can run this audit.</span></div>
   </form>
   <div id="playlistAuditSummary" class="playlist-audit-summary" hidden></div>
+  <div class="row playlist-audit-apply-row"><button type="button" id="playlistAuditApply" hidden>ADD EXPLICITLY VERIFIED MISSING LINKS</button><span class="muted" id="playlistAuditApplyNote">Only videos whose season and episode are explicitly stated in the YouTube title can be added. Inferred seasons and uncertain matches are always excluded.</span></div>
   <div id="playlistAuditResults" class="playlist-audit-results" aria-live="polite"></div>
  </section>
 <div class="section-head"><h2>System status</h2><div><button class="secondary" id="refresh">Refresh status</button><button class="secondary" id="logout">Log out</button></div></div>
@@ -1287,6 +1288,12 @@ async function runPlaylistAudit(event){
   if(error)throw new Error(error.message||"The playlist audit request failed.");
   if(!data?.success)throw new Error(data?.error||"The playlist audit could not be completed.");
   const counts=data.counts||{};
+  const explicitMissing=(data.items||[]).filter(item=>item.status==="missing_episode_link"&&item.season_inferred===false&&item.season_number!=null&&item.episode_start!=null);
+  const applyButton=$("playlistAuditApply");
+  applyButton.hidden=explicitMissing.length===0;
+  applyButton.textContent="ADD "+explicitMissing.length+" EXPLICITLY VERIFIED MISSING LINK"+(explicitMissing.length===1?"":"S");
+  const inferredCount=Math.max(0,(counts.missing_episode_link||0)-explicitMissing.length);
+  $("playlistAuditApplyNote").textContent="Only videos with the season and episode explicitly stated in the title qualify. "+inferredCount+" inferred-season match(es) will be left untouched.";
   const statItems=[
    ["Videos",counts.videos||0],["Already matched",counts.already_matched||0],
    ["Missing links",counts.missing_episode_link||0],["Already catalogued",counts.episode_already_catalogued||0],
@@ -1308,12 +1315,40 @@ async function runPlaylistAudit(event){
    tr.append(pos,ep,title,statusCell);tbody.append(tr);
   }
   table.append(tbody);wrap.append(table);results.append(wrap);
-  message.textContent="Audit complete for "+(data.anime_title||"the selected anime")+". No database records were changed.";
+  message.textContent="Audit complete for "+(data.anime_title||"the selected anime")+". "+explicitMissing.length+" match(es) have an explicit season and episode and are eligible to add. Inferred seasons are excluded.";
  }catch(error){
+  $("playlistAuditApply").hidden=true;
   message.textContent="Audit failed: "+(error?.message||String(error));
  }finally{button.disabled=false;button.textContent="Scan playlist";}
 }
 $("playlistAuditForm").addEventListener("submit",runPlaylistAudit);
+$("playlistAuditApply").addEventListener("click",async()=>{
+ const button=$("playlistAuditApply"),message=$("playlistAuditMessage");
+ if(!db||button.disabled)return;
+ const count=Number((button.textContent.match(/ADD (\\d+)/)||[])[1]||0);
+ if(!count)return;
+ if(!confirm("Add "+count+" reaction link(s)? Only videos with an explicitly stated season and episode will be saved. Inferred seasons, duplicates, and uncertain matches will be skipped."))return;
+ button.disabled=true;button.textContent="ADDING VERIFIED LINKS…";
+ try{
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!session?.access_token)throw new Error("Your owner session expired. Please sign in again.");
+  const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{
+   action:"apply",
+   playlist_url:$("playlistAuditUrl").value.trim(),
+   anime_title:$("playlistAuditAnime").value.trim(),
+   anilist_id:Number($("playlistAuditAniList").value)
+  }});
+  if(error)throw new Error(error.message||"The links could not be added.");
+  if(!data?.success)throw new Error(data?.error||"The links could not be added.");
+  await runPlaylistAudit({preventDefault(){}});
+  message.textContent="Finished: added "+(data.added_count||0)+" link(s), skipped "+(data.skipped_count||0)+". "+(data.inferred_seasons_excluded||0)+" inferred-season match(es) were deliberately excluded.";
+ }catch(error){
+  message.textContent="Could not add links: "+(error?.message||String(error));
+ }finally{
+  button.disabled=false;
+ }
+});
 
 function renderReports(){
  const filter=$("reportFilter").value;
