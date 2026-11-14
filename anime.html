@@ -1640,7 +1640,7 @@ input,select,textarea{accent-color:var(--got-gold)}
     if (!payload.data) {
       throw new Error("Taizen returned no catalogue data.");
     }
-    return payload.data;
+    return payload;
   }
 
   function normalizeTitle(title) {
@@ -2821,7 +2821,8 @@ input,select,textarea{accent-color:var(--got-gold)}
         }`
       );
       const query = "query GOTTaizenSeriesGroups {\n" + aliases.join("\n") + "\n}";
-      const data = await fetchTaizenGraphQL(query, {}, signal, true);
+      const payload = await fetchTaizenGraphQL(query, {}, signal, true);
+      const data = payload.data || {};
 
       batch.forEach((id, index) => {
         const result = data["series" + index];
@@ -3402,14 +3403,14 @@ input,select,textarea{accent-color:var(--got-gold)}
       if (payload.errors?.length) {
         throw new Error(
           payload.errors[0].message ||
-          "AniList couldn't complete the search."
+          "Taizen couldn't complete the search."
         );
       }
 
       const pageData = payload.data?.Page;
 
       if (!pageData) {
-        throw new Error("AniList returned an unexpected response.");
+        throw new Error("Taizen returned an unexpected response.");
       }
 
       displayedItems = pageData.media || [];
