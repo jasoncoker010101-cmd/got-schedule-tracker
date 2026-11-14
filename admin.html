@@ -1561,7 +1561,7 @@ function renderPlaylistReviewQueue(){
   const end=document.createElement("input");end.type="number";end.min="1";end.step="1";end.placeholder="Same as start";end.value=item.episode_end!=null&&item.episode_end!==item.episode_start?item.episode_end:"";endLabel.append(end);
   fields.append(seasonLabel,episodeLabel,endLabel);
   const actions=document.createElement("div");actions.className="review-actions";
-  const add=document.createElement("button");add.type="button";add.textContent="Add Link";
+  const add=document.createElement("button");add.type="button";add.textContent="Add Link";if(!item.anime_title||!item.anilist_id){add.disabled=true;add.title="This item has no confirmed anime identity; remove it or rescan under the correct anime.";add.textContent="Anime details needed";}
   add.addEventListener("click",async()=>{
    const seasonNumber=Number(season.value),episodeNumber=Number(episode.value),endNumber=end.value.trim()?Number(end.value):episodeNumber;
    if(!Number.isInteger(seasonNumber)||seasonNumber<1||!Number.isInteger(episodeNumber)||episodeNumber<1||!Number.isInteger(endNumber)||endNumber<episodeNumber){$("playlistReviewMessage").textContent="Enter a valid season and episode before adding this link.";return;}
