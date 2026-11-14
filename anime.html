@@ -2747,26 +2747,45 @@
         entry.anime.title?.native,
         ...(Array.isArray(entry.anime.synonyms) ? entry.anime.synonyms : [])
       ].filter(Boolean).join(" ");
+      const aliasNames = [
+        titleFor(entry.anime),
+        entry.anime.title?.romaji,
+        entry.anime.title?.native,
+        ...(Array.isArray(entry.anime.synonyms) ? entry.anime.synonyms : []),
+        ...(Array.isArray(entry.anime.historyAliases) ? entry.anime.historyAliases : [])
+      ].map(normalizeTitle).filter(Boolean);
+      const isAttackOnTitan = aliasNames.some(alias =>
+        alias === "attack on titan" ||
+        alias === "shingeki no kyojin" ||
+        alias.startsWith("attack on titan ") ||
+        alias.startsWith("shingeki no kyojin ")
+      );
       const isSpecial = entry.seasonNumber === 0 ||
         !["TV", "TV_SHORT"].includes(entry.anime.format);
       const seasonMatch = isSpecial ? null :
         title.match(/\bseason\s*(\d+)\b|\b(\d+)(?:st|nd|rd|th)\s+season\b/i);
       const partMatch = title.match(/\bpart\s*(\d+)\b|\bcour\s*(\d+)\b/i);
+      const isFinalSeason = !isSpecial && /\bfinal season\b/i.test(title);
       return {
         ...entry,
         isSpecial,
+        isAttackOnTitanFinalSeason: isAttackOnTitan && isFinalSeason,
         parsedSeason: seasonMatch ? Number(seasonMatch[1] || seasonMatch[2]) : null,
-        isFinalSeason: !isSpecial && /\bfinal season\b/i.test(title),
+        isFinalSeason,
         parsedPart: partMatch ? Number(partMatch[1] || partMatch[2]) : null
       };
     });
     const highestNamedSeason = Math.max(0, ...parsed.map(entry => entry.parsedSeason || 0));
     const resolved = parsed.map(entry => ({
       ...entry,
+      // Attack on Titan's split Final Season is one numbered season in the
+      // saved watch history: Part 1 is episodes 1-16 and Part 2 is 17-28.
       historySeasonNumber: entry.isSpecial
         ? entry.seasonNumber
-        : (entry.parsedSeason ??
-          (entry.isFinalSeason ? highestNamedSeason + 1 : entry.seasonNumber))
+        : (entry.isAttackOnTitanFinalSeason
+          ? 4
+          : (entry.parsedSeason ??
+            (entry.isFinalSeason ? highestNamedSeason + 1 : entry.seasonNumber)))
     }));
     // Calculate offsets across the complete set of displayed cards, not
     // only inside one AniList relation group. This matters when Part 1 and
@@ -2793,15 +2812,21 @@
         continue;
       }
       const key = String(season);
-      const offset = offsets.get(key) || 0;
       const count = Number(entry.anime.episodes) || 0;
+      const isAttackOnTitanPartTwo =
+        entry.isAttackOnTitanFinalSeason && entry.parsedPart === 2;
+      // The Part 2 AniList entry numbers its local episodes 1-12, while G.O.T.
+      // stores the same episodes in the full Season 4 sequence as 17-28.
+      const offset = isAttackOnTitanPartTwo
+        ? 16
+        : (entry.isAttackOnTitanFinalSeason ? 0 : (offsets.get(key) || 0));
       entry.historyMapping = {
         seasonNumber: Number(season),
         episodeOffset: offset,
         episodeCount: count,
         partNumber: entry.parsedPart || null
       };
-      offsets.set(key, offset + count);
+      offsets.set(key, Math.max(offsets.get(key) || 0, offset + count));
     }
     return resolved;
   }
