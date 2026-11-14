@@ -2793,46 +2793,52 @@ input,select,textarea{accent-color:var(--got-gold)}
     const missing = tvdbIds.filter(id => !taizenFullSeasonCache.has(id));
     if (!missing.length) return;
 
-    // Batch TheTVDB lookups. Each result contains all AniList entries that
-    // share one TheTVDB series id, even when AniList split them into seasons.
-    const pending = new Set(missing);
+    // Batch up to eight TheTVDB ids per request. Keep pagination scoped to
+    // each batch so a later batch always starts at page 1.
     const collected = new Map(missing.map(id => [id, []]));
-    let page = 1;
 
-    while (pending.size && page <= 5) {
-      const batch = [...pending].slice(0, 8);
-      const aliases = batch.map((id, index) =>
-        `series${index}: animePage(page: ${page}, perPage: 50, filter: { tvdbId: ${Number(id)} }) {
-          pageInfo { hasNextPage }
-          items {
-            id
-            title { preferred romaji english native }
-            synonyms
-            description
-            format
-            seasonYear
-            episodes
-            coverImage { large }
-            averageScore
-            genres { name }
-            status
-            externalIds { theTvdb theTvdbSeason }
+    for (let offset = 0; offset < missing.length; offset += 8) {
+      const batch = missing.slice(offset, offset + 8);
+      let activeIds = batch.slice();
+      let page = 1;
+
+      while (activeIds.length && page <= 5) {
+        const aliases = activeIds.map((id, index) =>
+          `series${index}: animePage(page: ${page}, perPage: 50, filter: { tvdbId: ${Number(id)} }) {
+            pageInfo { hasNextPage }
+            items {
+              id
+              title { preferred romaji english native }
+              synonyms
+              description
+              format
+              seasonYear
+              episodes
+              coverImage { large }
+              averageScore
+              genres { name }
+              status
+              externalIds { theTvdb theTvdbSeason }
+            }
+          }`
+        );
+        const query = "query GOTTaizenSeriesGroups {\n" + aliases.join("\n") + "\n}";
+        const payload = await fetchTaizenGraphQL(query, {}, signal, true);
+        const data = payload.data || {};
+        const nextPageIds = [];
+
+        activeIds.forEach((id, index) => {
+          const result = data["series" + index];
+          if (!result || !Array.isArray(result.items)) {
+            throw new Error("Taizen did not return a valid season list for TheTVDB series " + id + ".");
           }
-        }`
-      );
-      const query = "query GOTTaizenSeriesGroups {\n" + aliases.join("\n") + "\n}";
-      const payload = await fetchTaizenGraphQL(query, {}, signal, true);
-      const data = payload.data || {};
+          collected.get(id).push(...result.items);
+          if (result.pageInfo?.hasNextPage) nextPageIds.push(id);
+        });
 
-      batch.forEach((id, index) => {
-        const result = data["series" + index];
-        if (!result || !Array.isArray(result.items)) {
-          throw new Error("Taizen did not return a valid season list for TheTVDB series " + id + ".");
-        }
-        collected.get(id).push(...result.items);
-        if (!result.pageInfo?.hasNextPage) pending.delete(id);
-      });
-      page++;
+        activeIds = nextPageIds;
+        page++;
+      }
     }
 
     for (const id of missing) {
