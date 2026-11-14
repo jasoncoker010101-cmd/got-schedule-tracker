@@ -198,7 +198,7 @@ input,select,textarea{accent-color:var(--got-gold)}
  <div class="full-diagnostics-head">
   <div>
    <h2 id="fullDiagnosticsTitle">Full diagnostics</h2>
-   <p>A read-only system audit covering the admin session, core pages, live feeds, external APIs, Supabase tables, anime records, notifications, and review queues.</p>
+   <p>A read-only site-wide scan of pages, internal links, assets, game/show feeds, APIs, database tables, anime records, notifications, chat, profiles, and player data. Filter warnings and errors after each run.</p>
   </div>
   <div class="full-diagnostics-actions">
    <span class="diag-run-state" id="fullDiagState" data-state="idle"><i class="diag-pulse" aria-hidden="true"></i><span id="fullDiagStateText">READY</span></span>
@@ -412,8 +412,8 @@ async function health(){
 const FULL_DIAGNOSTIC_PAGE_PATHS = [
  "index.html","anime.html","notifications.html","profile.html",
  "player-directory.html","nexus.html","admin.html",
- "notifications.js","nexus.js","patreon-links.js",
- "schedule.json","live.json","shows.json","favicon.png","schedule/latest.png"
+ "notifications.js","nexus.js","patreon-links.js","mascot.js",
+ "schedule.json","live.json","shows.json","games.json","favicon.png","schedule/latest.png"
 ];
 const fullDiagSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let fullDiagRunning=false;
@@ -650,10 +650,11 @@ const fullDiagnosticSteps=[
  {
   name:"Schedule, live status, show catalogue, and artwork",
   run:async()=>{
-   const [schedule,live,shows]=await Promise.all([
+   const [schedule,live,shows,games]=await Promise.all([
     fullDiagFetch("schedule.json").then(async response=>({response,payload:response.ok?await response.json():null})),
     fullDiagFetch("live.json").then(async response=>({response,payload:response.ok?await response.json():null})),
-    fullDiagFetch("shows.json").then(async response=>({response,payload:response.ok?await response.json():null}))
+    fullDiagFetch("shows.json").then(async response=>({response,payload:response.ok?await response.json():null})),
+    fullDiagFetch("games.json").then(async response=>({response,payload:response.ok?await response.json():null}))
    ]);
    if(!schedule.response.ok)throw new Error("schedule.json returned HTTP "+schedule.response.status);
    if(!schedule.payload||!Array.isArray(schedule.payload.events))throw new Error("Schedule feed has an unexpected structure; events[] is missing.");
@@ -661,6 +662,8 @@ const fullDiagnosticSteps=[
    if(!live.payload||!live.payload.platforms||typeof live.payload.platforms!=="object")throw new Error("Live feed has an unexpected structure; platforms{} is missing.");
    if(!shows.response.ok)throw new Error("shows.json returned HTTP "+shows.response.status);
    if(!shows.payload||!shows.payload.shows||typeof shows.payload.shows!=="object")throw new Error("Show catalogue has an unexpected structure; shows{} is missing.");
+   if(!games.response.ok)throw new Error("games.json returned HTTP "+games.response.status);
+   if(!games.payload||!games.payload.games||typeof games.payload.games!=="object")throw new Error("Game catalogue has an unexpected structure; games{} is missing.");
    const events=schedule.payload.events;
    const malformedEvents=events.filter(event=>!event||typeof event!=="object"||!String(event.title||"").trim()||!String(event.platform||"").trim()||!event.start||Number.isNaN(Date.parse(event.start))).length;
    const keys=events.map(event=>event&&[String(event.title||"").trim().toLowerCase(),String(event.platform||"").toLowerCase(),String(event.start||"")].join("|"));
@@ -678,6 +681,8 @@ const fullDiagnosticSteps=[
    const malformedLiveDetails=platformNames.filter(name=>!details[name]||typeof details[name].ok!=="boolean"||typeof details[name].live!=="boolean").length;
    const showRows=Object.entries(shows.payload.shows);
    const malformedShows=showRows.filter(([name,item])=>!name||!item||(!item.skipped&&(!Number.isInteger(Number(item.tmdb_id))||Number(item.tmdb_id)<1))).length;
+   const gameRows=Object.entries(games.payload.games);
+   const malformedGames=gameRows.filter(([name,item])=>!name||!item||(!item.notFound&&!item.skipped&&(!item.poster||!/^https:\/\//i.test(item.poster)))).length;
    const issues=[];
    if(malformedEvents)issues.push(malformedEvents+" malformed schedule events");
    if(duplicateEvents)issues.push(duplicateEvents+" duplicate schedule entries");
@@ -689,6 +694,7 @@ const fullDiagnosticSteps=[
    if(!updated||Number.isNaN(updated.getTime()))issues.push("schedule timestamp missing or invalid");
    if(!liveUpdated||Number.isNaN(liveUpdated.getTime()))issues.push("live-status timestamp missing or invalid");
    if(malformedShows)issues.push(malformedShows+" malformed show catalogue records");
+   if(malformedGames)issues.push(malformedGames+" malformed game artwork records");
    let artwork="schedule artwork path not provided";
    if(schedule.payload.image){
     try{
@@ -701,8 +707,27 @@ const fullDiagnosticSteps=[
      }
     }catch(_){issues.push("schedule artwork path is invalid");}
    }
-   const detail=events.length+" schedule events · "+platforms+" live-state flags · "+showRows.length+" show catalogue entries · "+malformedEvents+" malformed events · "+malformedShows+" malformed show entries · "+artwork+(issues.length?" · "+issues.join(" · "):"");
+   const detail=events.length+" schedule events · "+platforms+" live-state flags · "+showRows.length+" show entries · "+gameRows.length+" game entries · "+malformedEvents+" malformed events · "+(malformedShows+malformedGames)+" malformed catalogue entries · "+artwork+(issues.length?" · "+issues.join(" · "):"");
    return fullDiagResult("Schedule, live status, show catalogue, and artwork",issues.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"Game cover lookup Edge Function",
+  run:async()=>{
+   const response=await fullDiagWithTimeout(fetch("https://tzgxkiucsjampbresqkw.supabase.co/functions/v1/igdb-game-cover",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({title:"Wuthering Waves"})
+   }),"Game cover Edge Function",12000);
+   const payload=await response.json().catch(()=>null);
+   if(!response.ok)throw new Error("IGDB game-cover function returned HTTP "+response.status+(payload?.error?": "+payload.error:""));
+   if(!payload||typeof payload!=="object")throw new Error("Game-cover function returned an unexpected response.");
+   if(payload.error)throw new Error(String(payload.error));
+   if(payload.game?.poster&&/^https:\/\//i.test(payload.game.poster)){
+    return fullDiagResult("Game cover lookup Edge Function","pass","Function responded successfully · poster URL returned for Wuthering Waves");
+   }
+   if(payload.notFound)return fullDiagResult("Game cover lookup Edge Function","warning","Function is reachable, but the Wuthering Waves lookup returned no poster.");
+   return fullDiagResult("Game cover lookup Edge Function","warning","Function responded, but returned no valid game poster payload.");
   }
  },
  {
