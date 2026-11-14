@@ -2519,6 +2519,7 @@ async function loadShows(){
 }
 
 const GAME_ART_CACHE_KEY="gotGameArtworkCacheV1";
+const pendingGameLookups=new Set();
 function readGameArtworkCache(){
   try{return JSON.parse(localStorage.getItem(GAME_ART_CACHE_KEY)||"{}");}
   catch(e){return {};}
@@ -2536,6 +2537,8 @@ async function resolveGameArtwork(){
   const cached=readGameArtworkCache();
   for(const title of titles){
     if(cached[title]){games[title]=cached[title];continue;}
+    if(pendingGameLookups.has(title))continue;
+    pendingGameLookups.add(title);
     try{
       const response=await fetch("https://tzgxkiucsjampbresqkw.supabase.co/functions/v1/igdb-game-cover",{
         method:"POST",
@@ -2555,6 +2558,8 @@ async function resolveGameArtwork(){
       }
     }catch(error){
       console.warn("Game artwork lookup unavailable for",title,error);
+    }finally{
+      pendingGameLookups.delete(title);
     }
   }
 }
