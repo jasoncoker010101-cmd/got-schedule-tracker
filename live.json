@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-14T22:45:15.342263Z",
+  "updated": "2026-11-14T23:21:19.183204Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,7 +19,7 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "skipped": "Twitch stream ended",
+      "skipped": "This scheduled Rumble session has already ended",
       "url": "https://rumble.com/v7icoik--the-anme-reactor-king-of-the-world-is-here-.html",
       "channel_url": "https://rumble.com/c/GOTGames",
       "session_state": "ended",
