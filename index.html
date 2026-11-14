@@ -1976,6 +1976,7 @@ const cleanTitle = t => (t || "").replace(EPISODE_RE, "").trim();
 let data = null;
 let liveFeed = null;
 let shows = {};
+let games = {};
 let tz = pickStartZone();
 let scheduleLoading = false;
 let lastScheduleCheck = null;
@@ -2069,7 +2070,13 @@ function eventKey(ev){
   return (ev.start || ev.date || "")+"|"+ev.platform+"|"+(ev.title || "");
 }
 
+function gameFor(title){
+  return games[cleanTitle(title)] || games[title] || null;
+}
+
 function posterFor(title){
+  const game=gameFor(title);
+  if(game && game.poster) return game.poster;
   const show=shows[cleanTitle(title)];
   return show && show.poster ? show.poster : null;
 }
@@ -2229,6 +2236,7 @@ function render(){
       row.dataset.search = [ev.title || "", (ev.labels || []).join(" "), p.label].join(" ").toLowerCase();
       row.style.setProperty("--c",p.color);
 
+      const game=gameFor(ev.title);
       const src=posterFor(ev.title);
       if(src){
         const img=el("img","thumb");
@@ -2272,6 +2280,7 @@ function render(){
         status==="ended" ? "Ended" : "Confirmed";
 
       body.append(t,el("div","k",
+        (game ? "GAME · " : "")+
         (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label)+" · "+statusText));
 
       row.append(body);
@@ -2302,7 +2311,7 @@ function render(){
     info.append(
       el("span",null,"Next up"),
       el("b",null,nextEv.title),
-      el("span",null,(PLATFORMS[nextEv.platform] || PLATFORMS.other).label+" · "+when)
+      el("span",null,(gameFor(nextEv.title) ? "GAME · " : "")+(PLATFORMS[nextEv.platform] || PLATFORMS.other).label+" · "+when)
     );
 
     nx.replaceChildren(info);
@@ -2508,6 +2517,16 @@ async function loadShows(){
   }catch(e){}
 }
 
+async function loadGames(){
+  try{
+    const r=await fetch("games.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok)return;
+    const j=await r.json();
+    games=j.games || {};
+    render();
+  }catch(e){}
+}
+
 async function loadLive(){
   try{
     const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"});
@@ -2521,10 +2540,12 @@ async function loadLive(){
 buildZoneOptions();
 load();
 loadShows();
+loadGames();
 loadLive();
 
 setInterval(load,5*60*1000);
 setInterval(loadShows,5*60*1000);
+setInterval(loadGames,15*60*1000);
 setInterval(loadLive,2*60*1000);
 setInterval(render,60*1000);
   /* ===== TWITCH LIVE = RUMBLE LIVE (he streams on both at the same time) ===== */
