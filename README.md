@@ -1,8 +1,8 @@
 # got-schedule-tracker
-Automatic G.O.T. Games weekly schedule tracker
+Automatic G.O.T Games weekly schedule tracker
 
 ## What this site does
-- Tracks the weekly G.O.T. Games schedule from Discord and updates the site automatically.
+- Tracks the weekly G.O.T Games schedule from Discord and updates the site automatically.
 - Parses the posted schedule image into structured event data for the agenda view.
 - Shows live stream status for Twitch/Rumble and publishes it to the site.
 - Hosts a fanbase directory and player profiles for the community.
