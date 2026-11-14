@@ -174,7 +174,7 @@ def normalized_channel_path(value):
 
 
 def is_target_rumble_stream(stream):
-    """Match the stream's nested channel URL to the G.O.T. Games channel."""
+    """Match the stream's nested channel URL to the G.O.T Games channel."""
     channel = stream.get("channel")
     if not isinstance(channel, dict):
         channel = {}
