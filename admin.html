@@ -243,17 +243,17 @@ input,select,textarea{accent-color:var(--got-gold)}
  <div class="full-diagnostics-head">
   <div>
    <h2 id="fullDiagnosticsTitle">Full diagnostics</h2>
-   <p>A read-only site-wide scan of pages, internal links, assets, game/show feeds, APIs, database tables, anime records, notifications, chat, profiles, and player data. Filter warnings and errors after each run.</p>
+   <p>A deeper read-only audit of every site area: pages, scripts, navigation, feeds, media, APIs, database access, anime identity, episode coverage, notification receipts, chat moderation, community records, and privacy boundaries. Each check reports its own evidence and limits.</p>
   </div>
   <div class="full-diagnostics-actions">
    <span class="diag-run-state" id="fullDiagState" data-state="idle"><i class="diag-pulse" aria-hidden="true"></i><span id="fullDiagStateText">READY</span></span>
    <button type="button" id="runFullDiagnostics">Run full diagnostics</button>
   </div>
  </div>
- <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 14</span></div>
- <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="14" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
+ <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 19</span></div>
+ <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="19" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
  <div class="diag-console" id="fullDiagTerminal" role="log" aria-live="polite" aria-relevant="additions text">
-  <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v3.0</div>
+  <div class="diag-console-line dim">G.O.T GAMES // DEEP SYSTEM DIAGNOSTICS v4.0</div>
   <div class="diag-console-line dim">Read-only mode · Findings will be grouped by severity.</div>
  </div>
  <div class="diag-filter-bar" id="fullDiagFilters" hidden aria-label="Filter diagnostic results">
@@ -1200,6 +1200,150 @@ const fullDiagnosticSteps=[
    const detail=profiles.length+" profiles · "+roles.length+" role records · "+rooms.length+" chat rooms · "+messages.length+" chat messages · "+chatReports.length+" chat reports · "+achievements.length+" achievements · "+stats.length+" player-stat rows · "+playerAchievements.length+" earned-achievement rows";
    return fullDiagResult("Community, profiles, chat, and player systems",failures.length?"fail":warnings.length?"warning":"pass",failures.length?failures.join(" · ")+" · "+detail:detail+(warnings.length?" · "+warnings.join(" · "):""));
   }
+ 
+ {
+  name:"Anime catalogue identity, duplicate links, and watch coverage",
+  run:async()=>{
+   const [watchResult,linkResult]=await Promise.all([
+    fullDiagReadAll("got_anime_watch_history","id,anime_title,anilist_id,season_number,episode_start,episode_end,platform,watched_at"),
+    fullDiagReadAll("got_anime_episode_links","id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,video_title,link_type")
+   ]);
+   const watch=watchResult.rows,links=linkResult.rows;
+   const idTitles=new Map(),titleIds=new Map(),videoOwners=new Map(),episodeOwners=new Map();
+   const problems=[],warnings=[];
+   const norm=value=>String(value||"").trim().toLowerCase().replace(/\s+/g," ");
+   for(const row of [...watch,...links]){
+    const id=Number(row.anilist_id),title=norm(row.anime_title);
+    if(Number.isInteger(id)&&id>0&&title){
+     if(!idTitles.has(id))idTitles.set(id,new Set());
+     idTitles.get(id).add(title);
+     if(!titleIds.has(title))titleIds.set(title,new Set());
+     titleIds.get(title).add(id);
+    }
+   }
+   const idTitleConflicts=[...idTitles].filter(([,titles])=>titles.size>1);
+   const titleIdConflicts=[...titleIds].filter(([,ids])=>ids.size>1);
+   for(const row of links){
+    if(row.youtube_url){
+     const match=String(row.youtube_url).match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{6,})/i);
+     if(match){
+      if(videoOwners.has(match[1]))problems.push("YouTube video "+match[1]+" is saved in multiple reaction-link rows (#"+videoOwners.get(match[1])+" and #"+row.id+")");
+      else videoOwners.set(match[1],row.id);
+     }
+    }
+    const season=Number(row.season_number),start=Number(row.episode_start),end=Number(row.episode_end);
+    if(Number.isInteger(season)&&season>0&&Number.isInteger(start)&&Number.isInteger(end)&&start>0&&end>=start&&row.anilist_id!=null){
+     for(let episode=start;episode<=end&&episode-start<100;episode++){
+      const key=String(row.anilist_id)+"|"+season+"|"+episode;
+      if(episodeOwners.has(key)&&episodeOwners.get(key)!==row.id)problems.push("AniList "+row.anilist_id+" S"+season+" E"+episode+" is covered by multiple reaction links");
+      else episodeOwners.set(key,row.id);
+     }
+    }
+   }
+   let uncoveredWatched=0,unassignableWatch=0;
+   for(const row of watch){
+    const season=Number(row.season_number),start=Number(row.episode_start),end=Number(row.episode_end);
+    if(row.anilist_id==null||!Number.isInteger(season)||season<1||!Number.isInteger(start)||!Number.isInteger(end)||start<1||end<start){unassignableWatch++;continue;}
+    for(let episode=start;episode<=end&&episode-start<100;episode++){
+     if(!episodeOwners.has(String(row.anilist_id)+"|"+season+"|"+episode))uncoveredWatched++;
+    }
+   }
+   if(idTitleConflicts.length)warnings.push(idTitleConflicts.length+" AniList ID(s) are paired with multiple anime titles");
+   if(titleIdConflicts.length)warnings.push(titleIdConflicts.length+" anime title(s) are paired with multiple AniList IDs");
+   if(uncoveredWatched)warnings.push(uncoveredWatched+" watched episode slot(s) have no matching reaction link");
+   if(unassignableWatch)warnings.push(unassignableWatch+" watch-history row(s) could not be reconciled because season/episode/ID data is incomplete");
+   if(watchResult.truncated||linkResult.truncated)warnings.push("one or more anime tables reached the 25,000-row scan limit");
+   const detail=watch.length+" watch rows · "+links.length+" reaction links · "+videoOwners.size+" unique YouTube videos · "+episodeOwners.size+" mapped episode slots · "+uncoveredWatched+" watched slots without links · "+problems.length+" duplicate video/episode conflicts";
+   return fullDiagResult("Anime catalogue identity, duplicate links, and watch coverage",problems.length?"fail":warnings.length?"warning":"pass",detail+(problems.length?" · "+problems.slice(0,6).join(" · "):"")+(warnings.length?" · "+warnings.join(" · "):""));
+  }
+ },
+ {
+  name:"Notification receipts, source deduplication, and profile references",
+  run:async()=>{
+   const [notificationResult,receiptResult,profileResult]=await Promise.all([
+    fullDiagReadAll("got_notifications","id,kind,title,message,href,source_key,created_by,created_at,metadata"),
+    fullDiagReadAll("got_notification_reads","user_id,notification_id,read_at",25000,"notification_id"),
+    fullDiagReadAll("profiles","id",10000)
+   ]);
+   const notifications=notificationResult.rows,receipts=receiptResult.rows,profileIds=new Set(profileResult.rows.map(row=>row.id));
+   const notificationIds=new Set(notifications.map(row=>row.id));
+   const receiptKeys=receipts.map(row=>String(row.user_id)+"|"+String(row.notification_id));
+   const sourceKeys=notifications.map(row=>String(row.source_key||"").trim()).filter(Boolean);
+   const duplicateReceipts=receiptKeys.length-new Set(receiptKeys).size;
+   const duplicateSources=sourceKeys.length-new Set(sourceKeys).size;
+   const orphanReceipts=receipts.filter(row=>!notificationIds.has(row.notification_id)).length;
+   const missingReceiptUsers=receipts.filter(row=>!profileIds.has(row.user_id)).length;
+   const missingCreators=notifications.filter(row=>row.created_by&&!profileIds.has(row.created_by)).length;
+   const invalidReadTimes=receipts.filter(row=>!row.read_at||Number.isNaN(Date.parse(row.read_at))).length;
+   const issues=[];
+   if(duplicateReceipts)issues.push(duplicateReceipts+" duplicate user/notification read receipts");
+   if(duplicateSources)issues.push(duplicateSources+" duplicate notification source keys");
+   if(orphanReceipts)issues.push(orphanReceipts+" read receipts point to missing notifications");
+   if(missingReceiptUsers)issues.push(missingReceiptUsers+" read receipts point to missing profiles");
+   if(missingCreators)issues.push(missingCreators+" notifications have missing creator profiles");
+   if(invalidReadTimes)issues.push(invalidReadTimes+" read receipts have invalid timestamps");
+   const truncated=notificationResult.truncated||receiptResult.truncated||profileResult.truncated;
+   if(truncated)issues.push("one or more notification tables reached the scan limit");
+   const detail=notifications.length+" notifications · "+receipts.length+" read receipts · "+profileIds.size+" profiles · "+(issues.join(" · ")||"relationships are consistent");
+   return fullDiagResult("Notification receipts, source deduplication, and profile references",issues.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"Chat moderation ownership and review workflow",
+  run:async()=>{
+   const [reportsResult,messagesResult,profilesResult]=await Promise.all([
+    fullDiagReadAll("got_chat_reports","id,message_id,reporter_id,status,reviewed_by,reviewed_at,created_at",10000),
+    fullDiagReadAll("got_chat_messages","id,author_id,deleted_at,deleted_by",25000),
+    fullDiagReadAll("profiles","id",10000)
+   ]);
+   const reports=reportsResult.rows,messages=messagesResult.rows,profileIds=new Set(profilesResult.rows.map(row=>row.id)),messageIds=new Set(messages.map(row=>row.id));
+   const orphanMessages=reports.filter(row=>!messageIds.has(row.message_id)).length;
+   const missingReporters=reports.filter(row=>!profileIds.has(row.reporter_id)).length;
+   const missingReviewers=reports.filter(row=>row.reviewed_by&&!profileIds.has(row.reviewed_by)).length;
+   const badStatuses=reports.filter(row=>!["new","reviewing","resolved","dismissed","fixed"].includes(String(row.status||"").toLowerCase())).length;
+   const reviewedWithoutTime=reports.filter(row=>["resolved","dismissed","fixed"].includes(String(row.status||"").toLowerCase())&&row.reviewed_by&&!row.reviewed_at).length;
+   const deletedWithoutActor=messages.filter(row=>row.deleted_at&&!row.deleted_by).length;
+   const deletedActorMissing=messages.filter(row=>row.deleted_by&&!profileIds.has(row.deleted_by)).length;
+   const problems=[];
+   if(orphanMessages)problems.push(orphanMessages+" reports reference missing chat messages");
+   if(missingReporters)problems.push(missingReporters+" reports have missing reporter profiles");
+   if(missingReviewers)problems.push(missingReviewers+" reports have missing reviewer profiles");
+   if(badStatuses)problems.push(badStatuses+" reports have unknown moderation statuses");
+   if(reviewedWithoutTime)problems.push(reviewedWithoutTime+" closed reports have no review timestamp");
+   if(deletedWithoutActor)problems.push(deletedWithoutActor+" deleted messages have no recorded moderator");
+   if(deletedActorMissing)problems.push(deletedActorMissing+" deleted messages reference missing moderator profiles");
+   if(reportsResult.truncated||messagesResult.truncated||profilesResult.truncated)problems.push("one or more moderation tables reached the scan limit");
+   return fullDiagResult("Chat moderation ownership and review workflow",problems.length?"warning":"pass",reports.length+" moderation reports · "+messages.length+" chat messages · "+(problems.join(" · ")||"review and ownership references are consistent"));
+  }
+ },
+ {
+  name:"Private-table exposure and access-boundary check",
+  run:async()=>{
+   if(!db)throw new Error("Supabase client did not load.");
+   const result=await fullDiagWithTimeout(db.from("got_anime_link_scanner_state").select("*").limit(1),"Private scanner-state exposure probe",9000);
+   if(!result.error)return fullDiagResult("Private-table exposure and access-boundary check","fail","The signed-in browser client can query the private scanner-state table. Review Data API grants and RLS immediately.");
+   const code=String(result.error.code||"");
+   const message=String(result.error.message||"");
+   if(code==="42501"||code==="PGRST205"||/permission denied|not found|schema cache/i.test(message)){
+    return fullDiagResult("Private-table exposure and access-boundary check","pass","Browser access to private scanner state is blocked as intended · "+(code||"access denied"));
+   }
+   return fullDiagResult("Private-table exposure and access-boundary check","warning","The privacy probe returned an unexpected response: "+message);
+  }
+ },
+ {
+  name:"Edge Function availability and browser CORS contracts",
+  run:async()=>{
+   const slugs=["audit-youtube-playlist","game-cover-lookup"];
+   const checks=await Promise.all(slugs.map(async slug=>{
+    try{
+     const response=await fetchWithTimeout(SUPABASE_URL+"/functions/v1/"+slug,{method:"OPTIONS",headers:{Origin:location.origin,"Access-Control-Request-Method":"POST","Access-Control-Request-Headers":"authorization,content-type,apikey"}},9000);
+     return {slug,ok:response.ok,status:response.status,allow:response.headers.get("access-control-allow-origin")};
+    }catch(error){return {slug,ok:false,detail:error?.message||String(error)};}
+   }));
+   const failed=checks.filter(item=>!item.ok);
+   const details=checks.map(item=>item.slug+": "+(item.ok?"HTTP "+item.status+" · CORS "+(item.allow||"header absent"):(item.detail||"HTTP "+item.status))).join(" · ");
+   return fullDiagResult("Edge Function availability and browser CORS contracts",failed.length?"warning":"pass",details);
+  }
  }
 ];
 
@@ -1219,7 +1363,7 @@ async function runFullDiagnostics(){
  fullDiagRows=[];
  const total=fullDiagnosticSteps.length;
  fullDiagSetProgress(0,total);
- fullDiagLogLine("G.O.T GAMES // SYSTEM DIAGNOSTICS v2.0","good");
+ fullDiagLogLine("G.O.T GAMES // DEEP SYSTEM DIAGNOSTICS v4.0","good");
  fullDiagLogLine("OWNER SESSION VERIFIED · READ-ONLY AUDIT · "+total+" CHECK GROUPS","dim");
  await fullDiagSleep(180);
  try{
