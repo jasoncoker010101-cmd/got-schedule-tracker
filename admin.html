@@ -220,8 +220,8 @@ input,select,textarea{accent-color:var(--got-gold)}
    <button type="button" id="runFullDiagnostics">Run full diagnostics</button>
   </div>
  </div>
- <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 12</span></div>
- <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
+ <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 13</span></div>
+ <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
  <div class="diag-console" id="fullDiagTerminal" role="log" aria-live="polite" aria-relevant="additions text">
   <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v3.0</div>
   <div class="diag-console-line dim">Read-only mode · Findings will be grouped by severity.</div>
@@ -426,8 +426,12 @@ const FULL_DIAGNOSTIC_PAGE_PATHS = [
  "index.html","anime.html","notifications.html","profile.html",
  "player-directory.html","nexus.html","admin.html",
  "notifications.js","nexus.js","patreon-links.js","mascot.js",
+ "check_live.py","Script/fetch_posters.py","Script/fetch_schedule.py",
+ "Script/parse_schedule.py","Script/show_overrides.json",
  "schedule.json","live.json","shows.json","games.json","manifest.json",
- "schedule/message.json","schedule/state.json","favicon.png","got-mascot.svg","schedule/latest.png"
+ "schedule/message.json","schedule/state.json","schedule/ocr_default.txt",
+ "schedule/ocr_sparse.txt","favicon.png","got-mascot.svg","schedule/latest.png",
+ "README.md","CNAME"
 ];
 const fullDiagSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let fullDiagRunning=false;
@@ -688,6 +692,75 @@ const fullDiagnosticSteps=[
    const warningDetail=warnings.slice(0,8).join(" · ")+(warnings.length>8?" · +"+(warnings.length-8)+" more markup warning(s)":"");
    const detail=checks.length+" page/feed/asset files reachable · "+targetChecks.length+" discovered internal targets checked · "+(warnings.length?warningDetail:"no duplicate IDs or basic markup issues found");
    return fullDiagResult("Website pages, scripts, links, and accessibility",warnings.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"Complete repository file inventory and live-file audit",
+  run:async()=>{
+   const repo="jasoncoker010101-cmd/got-schedule-tracker";
+   const treeUrl="https://api.github.com/repos/"+repo+"/git/trees/main?recursive=1";
+   const treeResponse=await fetchWithTimeout(treeUrl,{cache:"no-store",headers:{Accept:"application/vnd.github+json"}},10000);
+   if(!treeResponse.ok)throw new Error("GitHub repository inventory returned HTTP "+treeResponse.status+".");
+   const tree=await treeResponse.json();
+   const files=(tree.tree||[]).filter(item=>item.type==="blob"&&item.path);
+   if(!files.length)throw new Error("GitHub returned an empty repository file inventory.");
+   const textExtensions=/\.(html?|css|m?js|json|md|txt|xml|svg|ya?ml|py|toml|ini|webmanifest)$/i;
+   const liveExtensions=/\.(html?|css|m?js|json|md|txt|xml|svg|png|jpe?g|webp|gif|ico|woff2?|ttf|otf|mp4|webm|py|toml|ini|webmanifest)$/i;
+   const sourceIssues=[],liveIssues=[];
+   let sourceChecked=0,liveChecked=0,parsedJson=0,parsedSvg=0;
+   for(let i=0;i<files.length;i+=6){
+    const batch=files.slice(i,i+6);
+    const results=await Promise.all(batch.map(async file=>{
+     const path=file.path;
+     const rawUrl="https://raw.githubusercontent.com/"+repo+"/main/"+path.split("/").map(encodeURIComponent).join("/");
+     try{
+      const response=await fetchWithTimeout(rawUrl,{cache:"no-store"},10000);
+      if(!response.ok)throw new Error("GitHub raw HTTP "+response.status);
+      if(textExtensions.test(path)){
+       const body=await response.text();
+       if(!body.trim())throw new Error("file is empty");
+       if(/^(<<<<<<< |=======|>>>>>>> )/m.test(body))throw new Error("merge-conflict marker found");
+       if(/\.json$/i.test(path)){JSON.parse(body);parsedJson++;}
+       if(/\.svg$/i.test(path)){
+        const xml=new DOMParser().parseFromString(body,"image/svg+xml");
+        if(xml.querySelector("parsererror"))throw new Error("SVG/XML parsing failed");
+        parsedSvg++;
+       }
+       if(/\.html?$/i.test(path)){
+        const doc=new DOMParser().parseFromString(body,"text/html");
+        if(!doc.documentElement)throw new Error("HTML document could not be parsed");
+       }
+      }else{
+       const bytes=await response.arrayBuffer();
+       if(!bytes.byteLength)throw new Error("binary file is empty");
+      }
+      return {path,ok:true};
+     }catch(error){return {path,ok:false,detail:error?.message||String(error)};}
+    }));
+    sourceChecked+=results.length;
+    results.filter(item=>!item.ok).forEach(item=>sourceIssues.push(item.path+": "+item.detail));
+   }
+   const liveFiles=files.filter(file=>liveExtensions.test(file.path)&&!file.path.startsWith(".github/")&&file.path!=="CNAME");
+   for(let i=0;i<liveFiles.length;i+=6){
+    const batch=liveFiles.slice(i,i+6);
+    const results=await Promise.all(batch.map(async file=>{
+     try{
+      const response=await fullDiagFetch(file.path,9000);
+      if(!response.ok)return {path:file.path,ok:false,detail:"HTTP "+response.status};
+      return {path:file.path,ok:true};
+     }catch(error){return {path:file.path,ok:false,detail:error?.message||String(error)};}
+    }));
+    liveChecked+=results.length;
+    results.filter(item=>!item.ok).forEach(item=>liveIssues.push(item.path+": "+item.detail));
+   }
+   const warnings=[];
+   if(tree.truncated)warnings.push("GitHub marked the recursive tree as truncated");
+   if(sourceIssues.length)warnings.push(sourceIssues.length+" tracked source file(s) could not be read or parsed: "+sourceIssues.slice(0,5).join(" · "));
+   if(liveIssues.length)warnings.push(liveIssues.length+" deployed file(s) could not be reached: "+liveIssues.slice(0,8).join(" · "));
+   const detail=files.length+" tracked repository files inventoried · "+sourceChecked+" source/binary files fetched · "+parsedJson+" JSON files parsed · "+parsedSvg+" SVG files parsed · "+liveChecked+" published files checked on the live site · "+(warnings.length?warnings.join(" · "):"all tracked files and published paths passed");
+   if(liveIssues.length)return fullDiagResult("Complete repository file inventory and live-file audit","fail",detail);
+   if(warnings.length)return fullDiagResult("Complete repository file inventory and live-file audit","warning",detail);
+   return fullDiagResult("Complete repository file inventory and live-file audit","pass",detail);
   }
  },
  {
