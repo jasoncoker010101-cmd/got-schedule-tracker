@@ -561,7 +561,7 @@ async function fullDiagWithTimeout(promise,label,milliseconds=9000){
  }finally{clearTimeout(timer);}
 }
 function fullDiagRootUrl(path){
- const clean=String(path||"").replace(/^\\/+/, "");
+ const clean=String(path||"").replace(/^[/]+/, "");
  const url=new URL("/"+clean,location.origin);
  if(url.origin!==location.origin)throw new Error("Diagnostic resource is not on the current website origin: "+url.href);
  return url;
