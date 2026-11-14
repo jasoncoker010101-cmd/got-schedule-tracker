@@ -708,6 +708,15 @@ async function fullDiagReadAll(table,columns,maxRows=25000,orderColumn="id"){
  }
  return {rows,truncated:true};
 }
+function fullDiagYouTubeId(value){
+ try{
+  const url=new URL(value);
+  const host=url.hostname.replace(/^www\./i,"").toLowerCase();
+  let id=host==="youtu.be"?url.pathname.split("/").filter(Boolean)[0]:url.searchParams.get("v");
+  if(!id){const parts=url.pathname.split("/").filter(Boolean);if(["shorts","embed"].includes(parts[0]))id=parts[1];}
+  return /^[A-Za-z0-9_-]{6,}$/.test(id||"")?id:null;
+ }catch(_){return null;}
+}
 function fullDiagSafeUrl(value,hosts){
  try{
   const url=new URL(value);
@@ -1161,10 +1170,10 @@ const fullDiagnosticSteps=[
      }else problems.push("record "+row.id+" has an unknown reaction-link type");
      const title=String(row.video_title||"").trim();
      if(row.link_type==="youtube"&&row.youtube_url){
-      const match=String(row.youtube_url).match(/(?:v=|youtu\.be\/|shorts\\/|embed\\/)([A-Za-z0-9_-]{6,})/i);
-      if(match){
-       if(!videoEvidence.has(match[1]))videoEvidence.set(match[1],{videoId:match[1],title,mappings:[]});
-       videoEvidence.get(match[1]).mappings.push("Record #"+row.id+" · S"+season+" E"+start+(end!==start?"–"+end:""));
+      const videoId=fullDiagYouTubeId(row.youtube_url);
+      if(videoId){
+       if(!videoEvidence.has(videoId))videoEvidence.set(videoId,{videoId,title,mappings:[]});
+       videoEvidence.get(videoId).mappings.push("Record #"+row.id+" · S"+season+" E"+start+(end!==start?"–"+end:""));
       }
      }
      if(!title)warnings.push("record "+row.id+" has no saved link title; inspect its thumbnail before confirming episode identity");
@@ -1307,10 +1316,10 @@ const fullDiagnosticSteps=[
    const titleIdConflicts=[...titleIds].filter(([,ids])=>ids.size>1);
    for(const row of links){
     if(row.youtube_url){
-     const match=String(row.youtube_url).match(/(?:v=|youtu\.be\/|shorts\\/|embed\\/)([A-Za-z0-9_-]{6,})/i);
-     if(match){
-      if(!videoOwners.has(match[1]))videoOwners.set(match[1],[]);
-      videoOwners.get(match[1]).push(row);
+     const videoId=fullDiagYouTubeId(row.youtube_url);
+     if(videoId){
+      if(!videoOwners.has(videoId))videoOwners.set(videoId,[]);
+      videoOwners.get(videoId).push(row);
      }
     }
     const season=Number(row.season_number),start=Number(row.episode_start),end=Number(row.episode_end);
