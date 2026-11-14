@@ -158,7 +158,8 @@
         const {data, error} = await db.auth.verifyOtp({email, token, type:"email"});
         if (error) throw error;
         if (!data.session) throw new Error("Email verification did not create a session.");
-        const result = await securityCall("complete_email", {challenge_id: challengeId});\n        clearPendingEmail();
+        const result = await securityCall("complete_email", {challenge_id: challengeId});
+        clearPendingEmail();
         if (result.status === "enrollment_verified") {
           renderQuestionSetup();
         } else if (result.status === "verified") {
