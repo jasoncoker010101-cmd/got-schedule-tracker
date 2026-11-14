@@ -691,6 +691,16 @@
       text-shadow: 0 0 18px rgba(239,189,50,.65);
     }
     .page-loader-mark span { color: var(--accent); }
+    .page-loader-mascot {
+      display: block;
+      width: 88px;
+      height: 88px;
+      margin: -2px 0 2px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.42));
+      transform-origin: 50% 88%;
+      animation: anime-mascot-bounce .82s cubic-bezier(.36,.07,.19,.97) infinite;
+    }
     .page-loader-title {
       font: 800 20px var(--display);
       letter-spacing: .02em;
@@ -725,7 +735,7 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .page-loader-ring, .page-loader::before, .page-loader::after,
-      .page-loader-track::after { animation-duration: 8s; }
+      .page-loader-track::after, .page-loader-mascot { animation-duration: 8s; }
     }
 
     .watch-error {
@@ -1174,6 +1184,7 @@ input,select,textarea{accent-color:var(--got-gold)}
         <span class="page-loader-ring inner"></span>
         <span class="page-loader-mark">G.O.T<span>!</span></span>
       </div>
+      <img class="page-loader-mascot" src="got-mascot.svg" alt="" aria-hidden="true">
       <span class="page-loader-title">Entering the anime zone</span>
       <span class="page-loader-detail">Gathering anime, seasons, covers, and episode details…</span>
       <span class="page-loader-track" aria-hidden="true"></span>
@@ -1187,6 +1198,15 @@ input,select,textarea{accent-color:var(--got-gold)}
       var loader = document.getElementById("pageLoader");
       if (loader && !loader.hidden) {
         loader.hidden = true;
+        var resultsStage = document.getElementById("resultsStage");
+        var resultsLoading = document.getElementById("resultsLoading");
+        var resultsLoadingText = document.getElementById("resultsLoadingText");
+        if (resultsStage && resultsLoading) {
+          resultsStage.classList.add("is-loading");
+          resultsStage.setAttribute("aria-busy", "true");
+          resultsLoading.hidden = false;
+          if (resultsLoadingText) resultsLoadingText.textContent = "Still gathering anime…";
+        }
         var status = document.getElementById("status");
         if (status) {
           status.textContent = "The catalogue is taking longer than expected. You can still use the page or tap Discover to retry.";
@@ -3453,10 +3473,12 @@ input,select,textarea{accent-color:var(--got-gold)}
     if (resultsLoading.hidden || !resultsLoadingStartedAt) {
       resultsLoadingStartedAt = Date.now();
     }
-    pageLoader.hidden = true;
+    // Keep the animated full-page mascot for the first catalogue load.
+    // Later searches use the smaller in-results loader so the page stays usable.
+    pageLoader.hidden = !initialCatalogueLoad;
     resultsStage.classList.add("is-loading");
     resultsStage.setAttribute("aria-busy", "true");
-    resultsLoading.hidden = false;
+    resultsLoading.hidden = initialCatalogueLoad;
     resultsLoadingText.textContent = searchInput.value.trim()
       ? "Finding your anime…"
       : "Gathering anime for you…";
