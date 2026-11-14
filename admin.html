@@ -260,7 +260,7 @@ input,select,textarea{accent-color:var(--got-gold)}
  <section class="panel" id="playlistReviewPanel" aria-labelledby="playlistReviewTitle">
   <h2 id="playlistReviewTitle">Manual Playlist Review</h2>
   <p class="muted">Uncertain matches from every anime playlist are saved here. Set the correct season and episode, then choose Add Link. If a video is not an episode, choose Delete to remove it from the active review queue.</p>
-  <div class="row"><input id="playlistReviewSearch" type="search" placeholder="Filter by anime or video title" aria-label="Filter manual playlist reviews"><button type="button" class="secondary" id="playlistReviewRefresh">Refresh queue</button></div>
+  <div class="row"><input id="playlistReviewSearch" type="search" placeholder="Filter by anime or video title" aria-label="Filter manual playlist reviews"><select id="playlistReviewAge" aria-label="Filter review queue by age"><option value="14">Recent · last 14 days</option><option value="30">Last 30 days</option><option value="all">All active items</option></select><button type="button" class="secondary" id="playlistReviewRefresh">Refresh queue</button></div>
   <p class="muted" id="playlistReviewMessage" role="status" aria-live="polite">Loading saved review items…</p>
   <div id="playlistReviewQueue" class="playlist-review-queue"></div>
  </section>
@@ -1726,9 +1726,19 @@ $("playlistAuditApply").addEventListener("click",async()=>{
 let currentPlaylistReviewRows=[];
 function renderPlaylistReviewQueue(){
  const query=$("playlistReviewSearch").value.trim().toLowerCase();
- const rows=currentPlaylistReviewRows.filter(row=>[row.anime_title,row.video_title,row.review_note,row.anilist_id].filter(Boolean).join(" ").toLowerCase().includes(query));
+ const ageFilter=$("playlistReviewAge")?.value||"14";
+ const cutoff=ageFilter==="all"?null:Date.now()-Number(ageFilter)*24*60*60*1000;
+ const searched=currentPlaylistReviewRows.filter(row=>[row.anime_title,row.video_title,row.review_note,row.anilist_id].filter(Boolean).join(" ").toLowerCase().includes(query));
+ const rows=searched.filter(row=>{
+  if(cutoff===null)return true;
+  const timestamp=Date.parse(row.detected_at||row.created_at||row.uploaded_at||"");
+  return Number.isFinite(timestamp)&&timestamp>=cutoff;
+ });
  const root=$("playlistReviewQueue");root.replaceChildren();
- if(!rows.length){root.textContent=query?"No review items match that filter.":"No saved playlist items need review.";return;}
+ if(!rows.length){
+  root.textContent=searched.length?(ageFilter==="all"?"No active review items match that filter.":"No recent items match. Choose “All active items” to see older reviews."):(query?"No review items match that filter.":"No saved playlist items need review.");
+  return;
+ }
  for(const item of rows){
   const card=document.createElement("article");card.className="playlist-review-card";
   const heading=document.createElement("h3");heading.textContent=(item.anime_title||"Unknown anime")+" · "+(item.video_title||"Untitled video");
@@ -1776,10 +1786,15 @@ async function loadPlaylistReviewQueue(){
  const {data,error}=await db.from("got_anime_pending_episode_links").select("*").in("status",["pending","needs_checking"]).order("detected_at",{ascending:false}).limit(500);
  if(error){$("playlistReviewMessage").textContent="Could not load review queue: "+error.message;return;}
  currentPlaylistReviewRows=data||[];
- $("playlistReviewMessage").textContent=currentPlaylistReviewRows.length+" item(s) awaiting review across all anime.";
+ const now=Date.now(),recent=currentPlaylistReviewRows.filter(row=>{
+  const timestamp=Date.parse(row.detected_at||row.created_at||row.uploaded_at||"");
+  return Number.isFinite(timestamp)&&timestamp>=now-14*24*60*60*1000;
+ }).length;
+ $("playlistReviewMessage").textContent=recent+" recent item(s) · "+currentPlaylistReviewRows.length+" active item(s) total. Older items are hidden by default, not deleted.";
  renderPlaylistReviewQueue();
 }
 $("playlistReviewSearch").addEventListener("input",renderPlaylistReviewQueue);
+$("playlistReviewAge").addEventListener("change",renderPlaylistReviewQueue);
 $("playlistReviewRefresh").addEventListener("click",loadPlaylistReviewQueue);
 
 function renderReports(){
