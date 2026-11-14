@@ -2270,7 +2270,7 @@
         }
       }
 
-      const entries = seasonRows.map(season => {
+      const entries = await Promise.all(seasonRows.map(async season => {
         const anilistId = String(season.external_ids?.anilist || "");
         let media = mediaById.get(anilistId) || searchMediaById.get(anilistId) || null;
         const seasonNumber = Number(season.number);
@@ -2304,7 +2304,7 @@
         };
 
         return { anime, seasonNumber, junbanSeasonId: season.id };
-      });
+      }));
 
       junbanFullSeasonCache.set(key, entries);
     }
