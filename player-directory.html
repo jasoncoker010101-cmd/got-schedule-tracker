@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101510">
-<title>Fanbase | G.O.T. Games</title>
+<title>Fanbase | G.O.T Games</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,7 +52,7 @@ a { color: inherit; text-decoration: none; }
 :focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
 .hero { position:relative; isolation:isolate; display:flex; align-items:flex-end; justify-content:space-between; gap:30px; min-height:278px; overflow:hidden; padding:clamp(28px,6vw,58px); margin-bottom:20px; border:1px solid var(--line); border-radius:24px; background:linear-gradient(135deg, rgba(198,243,106,.06), rgba(23,30,24,.82)); box-shadow:var(--shadow); }
 .hero::before { content:""; position:absolute; z-index:-1; width:450px; height:450px; right:3%; top:-63%; border:1px solid rgba(198,243,106,.16); border-radius:50%; box-shadow:0 0 0 35px rgba(198,243,106,.03), 0 0 0 70px rgba(198,243,106,.02); }
-.hero::after { content:"G.O.T."; position:absolute; z-index:-1; right:7%; bottom:-.27em; color:rgba(244,248,237,.035); font:700 clamp(6rem,20vw,14rem)/1 var(--display); letter-spacing:-.11em; }
+.hero::after { content:"G.O.T"; position:absolute; z-index:-1; right:7%; bottom:-.27em; color:rgba(244,248,237,.035); font:700 clamp(6rem,20vw,14rem)/1 var(--display); letter-spacing:-.11em; }
 .hero-copy { max-width:650px; }
 .eyebrow { display:inline-flex; align-items:center; gap:9px; margin-bottom:17px; color:var(--accent); font-size:.7rem; font-weight:800; letter-spacing:.17em; text-transform:uppercase; }
 .eyebrow::before { content:""; width:22px; height:2px; background:var(--accent); }
@@ -282,7 +282,7 @@ footer { margin-top:54px; padding-top:21px; border-top:1px solid var(--line); co
 <body>
 <div class="wrap">
   <nav class="topbar" aria-label="Main navigation">
-    <div class="brand"><div class="brand-mark" aria-hidden="true">G</div><span>G.O.T. GAMES</span></div>
+    <div class="brand"><div class="brand-mark" aria-hidden="true">G</div><span>G.O.T GAMES</span></div>
     <div class="site-nav" aria-label="Main navigation">
     <a href="index.html">Schedule</a>
     <a href="profile.html">Profile</a>
@@ -293,9 +293,9 @@ footer { margin-top:54px; padding-top:21px; border-top:1px solid var(--line); co
 
   <header class="hero">
     <div class="hero-copy">
-      <div class="eyebrow">The G.O.T. community</div>
+      <div class="eyebrow">The G.O.T community</div>
       <h1>Fanbase</h1>
-      <p class="hero-description">Meet the players behind G.O.T. Games. Find community profiles and get to know the people who make every game feel like home.</p>
+      <p class="hero-description">Meet the players behind G.O.T Games. Find community profiles and get to know the people who make every game feel like home.</p>
     </div>
     <div class="hero-tag"><span class="live-dot" aria-hidden="true"></span> The community, together</div>
   </header>
@@ -308,7 +308,7 @@ footer { margin-top:54px; padding-top:21px; border-top:1px solid var(--line); co
 
   <main>
     <section class="directory-tools" aria-label="Player directory tools">
-      <div class="tools-copy"><div class="tools-kicker">Find your people</div><h2>Player directory</h2><p>Search the G.O.T. Games community by username.</p></div>
+      <div class="tools-copy"><div class="tools-kicker">Find your people</div><h2>Player directory</h2><p>Search the G.O.T Games community by username.</p></div>
       <div class="directory-controls">
         <div class="search-wrap"><span class="search-icon" aria-hidden="true"></span><input class="search" id="search" type="search" placeholder="Search players..." autocomplete="off" aria-label="Search players"></div>
         <select id="roleFilter" class="role-filter" aria-label="Filter players by role">
@@ -332,14 +332,14 @@ footer { margin-top:54px; padding-top:21px; border-top:1px solid var(--line); co
 
     <section class="section">
       <div class="section-heading">
-        <div><div class="heading-title"><span class="heading-icon" aria-hidden="true">◎</span><h2>Community Players</h2></div><p>Explore the members of G.O.T. Games.</p></div>
+        <div><div class="heading-title"><span class="heading-icon" aria-hidden="true">◎</span><h2>Community Players</h2></div><p>Explore the members of G.O.T Games.</p></div>
         <span class="section-count" id="memberResults"></span>
       </div>
       <div class="player-grid" id="memberList"><div class="loading">Loading players...</div></div>
     </section>
   </main>
 
-  <footer><div class="footer-brand">G.O.T. GAMES</div><div>Fanbase · Unofficial Fan Site</div></footer>
+  <footer><div class="footer-brand">G.O.T GAMES</div><div>Fanbase · Unofficial Fan Site</div></footer>
 </div>
 <script>
 const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
@@ -449,7 +449,7 @@ function makePlayerCard(player, index = 0) {
   username.textContent = player.username;
   const caption = document.createElement("div");
   caption.className = "player-caption";
-  caption.textContent = isStaff(player) ? "G.O.T. Games Staff" : "Community Member";
+  caption.textContent = isStaff(player) ? "G.O.T Games Staff" : "Community Member";
   const badges = document.createElement("div");
   badges.className = "badges";
   const sortedRoles = [...player.roles].sort((a,b)=>(roleInfo[a]?.priority ?? 99)-(roleInfo[b]?.priority ?? 99));
