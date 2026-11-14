@@ -2389,8 +2389,25 @@
         : (entry.parsedSeason ??
           (entry.isFinalSeason ? highestNamedSeason + 1 : entry.seasonNumber))
     }));
+    // Calculate offsets across the complete set of displayed cards, not
+    // only inside one AniList relation group. This matters when Part 1 and
+    // Part 2 are returned through different relation paths.
+    const chronological = resolved.slice().sort((a, b) => {
+      const seasonA = Number(a.historySeasonNumber) || Number.MAX_SAFE_INTEGER;
+      const seasonB = Number(b.historySeasonNumber) || Number.MAX_SAFE_INTEGER;
+      if (seasonA !== seasonB) return seasonA - seasonB;
+
+      const yearA = Number(a.anime.seasonYear) || Number.MAX_SAFE_INTEGER;
+      const yearB = Number(b.anime.seasonYear) || Number.MAX_SAFE_INTEGER;
+      if (yearA !== yearB) return yearA - yearB;
+
+      const partA = a.parsedPart || 1;
+      const partB = b.parsedPart || 1;
+      return partA - partB || Number(a.anime.id) - Number(b.anime.id);
+    });
+
     const offsets = new Map();
-    for (const entry of resolved) {
+    for (const entry of chronological) {
       const season = entry.historySeasonNumber;
       if (season == null || !Number.isFinite(Number(season))) {
         entry.historyMapping = null;
@@ -2486,9 +2503,36 @@
       Number(hasRecordedReactionLinks(b)) - Number(hasRecordedReactionLinks(a))
     );
     const groups = getSeasonGroups(orderedItems);
+
+    // Resolve split-cour mappings once across every group, so separate
+    // relation groups still share one canonical episode-number sequence.
+    const allEntries = groups.flatMap(group => group.items);
+    const mappedEntries = resolveHistoryMappings(allEntries);
+    const mappedById = new Map(mappedEntries.map(entry => [
+      Number(entry.anime.id),
+      entry
+    ]));
+
+    for (const group of groups) {
+      group.items = group.items.map(entry =>
+        mappedById.get(Number(entry.anime.id)) || entry
+      );
+      group.items.sort((a, b) =>
+        Number(Boolean(a.isSpecial || a.seasonNumber === 0)) -
+        Number(Boolean(b.isSpecial || b.seasonNumber === 0))
+      );
+    }
+
+    const regularGroups = groups.filter(group =>
+      !group.items.every(entry => entry.isSpecial || entry.seasonNumber === 0)
+    );
+    const specialsGroups = groups.filter(group =>
+      group.items.every(entry => entry.isSpecial || entry.seasonNumber === 0)
+    );
+    const renderGroups = [...regularGroups, ...specialsGroups];
     const rendered = new Set();
 
-    for (const seasonGroup of groups) {
+    for (const seasonGroup of renderGroups) {
       const unique = seasonGroup.items.filter(entry => {
         const id = Number(entry.anime.id);
         if (rendered.has(id)) return false;
