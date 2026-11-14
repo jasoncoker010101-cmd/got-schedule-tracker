@@ -91,6 +91,7 @@ input,select,textarea{accent-color:var(--got-gold)}
     <a href="player-directory.html">Fanbase</a>
     <a href="anime.html">Anime</a>
     <a href="admin.html" class="active" aria-current="page">Admin</a>
+    <a href="notifications.html" data-got-alert-link>Alerts <span class="got-alert-count" hidden></span></a>
   </nav>
 </header>
 <main>
@@ -133,6 +134,7 @@ const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const db=(window.supabase && typeof window.supabase.createClient==="function")
   ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
   : null;
+window.GOT_SUPABASE = db;
 const $=id=>document.getElementById(id);let currentReports=[];
 function setHealth(name,ok,value,detail){$(name+"Dot").className="dot "+(ok?"ok":"bad");$(name+"Status").textContent=value;$(name+"Detail").textContent=detail;}
 async function fetchWithTimeout(url,options={},milliseconds=8000){
