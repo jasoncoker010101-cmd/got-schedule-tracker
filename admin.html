@@ -213,7 +213,18 @@ input,select,textarea{accent-color:var(--got-gold)}
    <div class="row"><button type="submit" id="announcementSubmit">Publish alert</button><span class="muted" id="announcementMessage" role="status" aria-live="polite"></span></div>
   </form>
  </section>
- <section class="panel playlist-auditor-panel" aria-labelledby="playlistAuditorTitle">
+  <section class="panel manual-episode-link-panel" aria-labelledby="manualEpisodeLinkTitle">
+  <h2 id="manualEpisodeLinkTitle">Manually add an episode link</h2>
+  <p class="muted">Add a YouTube reaction, Patreon post, or any other secure HTTPS link directly to an anime episode. Only the owner account can save links.</p>
+  <form id="manualEpisodeLinkForm">
+   <div class="row"><div style="flex:2;min-width:210px"><label for="manualLinkAnime">Anime title</label><input id="manualLinkAnime" value="Jujutsu Kaisen" maxlength="160" required></div><div style="flex:1;min-width:130px"><label for="manualLinkAniList">AniList ID</label><input id="manualLinkAniList" type="number" min="1" step="1" value="113415" required></div></div>
+   <div class="row"><div style="flex:1;min-width:110px"><label for="manualLinkSeason">Season</label><input id="manualLinkSeason" type="number" min="1" step="1" placeholder="e.g. 2" required></div><div style="flex:1;min-width:110px"><label for="manualLinkEpisode">Episode start</label><input id="manualLinkEpisode" type="number" min="1" step="1" placeholder="e.g. 8" required></div><div style="flex:1;min-width:110px"><label for="manualLinkEpisodeEnd">Episode end (optional)</label><input id="manualLinkEpisodeEnd" type="number" min="1" step="1" placeholder="Same episode"></div></div>
+   <div class="row"><div style="flex:1;min-width:180px"><label for="manualLinkType">Link type</label><select id="manualLinkType"><option value="youtube">YouTube</option><option value="patreon">Patreon</option><option value="external">Other website / external link</option></select></div><div style="flex:2;min-width:230px"><label for="manualLinkUrl">Link URL</label><input id="manualLinkUrl" type="url" placeholder="https://…" required></div></div>
+   <label for="manualLinkTitle">Link title (optional)</label><input id="manualLinkTitle" maxlength="240" placeholder="Reaction title or short description">
+   <div class="row"><button type="submit" id="manualLinkSubmit">Save episode link</button><span class="muted" id="manualLinkMessage" role="status" aria-live="polite">Choose the anime, season, episode, and destination.</span></div>
+  </form>
+ </section>
+<section class="panel playlist-auditor-panel" aria-labelledby="playlistAuditorTitle">
   <h2 id="playlistAuditorTitle">YouTube Playlist Auditor</h2>
   <p class="muted">Scan any anime playlist, compare videos against saved reaction links, detect missing episodes, and save uncertain matches to the shared manual review queue. Uncertain videos are never added automatically.</p>
   <form id="playlistAuditForm">
@@ -242,7 +253,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 <article class="status-card"><span class="dot" id="anilistDot"></span>Taizen catalogue<strong id="anilistStatus">Checking…</strong><span class="muted" id="anilistDetail">Public anime catalogue · no API key</span></article>
 <article class="status-card"><span class="dot" id="junbanDot"></span>Series mapping<strong id="junbanStatus">Checking…</strong><span class="muted" id="junbanDetail">Shared TheTVDB season groups</span></article>
 <article class="status-card"><span class="dot" id="supabaseDot"></span>Supabase<strong id="supabaseStatus">Checking…</strong><span class="muted" id="supabaseDetail">Watch history and reports</span></article>
-<article class="status-card"><span class="dot" id="linksDot"></span>Reaction links<strong id="linksStatus">—</strong><span class="muted" id="linksDetail">Saved YouTube and Patreon links</span></article>
+<article class="status-card"><span class="dot" id="linksDot"></span>Reaction links<strong id="linksStatus">—</strong><span class="muted" id="linksDetail">Saved YouTube, Patreon, and external links</span></article>
 </div>
 <div class="grid">
 <article class="status-card">Watch-history records<strong id="watchedCount">—</strong><span class="muted">Database rows; some records cover multiple episodes</span></article>
@@ -258,7 +269,7 @@ input,select,textarea{accent-color:var(--got-gold)}
   <article class="status-card"><span class="dot" id="animeActivityDot"></span>Recent anime data<strong id="animeActivityStatus">Checking…</strong><span class="status-detail" id="animeActivityDetail">Checking latest saved reaction and watch records</span></article>
  </div>
 </section>
-<h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube and Patreon URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div>
+<h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube, Patreon, and external URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div>
 <section class="panel full-diagnostics" id="fullDiagnosticsPanel" aria-labelledby="fullDiagnosticsTitle">
  <div class="full-diagnostics-head">
   <div>
@@ -431,7 +442,7 @@ if(!db){
   pErr?("Pending links: "+(pErr.message||pErr.code||"query failed")):null
  ].filter(Boolean);
  setHealth("supabase",dbOk,dbOk?"Connected":"Issue",dbOk?"Database queries succeeded":dbProblems.join(" | "));
- setHealth("links",!lErr, lErr?"Issue":String(links??"—"), lErr?(lErr.message||lErr.code||"Could not count links"):"Active YouTube and Patreon links");
+ setHealth("links",!lErr, lErr?"Issue":String(links??"—"), lErr?(lErr.message||lErr.code||"Could not count links"):"Active YouTube, Patreon, and external links");
  $("watchedCount").textContent=wErr?"Error":(watched??"0");
  $("pendingLinks").textContent=pErr?"Error":(pending??"0");
  const watch=watchRows.data||[];const linksData=linkRows.data||[];const pendingData=pendingRows.data||[];
@@ -454,12 +465,12 @@ if(!db){
  }
  if(linkRows.error){setHealth("linkData",false,"Unavailable",linkRows.error.message);}
  else {
-  const badYoutube=linksData.filter(x=>x.youtube_url&&!validWebUrl(x.youtube_url,["youtube.com","youtu.be"])).length;
-  const badPatreon=linksData.filter(x=>x.patreon_url&&!validWebUrl(x.patreon_url,["patreon.com"])).length;
-  const noUrl=linksData.filter(x=>!x.youtube_url&&!x.patreon_url).length;
+  const badYoutube=linksData.filter(x=>x.link_type==="youtube"&&x.youtube_url&&!validWebUrl(x.youtube_url,["youtube.com","youtu.be"])).length;
+  const badPatreon=linksData.filter(x=>x.link_type==="patreon"&&x.patreon_url&&!validWebUrl(x.patreon_url,["patreon.com"])).length;
+  const badExternal=linksData.filter(x=>x.link_type==="external"&&(!x.youtube_url||!/^https:\/\//i.test(x.youtube_url))).length;\n   const noUrl=linksData.filter(x=>!x.youtube_url&&!x.patreon_url).length;
   const badRanges=linksData.filter(x=>!Number.isInteger(x.episode_start)||!Number.isInteger(x.episode_end)||x.episode_start<1||x.episode_end<x.episode_start).length;
-  const problems=badYoutube+badPatreon+noUrl+badRanges;
-  setHealth("linkData",problems===0,problems===0?"Looks good":"Review needed",badYoutube+" invalid YouTube · "+badPatreon+" invalid Patreon · "+noUrl+" empty links · "+badRanges+" invalid episode ranges");
+  const problems=badYoutube+badPatreon+badExternal+noUrl+badRanges;
+  setHealth("linkData",problems===0,problems===0?"Looks good":"Review needed",badYoutube+" invalid YouTube · "+badPatreon+" invalid Patreon · "+badExternal+" invalid external · "+noUrl+" empty links · "+badRanges+" invalid episode ranges");
  }
  if(pendingRows.error||reportRows.error){setHealth("queueData",false,"Unavailable",(pendingRows.error||reportRows.error).message);}
  else {
@@ -1063,7 +1074,7 @@ const fullDiagnosticSteps=[
    const noLink=links.filter(row=>!row.youtube_url&&!row.patreon_url).length;
    const badYoutube=links.filter(row=>row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
    const badPatreon=links.filter(row=>row.patreon_url&&!fullDiagSafeUrl(row.patreon_url,["patreon.com"])).length;
-   const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&!row.youtube_url)||(row.link_type==="patreon"&&!row.patreon_url)||!["youtube","patreon"].includes(row.link_type)).length;
+   const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&(!row.youtube_url||!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])||row.patreon_url))||(row.link_type==="patreon"&&(!row.patreon_url||!fullDiagSafeUrl(row.patreon_url,["patreon.com"])||row.youtube_url))||(row.link_type==="external"&&(!row.youtube_url||!/^https:\/\//i.test(row.youtube_url)||row.patreon_url))||!["youtube","patreon","external"].includes(row.link_type)).length;
    const invalidWatchTimes=watch.filter(row=>!row.watched_at||Number.isNaN(Date.parse(row.watched_at))).length;
    const invalidLinkTimes=links.filter(row=>!row.created_at||Number.isNaN(Date.parse(row.created_at))).length;
    const eventKeys=watch.map(row=>row.event_key).filter(Boolean);
@@ -1464,6 +1475,31 @@ $("copyDiagErrors").addEventListener("click",()=>fullDiagCopyText(fullDiagReport
 $("saveDiagErrors").addEventListener("click",()=>fullDiagSaveText("fail"));
 $("copyDiagWarnings").addEventListener("click",()=>fullDiagCopyText(fullDiagReportText("warning"),$("copyDiagWarnings"),"Copy warnings"));
 $("saveDiagWarnings").addEventListener("click",()=>fullDiagSaveText("warning"));
+
+async function submitManualEpisodeLink(event){
+ event.preventDefault();
+ const button=$("manualLinkSubmit"),message=$("manualLinkMessage");
+ if(!db||button.disabled)return;
+ const animeTitle=$("manualLinkAnime").value.trim(),anilistId=Number($("manualLinkAniList").value);
+ const season=Number($("manualLinkSeason").value),episodeStart=Number($("manualLinkEpisode").value);
+ const episodeEnd=$("manualLinkEpisodeEnd").value.trim()?Number($("manualLinkEpisodeEnd").value):episodeStart;
+ const linkType=$("manualLinkType").value,linkUrl=$("manualLinkUrl").value.trim(),videoTitle=$("manualLinkTitle").value.trim();
+ if(!animeTitle||!Number.isInteger(anilistId)||anilistId<1||!Number.isInteger(season)||season<1||!Number.isInteger(episodeStart)||episodeStart<1||!Number.isInteger(episodeEnd)||episodeEnd<episodeStart||episodeEnd-episodeStart>20){message.textContent="Enter a valid anime, AniList ID, season, and episode range (up to 20 episodes).";return;}
+ let parsed;try{parsed=new URL(linkUrl);}catch(_){message.textContent="Enter a valid HTTPS link.";return;}
+ if(parsed.protocol!=="https:"||parsed.username||parsed.password){message.textContent="Links must use HTTPS and cannot contain embedded credentials.";return;}
+ if(linkType==="youtube"&&!((parsed.hostname==="youtube.com"||parsed.hostname.endsWith(".youtube.com")||parsed.hostname==="youtu.be")&&(/youtu\.be/.test(parsed.hostname)?parsed.pathname.length>1:parsed.pathname==="/watch"||/^\/(shorts|embed|live)\//.test(parsed.pathname)))){message.textContent="For YouTube, enter a valid YouTube video, Shorts, or embed link.";return;}
+ if(linkType==="patreon"&&!(parsed.hostname==="patreon.com"||parsed.hostname.endsWith(".patreon.com"))){message.textContent="For Patreon, enter a Patreon post URL.";return;}
+ button.disabled=true;button.textContent="Saving…";message.textContent="Checking for duplicates and saving the episode link…";
+ try{
+  const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError)throw sessionError;if(!session?.access_token)throw new Error("Your owner session expired. Please sign in again.");
+  const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"manual_add",anime_title:animeTitle,anilist_id:anilistId,season_number:season,episode_start:episodeStart,episode_end:episodeEnd,link_type:linkType,url:linkUrl,video_title:videoTitle}});
+  if(error)throw error;if(!data?.success)throw new Error(data?.error||"The link could not be saved.");
+  message.textContent="Saved "+animeTitle+" · Season "+season+" · Episode"+(episodeEnd===episodeStart?" ":"s ")+episodeStart+(episodeEnd===episodeStart?"":"–"+episodeEnd)+".";
+  $("manualLinkUrl").value="";$("manualLinkTitle").value="";await health();
+ }catch(error){message.textContent="Could not save link: "+(error?.message||String(error));}
+ finally{button.disabled=false;button.textContent="Save episode link";}
+}
+$("manualEpisodeLinkForm").addEventListener("submit",submitManualEpisodeLink);
 
 async function runPlaylistAudit(event){
  event.preventDefault();
