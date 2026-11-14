@@ -45,7 +45,36 @@
       ],
       "start": "2026-11-12T20:30:00Z",
       "status": "confirmed",
-      "url": ""
+      "url": "",
+      "patreon_check": {
+        "status": "verified",
+        "message": "All announced episodes were found on Patreon.",
+        "url": "https://www.patreon.com/gotgames/posts/one-piece-36-40-175236334",
+        "posts": [
+          {
+            "title": "⚓ONE PIECE *EPISODES 36-40* | FULL LIVESTREAM REACTION! ⚓",
+            "url": "https://www.patreon.com/gotgames/posts/one-piece-36-40-175236334",
+            "episodes": [
+              36,
+              37,
+              38,
+              39,
+              40
+            ]
+          }
+        ],
+        "covered_episodes": [
+          36,
+          37,
+          38,
+          39
+        ],
+        "extra_episodes": [
+          40
+        ],
+        "checked_at": "2026-11-14T19:31:17.866776Z",
+        "source": "https://www.patreon.com/cw/gotgames/sitemap"
+      }
     },
     {
       "title": "Jojo's P7 (SBR) E9",
@@ -87,7 +116,20 @@
       ],
       "start": "2026-11-14T20:30:00Z",
       "status": "confirmed",
-      "url": ""
+      "url": "",
+      "patreon_check": {
+        "status": "pending",
+        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
+        "covered_episodes": [],
+        "missing_episodes": [
+          7,
+          8,
+          9,
+          10
+        ],
+        "checked_at": "2026-11-14T19:31:17.866776Z",
+        "source": "https://www.patreon.com/cw/gotgames/sitemap"
+      }
     },
     {
       "title": "Charlotte E9-13",
@@ -97,7 +139,21 @@
       ],
       "start": "2026-11-15T20:30:00Z",
       "status": "confirmed",
-      "url": ""
+      "url": "",
+      "patreon_check": {
+        "status": "pending",
+        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
+        "covered_episodes": [],
+        "missing_episodes": [
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "checked_at": "2026-11-14T19:31:17.866776Z",
+        "source": "https://www.patreon.com/cw/gotgames/sitemap"
+      }
     }
   ],
   "notes": [
@@ -106,5 +162,14 @@
     "Saturday slot is flexible.",
     "March/dr stone to be covered on stream.",
     "Tanya to be caught up with as soon as available"
-  ]
+  ],
+  "patreonChecked": "2026-11-14T19:31:17.866776Z",
+  "patreonCheckSummary": {
+    "source": "https://www.patreon.com/cw/gotgames/sitemap",
+    "posts_scanned": 500,
+    "events_checked": 3,
+    "verified": 1,
+    "partial": 0,
+    "pending": 2
+  }
 }
