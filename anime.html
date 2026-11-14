@@ -2504,19 +2504,9 @@
     );
     const groups = getSeasonGroups(orderedItems);
 
-    // Resolve split-cour mappings once across every group, so separate
-    // relation groups still share one canonical episode-number sequence.
-    const allEntries = groups.flatMap(group => group.items);
-    const mappedEntries = resolveHistoryMappings(allEntries);
-    const mappedById = new Map(mappedEntries.map(entry => [
-      Number(entry.anime.id),
-      entry
-    ]));
-
+    // Keep episode offsets scoped to each franchise/series group. Never let
+    // unrelated anime with the same season number affect one another.
     for (const group of groups) {
-      group.items = group.items.map(entry =>
-        mappedById.get(Number(entry.anime.id)) || entry
-      );
       group.items.sort((a, b) =>
         Number(Boolean(a.isSpecial || a.seasonNumber === 0)) -
         Number(Boolean(b.isSpecial || b.seasonNumber === 0))
