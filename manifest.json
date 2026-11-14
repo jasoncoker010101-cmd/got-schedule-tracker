@@ -1,7 +1,7 @@
 {
-  "name": "G.O.T. Games Schedule",
-  "short_name": "G.O.T. Schedule",
-  "description": "Unofficial fan-made weekly stream and upload schedule for G.O.T. Games.",
+  "name": "G.O.T Games Schedule",
+  "short_name": "G.O.T Schedule",
+  "description": "Unofficial fan-made weekly stream and upload schedule for G.O.T Games.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#10161c",
