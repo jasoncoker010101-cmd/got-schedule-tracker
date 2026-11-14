@@ -829,7 +829,8 @@
       letter-spacing: .02em;
     }
 
-    .episode-chip.youtube-link {
+    .episode-chip.youtube-link,
+    .episode-chip.external-link {
       border-color: rgba(239,189,50,.4);
       background: rgba(239,189,50,.12);
       color: var(--accent);
@@ -837,12 +838,14 @@
       transition: background .15s, border-color .15s;
     }
 
-    .episode-chip.youtube-link:hover {
+    .episode-chip.youtube-link:hover,
+    .episode-chip.external-link:hover {
       border-color: var(--accent);
       background: rgba(239,189,50,.24);
     }
 
-    .episode-chip.youtube-link:focus-visible {
+    .episode-chip.youtube-link:focus-visible,
+    .episode-chip.external-link:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
     }
