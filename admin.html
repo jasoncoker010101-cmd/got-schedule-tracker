@@ -242,7 +242,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 <article class="status-card"><span class="dot" id="anilistDot"></span>Taizen catalogue<strong id="anilistStatus">Checking…</strong><span class="muted" id="anilistDetail">Public anime catalogue · no API key</span></article>
 <article class="status-card"><span class="dot" id="junbanDot"></span>Series mapping<strong id="junbanStatus">Checking…</strong><span class="muted" id="junbanDetail">Shared TheTVDB season groups</span></article>
 <article class="status-card"><span class="dot" id="supabaseDot"></span>Supabase<strong id="supabaseStatus">Checking…</strong><span class="muted" id="supabaseDetail">Watch history and reports</span></article>
-<article class="status-card"><span class="dot" id="linksDot"></span>Reaction links<strong id="linksStatus">—</strong><span class="muted">Saved YouTube and Patreon links</span></article>
+<article class="status-card"><span class="dot" id="linksDot"></span>Reaction links<strong id="linksStatus">—</strong><span class="muted" id="linksDetail">Saved YouTube and Patreon links</span></article>
 </div>
 <div class="grid">
 <article class="status-card">Watch-history records<strong id="watchedCount">—</strong><span class="muted">Database rows; some records cover multiple episodes</span></article>
@@ -306,7 +306,7 @@ const db=(window.supabase && typeof window.supabase.createClient==="function")
   : null;
 window.GOT_SUPABASE = db;
 const $=id=>document.getElementById(id);let currentReports=[];
-function setHealth(name,ok,value,detail){$(name+"Dot").className="dot "+(ok?"ok":"bad");$(name+"Status").textContent=value;$(name+"Detail").textContent=detail;}
+function setHealth(name,ok,value,detail){const dot=$(name+"Dot"),status=$(name+"Status"),description=$(name+"Detail");if(dot)dot.className="dot "+(ok?"ok":"bad");if(status)status.textContent=value;if(description&&detail!==undefined)description.textContent=detail;}
 async function fetchWithTimeout(url,options={},milliseconds=8000){
  const controller=new AbortController();
  const sourceSignal=options.signal;
@@ -1570,7 +1570,7 @@ function renderPlaylistReviewQueue(){
     const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"review",review_action:"add",pending_id:item.id,season_number:seasonNumber,episode_start:episodeNumber,episode_end:endNumber,playlist_url:item.source_url||"https://www.youtube.com/playlist?list=PL0000000000000000000000"}});
     if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not add this link.");
     $("playlistReviewMessage").textContent="Added "+(item.anime_title||"the anime")+" S"+seasonNumber+" E"+episodeNumber+" to reaction links.";
-    await loadPlaylistReviewQueue();await health();
+    await loadPlaylistReviewQueue();health().catch(error=>console.warn("Dashboard health refresh failed after playlist review action:",error));
    }catch(error){$("playlistReviewMessage").textContent="Could not add link: "+(error?.message||String(error));add.disabled=false;add.textContent="Add Link";}
   });
   const del=document.createElement("button");del.type="button";del.className="delete-review";del.textContent="Delete";
@@ -1581,7 +1581,7 @@ function renderPlaylistReviewQueue(){
     const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"review",review_action:"delete",pending_id:item.id,playlist_url:item.source_url||"https://www.youtube.com/playlist?list=PL0000000000000000000000"}});
     if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not remove this item.");
     $("playlistReviewMessage").textContent="Removed the video from the active review queue.";
-    await loadPlaylistReviewQueue();await health();
+    await loadPlaylistReviewQueue();health().catch(error=>console.warn("Dashboard health refresh failed after playlist review action:",error));
    }catch(error){$("playlistReviewMessage").textContent="Could not delete review item: "+(error?.message||String(error));del.disabled=false;del.textContent="Delete";}
   });
   actions.append(add,del);card.append(heading,meta,note,link,fields,actions);root.append(card);
