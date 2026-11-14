@@ -125,4 +125,12 @@
   client.auth.onAuthStateChange((_event, session) => {
     setTimeout(() => connectUser(session?.user || null), 0);
   });
+
+  // The inbox marks alerts read on entry; refresh the shared badge even if
+  // that database write finished before this script attached its listener.
+  document.addEventListener("got:notifications-read", () => refreshCount(activeUserId));
+  if (window.GOT_NOTIFICATIONS_READ_SYNC_PENDING) {
+    refreshCount(activeUserId);
+    window.GOT_NOTIFICATIONS_READ_SYNC_PENDING = false;
+  }
 })();
