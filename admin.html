@@ -803,16 +803,16 @@ const fullDiagnosticSteps=[
  {
   name:"Game cover lookup Edge Function",
   run:async()=>{
-   const response=await fullDiagWithTimeout(fetch("https://tzgxkiucsjampbresqkw.supabase.co/functions/v1/igdb-game-cover",{
+   const response=await fullDiagWithTimeout(fetch("https://tzgxkiucsjampbresqkw.supabase.co/functions/v1/rawg-game-cover",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({title:"Wuthering Waves"})
    }),"Game cover Edge Function",12000);
    const payload=await response.json().catch(()=>null);
    if(!response.ok&&/credentials have not been configured/i.test(String(payload?.error||""))){
-    return fullDiagResult("Game cover lookup Edge Function","fail","Missing Supabase Edge Function secrets: IGDB_CLIENT_ID and IGDB_CLIENT_SECRET · configure them in Supabase Edge Function secrets · never put these credentials in website JavaScript");
+    return fullDiagResult("Game cover lookup Edge Function","fail","Missing Supabase Edge Function secrets: RAWG_API_KEY · configure them in Supabase Edge Function secrets · never put these credentials in website JavaScript");
    }
-   if(!response.ok)throw new Error("IGDB game-cover function returned HTTP "+response.status+(payload?.error?": "+payload.error:""));
+   if(!response.ok)throw new Error("RAWG game-cover function returned HTTP "+response.status+(payload?.error?": "+payload.error:""));
    if(!payload||typeof payload!=="object")throw new Error("Game-cover function returned an unexpected response.");
    if(payload.error)throw new Error(String(payload.error));
    if(payload.game?.poster&&/^https:\/\//i.test(payload.game.poster)){
