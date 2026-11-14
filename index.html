@@ -236,6 +236,11 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 .ev .n{font-weight:400;display:block;margin:1px 0}
 .ev .k{font-size:.8rem;color:var(--mute)}
 .ev a{color:inherit;text-underline-offset:3px}
+.patreon-check{margin-top:4px;font-size:.74rem;font-weight:700;line-height:1.45}
+.patreon-check.verified{color:#2ecc71}
+.patreon-check.partial{color:#f5a623}
+.patreon-check.pending{color:var(--mute)}
+.patreon-check a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
 /* Status dots */
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;
@@ -2051,6 +2056,12 @@ function zoneName(d){
 }
 
 const safeUrl = u=>/^https?:\/\//i.test(u || "") ? u : "";
+function safePatreonPostUrl(value){
+  try{
+    const url=new URL(String(value||""));
+    return url.protocol==="https:"&&(url.hostname==="patreon.com"||url.hostname.endsWith(".patreon.com"))?url.href:"";
+  }catch(_error){return "";}
+}
 
 function el(tag,cls,text){
   const e = document.createElement(tag);
@@ -2283,6 +2294,26 @@ function render(){
       body.append(t,el("div","k",
         (game ? "GAME · " : "")+
         (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label)+" · "+statusText));
+
+      if(ev.platform==="rumble"||(ev.labels||[]).some(label=>/rumble/i.test(label))){
+        const check=ev.patreon_check||{};
+        const checkStatus=["verified","partial","pending"].includes(check.status)?check.status:"pending";
+        const checkLine=el("div","patreon-check "+checkStatus);
+        if(checkStatus==="verified"){
+          const link=el("a",null,"Patreon verified");
+          link.href=safePatreonPostUrl(check.url)||"https://www.patreon.com/cw/gotgames";
+          link.target="_blank";link.rel="noopener noreferrer";
+          checkLine.append(link);
+        }else if(checkStatus==="partial"){
+          const missing=Array.isArray(check.missing_episodes)?check.missing_episodes:[];
+          checkLine.textContent="Patreon partially verified"+(missing.length?" · Still missing EP "+missing.join(", "):"");
+        }else{
+          checkLine.textContent="Patreon not verified yet · Checking automatically";
+        }
+        const extras=Array.isArray(check.extra_episodes)?check.extra_episodes:[];
+        if(extras.length)checkLine.append(document.createTextNode(" · Extra episodes found: "+extras.join(", ")));
+        body.append(checkLine);
+      }
 
       row.append(body);
       box.append(row);
