@@ -220,8 +220,8 @@ input,select,textarea{accent-color:var(--got-gold)}
    <button type="button" id="runFullDiagnostics">Run full diagnostics</button>
   </div>
  </div>
- <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 11</span></div>
- <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="11" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
+ <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 12</span></div>
+ <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
  <div class="diag-console" id="fullDiagTerminal" role="log" aria-live="polite" aria-relevant="additions text">
   <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v3.0</div>
   <div class="diag-console-line dim">Read-only mode · Findings will be grouped by severity.</div>
@@ -680,6 +680,21 @@ const fullDiagnosticSteps=[
    const warningDetail=warnings.slice(0,8).join(" · ")+(warnings.length>8?" · +"+(warnings.length-8)+" more markup warning(s)":"");
    const detail=checks.length+" page/feed/asset files reachable · "+targetChecks.length+" discovered internal targets checked · "+(warnings.length?warningDetail:"no duplicate IDs or basic markup issues found");
    return fullDiagResult("Website pages, scripts, links, and accessibility",warnings.length?"warning":"pass",detail);
+  }
+ },
+ {
+  name:"Automated source validation (GitHub Actions)",
+  run:async()=>{
+   const url="https://api.github.com/repos/jasoncoker010101-cmd/got-schedule-tracker/actions/workflows/site-quality.yml/runs?branch=main&per_page=1";
+   const response=await fetchWithTimeout(url,{cache:"no-store",headers:{Accept:"application/vnd.github+json"}},9000);
+   if(!response.ok)return fullDiagResult("Automated source validation (GitHub Actions)","warning","GitHub Actions status could not be checked · HTTP "+response.status);
+   const payload=await response.json().catch(()=>null);
+   const run=payload?.workflow_runs?.[0];
+   if(!run)return fullDiagResult("Automated source validation (GitHub Actions)","warning","No recent site-quality workflow run was found.");
+   const shortSha=String(run.head_sha||"").slice(0,7)||"unknown commit";
+   if(run.status!=="completed")return fullDiagResult("Automated source validation (GitHub Actions)","warning","Latest source validation is "+String(run.status||"not completed")+" · commit "+shortSha);
+   if(run.conclusion!=="success")return fullDiagResult("Automated source validation (GitHub Actions)","fail","Latest source validation concluded "+String(run.conclusion||"without a conclusion")+" · commit "+shortSha+" · open the workflow run for details");
+   return fullDiagResult("Automated source validation (GitHub Actions)","pass","Latest repository validation passed · commit "+shortSha+" · checks HTML IDs, inline JavaScript, standalone JavaScript, JSON, and Python syntax");
   }
  },
  {
