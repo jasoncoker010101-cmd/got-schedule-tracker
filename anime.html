@@ -1711,17 +1711,19 @@
       alias.startsWith("attack on titan ") ||
       alias.startsWith("shingeki no kyojin ")
     )) {
-      const alternateTitle = aliases.some(alias => alias.includes("shingeki no kyojin"))
-        ? "attack on titan"
-        : "shingeki no kyojin";
-      const links = episodeLinksBySeason.get(`${alternateTitle}|${seasonKey}`) || [];
+      // Search both canonical database titles. A long AniList season title
+      // such as "Attack on Titan Final Season Part 2" may not include the
+      // shorter title used by the saved reaction-link rows.
+      for (const alternateTitle of ["attack on titan", "shingeki no kyojin"]) {
+        const links = episodeLinksBySeason.get(`${alternateTitle}|${seasonKey}`) || [];
+        const match = links.find(link => {
+          const start = Number(link.episode_start);
+          const end = Number(link.episode_end);
 
-      return links.find(link => {
-        const start = Number(link.episode_start);
-        const end = Number(link.episode_end);
-
-        return episode >= start && episode <= end;
-      }) || null;
+          return episode >= start && episode <= end;
+        });
+        if (match) return match;
+      }
     }
 
     return null;
