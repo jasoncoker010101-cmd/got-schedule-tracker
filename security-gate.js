@@ -79,6 +79,20 @@
       return String(payload.session_id || "");
     } catch (_) { return ""; }
   }
+  function restorePendingEmailFromUrl() {
+    try {
+      const url = new URL(window.location.href);
+      const challengeId = url.searchParams.get("got_security_challenge");
+      if (!challengeId || !/^[0-9a-f-]{36}$/i.test(challengeId)) return;
+      const enrollment = url.searchParams.get("got_security_enrollment") === "1";
+      localStorage.setItem("gotSecurityPendingEmailV1", JSON.stringify({
+        challengeId, enrollment, originalSessionId: "", savedAt: Date.now()
+      }));
+      url.searchParams.delete("got_security_challenge");
+      url.searchParams.delete("got_security_enrollment");
+      window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+    } catch (_) {}
+  }
   function readPendingEmail() {
     try {
       const value = JSON.parse(localStorage.getItem("gotSecurityPendingEmailV1") || "null");
@@ -97,14 +111,23 @@
     if (!email) throw new Error("This account has no email address for verification.");
     const {data} = await db.auth.getSession();
     if (!data.session) throw new Error("Your sign-in session ended. Please log in again.");
+    const originalSessionId = sessionIdFromClientSession(data.session);
     localStorage.setItem("gotSecurityPendingEmailV1", JSON.stringify({
-      challengeId, enrollment: !!enrollment,
-      originalSessionId: sessionIdFromClientSession(data.session),
-      savedAt: Date.now()
+      challengeId, enrollment: !!enrollment, originalSessionId, savedAt: Date.now()
     }));
+
+    // Carry the challenge through the email redirect too. This still works
+    // when the mail app opens the site in a fresh browser context.
+    const redirectUrl = new URL("/", window.location.origin);
+    redirectUrl.searchParams.set("got_security_challenge", challengeId);
+    if (enrollment) redirectUrl.searchParams.set("got_security_enrollment", "1");
+
     const { error } = await db.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: false }
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: redirectUrl.toString()
+      }
     });
     if (error) throw error;
     return email;
@@ -296,6 +319,8 @@
       });
     }
   }
+
+  restorePendingEmailFromUrl();
 
   db.auth.onAuthStateChange((_event, session) => {
     if (suppressAuthEvents) return;
