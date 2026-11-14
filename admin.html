@@ -217,7 +217,7 @@ input,select,textarea{accent-color:var(--got-gold)}
   <h2 id="manualEpisodeLinkTitle">Manually add an episode link</h2>
   <p class="muted">Add a YouTube reaction, Patreon post, or any other secure HTTPS link directly to an anime episode. Only the owner account can save links.</p>
   <form id="manualEpisodeLinkForm">
-   <div class="row"><div style="flex:2;min-width:210px"><label for="manualLinkAnime">Anime title</label><input id="manualLinkAnime" value="Jujutsu Kaisen" maxlength="160" required></div><div style="flex:1;min-width:130px"><label for="manualLinkAniList">AniList ID</label><input id="manualLinkAniList" type="number" min="1" step="1" value="113415" required></div></div>
+   <div class="row"><div style="flex:2;min-width:210px"><label for="manualLinkAnime">Anime title</label><input id="manualLinkAnime" value="Jujutsu Kaisen" maxlength="160" required></div><div style="flex:1;min-width:130px"><label for="manualLinkAniList">AniList ID</label><input id="manualLinkAniList" type="number" min="1" step="1" value="113415" required><span class="muted" id="manualAniListLookup" role="status" aria-live="polite">AniList ID is prefilled. Change the title to look up another anime.</span><select id="manualAniListChoices" hidden aria-label="Choose matching anime"></select></div></div>
    <div class="row"><div style="flex:1;min-width:110px"><label for="manualLinkSeason">Season</label><input id="manualLinkSeason" type="number" min="1" step="1" placeholder="e.g. 2" required></div><div style="flex:1;min-width:110px"><label for="manualLinkEpisode">Episode start</label><input id="manualLinkEpisode" type="number" min="1" step="1" placeholder="e.g. 8" required></div><div style="flex:1;min-width:110px"><label for="manualLinkEpisodeEnd">Episode end (optional)</label><input id="manualLinkEpisodeEnd" type="number" min="1" step="1" placeholder="Same episode"></div></div>
    <div class="row"><div style="flex:1;min-width:180px"><label for="manualLinkType">Link type</label><select id="manualLinkType"><option value="youtube">YouTube</option><option value="patreon">Patreon</option><option value="external">Other website / external link</option></select></div><div style="flex:2;min-width:230px"><label for="manualLinkUrl">Link URL</label><input id="manualLinkUrl" type="url" placeholder="https://…" required></div></div>
    <label for="manualLinkTitle">Link title (optional)</label><input id="manualLinkTitle" maxlength="240" placeholder="Reaction title or short description">
@@ -232,7 +232,7 @@ input,select,textarea{accent-color:var(--got-gold)}
    <input id="playlistAuditUrl" type="url" value="https://www.youtube.com/playlist?list=PL3EHLDlY5GPy5Q7dwxHTR0O3T1XEqafzW" placeholder="https://www.youtube.com/playlist?list=..." required>
    <div class="row">
     <div style="flex:2;min-width:210px"><label for="playlistAuditAnime">Anime title</label><input id="playlistAuditAnime" value="Jujutsu Kaisen" required></div>
-    <div style="flex:1;min-width:130px"><label for="playlistAuditAniList">AniList ID</label><input id="playlistAuditAniList" type="number" min="1" step="1" value="113415" required></div>
+    <div style="flex:1;min-width:130px"><label for="playlistAuditAniList">AniList ID</label><input id="playlistAuditAniList" type="number" min="1" step="1" value="113415" required><span class="muted" id="auditAniListLookup" role="status" aria-live="polite">AniList ID is prefilled. Change the title to look up another anime.</span><select id="auditAniListChoices" hidden aria-label="Choose matching anime"></select></div>
    </div>
    <div class="row"><button type="submit" id="playlistAuditRun">Scan playlist</button><span class="muted" id="playlistAuditMessage" role="status" aria-live="polite">Ready to scan. Only owner accounts can run this audit.</span></div>
   </form>
@@ -1482,11 +1482,96 @@ $("saveDiagErrors").addEventListener("click",()=>fullDiagSaveText("fail"));
 $("copyDiagWarnings").addEventListener("click",()=>fullDiagCopyText(fullDiagReportText("warning"),$("copyDiagWarnings"),"Copy warnings"));
 $("saveDiagWarnings").addEventListener("click",()=>fullDiagSaveText("warning"));
 
+// AniList title lookup: only auto-select an exact title/alias match. Similar results require owner confirmation.
+const anilistLookupState = new Map();
+function normalizeAniListTitle(value){
+ return String(value||"").normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+}
+async function resolveAniListTitle(title){
+ const query=String.raw`query ($search: String) {
+  Media(search: $search, type: ANIME, isAdult: false) {
+   id
+   title { romaji english native }
+   synonyms
+   format
+   seasonYear
+  }
+ }`;
+ const response=await fetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({query,variables:{search:title}})});
+ if(!response.ok)throw new Error("AniList lookup returned HTTP "+response.status+".");
+ const payload=await response.json();
+ if(payload.errors?.length)throw new Error(payload.errors[0].message||"AniList search failed.");
+ const results=(payload.data?.Media||[]).filter(x=>x&&Number.isInteger(Number(x.id)));
+ const needle=normalizeAniListTitle(title);
+ const exact=results.filter(item=>[item.title?.romaji,item.title?.english,item.title?.native,...(item.synonyms||[])].some(name=>normalizeAniListTitle(name)===needle));
+ return {exact,results};
+}
+async function updateAniListLookup(prefix,force=false){
+ const titleInput=$(prefix==="manual"?"manualLinkAnime":"playlistAuditAnime");
+ const idInput=$(prefix==="manual"?"manualLinkAniList":"playlistAuditAniList");
+ const message=$(prefix==="manual"?"manualAniListLookup":"auditAniListLookup");
+ const choices=$(prefix==="manual"?"manualAniListChoices":"auditAniListChoices");
+ const title=titleInput.value.trim();
+ if(!title){message.textContent="Enter an anime title to search AniList.";idInput.value="";choices.hidden=true;return false;}
+ const state=anilistLookupState.get(prefix);
+ if(!force&&state?.title===title&&state.id===Number(idInput.value))return true;
+ message.textContent="Searching AniList for “"+title+"”…";
+ choices.hidden=true;choices.replaceChildren();
+ try{
+  const {exact,results}=await resolveAniListTitle(title);
+  const candidates=exact.length?exact:results;
+  if(exact.length===1){
+   idInput.value=String(exact[0].id);idInput.dataset.resolvedTitle=title;
+   message.textContent="Matched AniList: "+(exact[0].title?.english||exact[0].title?.romaji||title)+" · ID "+exact[0].id+".";
+   anilistLookupState.set(prefix,{title,id:Number(exact[0].id)});return true;
+  }
+  if(candidates.length){
+   choices.append(new Option("Choose the correct anime…",""));
+   for(const item of candidates){
+    const label=[item.title?.english||item.title?.romaji||item.title?.native||"Untitled",item.title?.romaji,item.seasonYear,item.format].filter(Boolean).join(" · ");
+    choices.append(new Option(label+" (AniList ID "+item.id+")",String(item.id)));
+   }
+   choices.hidden=false;
+   message.textContent=exact.length>1?"More than one exact AniList match. Choose the correct series below.":"No exact title match. Confirm the correct AniList result below.";
+   idInput.value="";idInput.dataset.resolvedTitle="";
+   anilistLookupState.delete(prefix);return false;
+  }
+  idInput.value="";idInput.dataset.resolvedTitle="";
+  message.textContent="No AniList anime matched that title. Check the spelling or enter the ID manually.";
+  anilistLookupState.delete(prefix);return false;
+ }catch(error){
+  message.textContent="AniList lookup failed: "+(error?.message||String(error))+" You can enter the ID manually.";
+  anilistLookupState.delete(prefix);return false;
+ }
+}
+function bindAniListLookup(prefix){
+ const title=$(prefix==="manual"?"manualLinkAnime":"playlistAuditAnime");
+ const id=$(prefix==="manual"?"manualLinkAniList":"playlistAuditAniList");
+ const choices=$(prefix==="manual"?"manualAniListChoices":"auditAniListChoices");
+ title.addEventListener("input",()=>{
+  const state=anilistLookupState.get(prefix);
+  if(!state||normalizeAniListTitle(title.value)!==normalizeAniListTitle(state.title)){
+   id.value="";id.dataset.resolvedTitle="";anilistLookupState.delete(prefix);
+   $(prefix==="manual"?"manualAniListLookup":"auditAniListLookup").textContent="Anime title changed. AniList ID will be looked up automatically.";
+  }
+ });
+ title.addEventListener("blur",()=>{if(title.value.trim())updateAniListLookup(prefix,true);});
+ choices.addEventListener("change",()=>{
+  const selected=choices.selectedOptions[0];
+  if(!choices.value)return;
+  id.value=choices.value;id.dataset.resolvedTitle=title.value.trim();
+  anilistLookupState.set(prefix,{title:title.value.trim(),id:Number(choices.value)});
+  $(prefix==="manual"?"manualAniListLookup":"auditAniListLookup").textContent="Confirmed AniList match: "+selected.textContent+".";
+  choices.hidden=true;
+ });
+}
+bindAniListLookup("manual");bindAniListLookup("audit");
+
 async function submitManualEpisodeLink(event){
  event.preventDefault();
  const button=$("manualLinkSubmit"),message=$("manualLinkMessage");
  if(!db||button.disabled)return;
- const animeTitle=$("manualLinkAnime").value.trim(),anilistId=Number($("manualLinkAniList").value);
+ const animeTitle=$("manualLinkAnime").value.trim();\n if(!Number.isInteger(Number($("manualLinkAniList").value))||Number($("manualLinkAniList").value)<1){const resolved=await updateAniListLookup("manual",true);if(!resolved){message.textContent+=" Select a confirmed AniList match before saving.";return;}}\n const anilistId=Number($("manualLinkAniList").value);
  const season=Number($("manualLinkSeason").value),episodeStart=Number($("manualLinkEpisode").value);
  const episodeEnd=$("manualLinkEpisodeEnd").value.trim()?Number($("manualLinkEpisodeEnd").value):episodeStart;
  const linkType=$("manualLinkType").value,linkUrl=$("manualLinkUrl").value.trim(),videoTitle=$("manualLinkTitle").value.trim();
