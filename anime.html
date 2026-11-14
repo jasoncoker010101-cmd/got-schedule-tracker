@@ -2354,20 +2354,26 @@
         entry.anime.title?.native,
         ...(Array.isArray(entry.anime.synonyms) ? entry.anime.synonyms : [])
       ].filter(Boolean).join(" ");
-      const seasonMatch = title.match(/\\bseason\\s*(\\d+)\\b|\\b(\\d+)(?:st|nd|rd|th)\\s+season\\b/i);
-      const partMatch = title.match(/\\bpart\\s*(\\d+)\\b|\\bcour\\s*(\\d+)\\b/i);
+      const isSpecial = entry.seasonNumber === 0 ||
+        !["TV", "TV_SHORT"].includes(entry.anime.format);
+      const seasonMatch = isSpecial ? null :
+        title.match(/\bseason\s*(\d+)\b|\b(\d+)(?:st|nd|rd|th)\s+season\b/i);
+      const partMatch = title.match(/\bpart\s*(\d+)\b|\bcour\s*(\d+)\b/i);
       return {
         ...entry,
+        isSpecial,
         parsedSeason: seasonMatch ? Number(seasonMatch[1] || seasonMatch[2]) : null,
-        isFinalSeason: /\\bfinal season\\b/i.test(title),
+        isFinalSeason: !isSpecial && /\bfinal season\b/i.test(title),
         parsedPart: partMatch ? Number(partMatch[1] || partMatch[2]) : null
       };
     });
     const highestNamedSeason = Math.max(0, ...parsed.map(entry => entry.parsedSeason || 0));
     const resolved = parsed.map(entry => ({
       ...entry,
-      historySeasonNumber: entry.parsedSeason ??
-        (entry.isFinalSeason ? highestNamedSeason + 1 : entry.seasonNumber)
+      historySeasonNumber: entry.isSpecial
+        ? entry.seasonNumber
+        : (entry.parsedSeason ??
+          (entry.isFinalSeason ? highestNamedSeason + 1 : entry.seasonNumber))
     }));
     const offsets = new Map();
     for (const entry of resolved) {
