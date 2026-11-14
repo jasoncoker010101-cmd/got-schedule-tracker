@@ -467,7 +467,8 @@ if(!db){
  else {
   const badYoutube=linksData.filter(x=>x.link_type==="youtube"&&x.youtube_url&&!validWebUrl(x.youtube_url,["youtube.com","youtu.be"])).length;
   const badPatreon=linksData.filter(x=>x.link_type==="patreon"&&x.patreon_url&&!validWebUrl(x.patreon_url,["patreon.com"])).length;
-  const badExternal=linksData.filter(x=>x.link_type==="external"&&(!x.youtube_url||!/^https:\/\//i.test(x.youtube_url))).length;\n   const noUrl=linksData.filter(x=>!x.youtube_url&&!x.patreon_url).length;
+  const badExternal=linksData.filter(x=>x.link_type==="external"&&(!x.youtube_url||!/^https:\/\//i.test(x.youtube_url))).length;
+   const noUrl=linksData.filter(x=>!x.youtube_url&&!x.patreon_url).length;
   const badRanges=linksData.filter(x=>!Number.isInteger(x.episode_start)||!Number.isInteger(x.episode_end)||x.episode_start<1||x.episode_end<x.episode_start).length;
   const problems=badYoutube+badPatreon+badExternal+noUrl+badRanges;
   setHealth("linkData",problems===0,problems===0?"Looks good":"Review needed",badYoutube+" invalid YouTube · "+badPatreon+" invalid Patreon · "+badExternal+" invalid external · "+noUrl+" empty links · "+badRanges+" invalid episode ranges");
@@ -1074,6 +1075,8 @@ const fullDiagnosticSteps=[
    const noLink=links.filter(row=>!row.youtube_url&&!row.patreon_url).length;
    const badYoutube=links.filter(row=>row.link_type==="youtube"&&row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
    const badPatreon=links.filter(row=>row.link_type==="patreon"&&row.patreon_url&&!fullDiagSafeUrl(row.patreon_url,["patreon.com"])).length;
+   const badExternal=links.filter(row=>row.link_type==="external"&&(!row.youtube_url||!/^https:\/\//i.test(row.youtube_url))).length;
+
    const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&(!row.youtube_url||!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])||row.patreon_url))||(row.link_type==="patreon"&&(!row.patreon_url||!fullDiagSafeUrl(row.patreon_url,["patreon.com"])||row.youtube_url))||(row.link_type==="external"&&(!row.youtube_url||!/^https:\/\//i.test(row.youtube_url)||row.patreon_url))||!["youtube","patreon","external"].includes(row.link_type)).length;
    const invalidWatchTimes=watch.filter(row=>!row.watched_at||Number.isNaN(Date.parse(row.watched_at))).length;
    const invalidLinkTimes=links.filter(row=>!row.created_at||Number.isNaN(Date.parse(row.created_at))).length;
