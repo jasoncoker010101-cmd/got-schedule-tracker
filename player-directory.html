@@ -340,6 +340,7 @@ input,select,textarea{accent-color:var(--got-gold)}
     <a href="profile.html">Profile</a>
     <a href="player-directory.html" class="active" aria-current="page">Fanbase</a>
     <a href="anime.html">Anime</a>
+    <a href="notifications.html" data-got-alert-link>Alerts <span class="got-alert-count" hidden></span></a>
   </div>
   </nav>
 
@@ -398,6 +399,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.GOT_SUPABASE = supabaseClient;
 const searchInput = document.getElementById("search");
 const roleFilter = document.getElementById("roleFilter");
 const clearDirectoryFilters = document.getElementById("clearDirectoryFilters");
@@ -606,5 +608,6 @@ roleFilter.addEventListener("change", renderPlayers);
 clearDirectoryFilters.addEventListener("click",()=>{searchInput.value="";roleFilter.value="all";renderPlayers();searchInput.focus();});
 loadPlayers();
 </script>
+<script src="notifications.js"></script>
 </body>
 </html>
