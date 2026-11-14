@@ -1072,8 +1072,8 @@ const fullDiagnosticSteps=[
    const missingLinkTitles=links.filter(row=>!String(row.anime_title||"").trim()).length;
    const missingLinkIds=links.filter(row=>row.anilist_id==null||!Number.isInteger(Number(row.anilist_id))||Number(row.anilist_id)<1).length;
    const noLink=links.filter(row=>!row.youtube_url&&!row.patreon_url).length;
-   const badYoutube=links.filter(row=>row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
-   const badPatreon=links.filter(row=>row.patreon_url&&!fullDiagSafeUrl(row.patreon_url,["patreon.com"])).length;
+   const badYoutube=links.filter(row=>row.link_type==="youtube"&&row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
+   const badPatreon=links.filter(row=>row.link_type==="patreon"&&row.patreon_url&&!fullDiagSafeUrl(row.patreon_url,["patreon.com"])).length;
    const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&(!row.youtube_url||!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])||row.patreon_url))||(row.link_type==="patreon"&&(!row.patreon_url||!fullDiagSafeUrl(row.patreon_url,["patreon.com"])||row.youtube_url))||(row.link_type==="external"&&(!row.youtube_url||!/^https:\/\//i.test(row.youtube_url)||row.patreon_url))||!["youtube","patreon","external"].includes(row.link_type)).length;
    const invalidWatchTimes=watch.filter(row=>!row.watched_at||Number.isNaN(Date.parse(row.watched_at))).length;
    const invalidLinkTimes=links.filter(row=>!row.created_at||Number.isNaN(Date.parse(row.created_at))).length;
@@ -1104,9 +1104,10 @@ const fullDiagnosticSteps=[
    if(noLink)failures.push(noLink+" reaction links have no destination URL");
    if(badYoutube)failures.push(badYoutube+" invalid YouTube URLs");
    if(badPatreon)failures.push(badPatreon+" invalid Patreon URLs");
+    if(badExternal)failures.push(badExternal+" invalid external URLs");
    if(wrongProvider)failures.push(wrongProvider+" provider type/URL mismatches");
    if(invalidWatchTimes||invalidLinkTimes)failures.push((invalidWatchTimes+invalidLinkTimes)+" records have missing or invalid timestamps");
-   const detail=watch.length+" watch-history rows · "+links.length+" reaction-link rows · missing AniList IDs: "+missingWatchIds+" watch / "+missingLinkIds+" links · missing titles: "+missingWatchTitles+" watch / "+missingLinkTitles+" links · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link errors · "+missingWatchSeasons+" missing season assignments · "+wrongKnownIds+" known ID mismatches";
+   const detail=watch.length+" watch-history rows · "+links.length+" reaction-link rows · missing AniList IDs: "+missingWatchIds+" watch / "+missingLinkIds+" links · missing titles: "+missingWatchTitles+" watch / "+missingLinkTitles+" links · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+badExternal+wrongProvider)+" reaction-link errors · "+missingWatchSeasons+" missing season assignments · "+wrongKnownIds+" known ID mismatches";
    return fullDiagResult("Anime IDs, seasons, episode ranges, and video links",failures.length?"fail":warnings.length?"warning":"pass",failures.length?failures.join(" · ")+" · "+detail:detail+(warnings.length?" · "+warnings.join(" · "):""));
   }
  },
@@ -1122,17 +1123,19 @@ const fullDiagnosticSteps=[
     const season=Number(row.season_number),start=Number(row.episode_start),end=Number(row.episode_end);
     if(!Number.isInteger(season)||season<1||!Number.isInteger(start)||!Number.isInteger(end)||start<1||end<start)problems.push("record "+row.id+" has an invalid season or episode range");
     if(row.link_type==="youtube"){
-     if(!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])||row.patreon_url)problems.push("record "+row.id+" has a mismatched YouTube destination");
-    }else if(row.link_type==="patreon"){
-     if(!fullDiagSafeUrl(row.patreon_url,["patreon.com"])||row.youtube_url)problems.push("record "+row.id+" has a mismatched Patreon destination");
-    }else problems.push("record "+row.id+" has an unknown reaction-link type");
-    const title=String(row.video_title||"").toLowerCase();
-    if(!title.trim())warnings.push("record "+row.id+" has no saved video title");
-    else{
-     if(!title.includes("jujutsu kaisen"))problems.push("record "+row.id+" title does not identify Jujutsu Kaisen");
-     if(!title.includes("episode "+start))problems.push("record "+row.id+" title does not match episode "+start);
-     if(season>1&&!title.includes("season "+season))problems.push("record "+row.id+" title does not match Season "+season);
-    }
+      if(!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])||row.patreon_url)problems.push("record "+row.id+" has a mismatched YouTube destination");
+     }else if(row.link_type==="patreon"){
+      if(!fullDiagSafeUrl(row.patreon_url,["patreon.com"])||row.youtube_url)problems.push("record "+row.id+" has a mismatched Patreon destination");
+     }else if(row.link_type==="external"){
+      if(!row.youtube_url||!/^https:\/\//i.test(row.youtube_url)||row.patreon_url)problems.push("record "+row.id+" has an invalid external destination");
+     }else problems.push("record "+row.id+" has an unknown reaction-link type");
+     const title=String(row.video_title||"").toLowerCase();
+     if(!title.trim())warnings.push("record "+row.id+" has no saved link title");
+     else if(row.link_type!=="external"){
+      if(!title.includes("jujutsu kaisen"))problems.push("record "+row.id+" title does not identify Jujutsu Kaisen");
+      if(!title.includes("episode "+start))problems.push("record "+row.id+" title does not match episode "+start);
+      if(season>1&&!title.includes("season "+season))problems.push("record "+row.id+" title does not match Season "+season);
+     }
     for(let episode=start;episode<=end&&episode-start<100;episode++){
      const key=season+"|"+episode;
      if(occupied.has(key))problems.push("season "+season+" episode "+episode+" is linked more than once");
