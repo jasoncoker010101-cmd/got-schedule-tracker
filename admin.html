@@ -615,12 +615,12 @@ const fullDiagnosticSteps=[
    const checks=await Promise.all(FULL_DIAGNOSTIC_PAGE_PATHS.map(async path=>{
     try{
      const response=await fullDiagFetch(path);
-     if(!response.ok)return {path,ok:false,detail:"HTTP "+response.status,warnings:[],targets:[]};
+     if(!response.ok)return {path,ok:false,detail:"HTTP "+response.status,warnings:[],errors:[],targets:[]};
      if(path.endsWith(".html")){
       const body=await response.text();
-      if(!body.toLowerCase().includes("<html"))return {path,ok:false,detail:"Response did not look like an HTML page",warnings:[],targets:[]};
+      if(!body.toLowerCase().includes("<html"))return {path,ok:false,detail:"Response did not look like an HTML page",warnings:[],errors:[],targets:[]};
       const parsed=new DOMParser().parseFromString(body,"text/html");
-      const warnings=[];
+      const warnings=[],errors=[];
       if(!parsed.title.trim())warnings.push("page title missing");
       if(!parsed.querySelector('meta[name="viewport"]'))warnings.push("mobile viewport meta missing");
       const seenIds=new Set(),duplicateIds=new Set();
@@ -628,13 +628,13 @@ const fullDiagnosticSteps=[
        if(seenIds.has(node.id))duplicateIds.add(node.id);
        seenIds.add(node.id);
       });
-      if(duplicateIds.size)warnings.push(duplicateIds.size+" duplicate element ID(s) (these can break scripts and in-page navigation)");
+      if(duplicateIds.size)errors.push(duplicateIds.size+" duplicate element ID(s) (these can break scripts and in-page navigation)");
       const brokenFragments=[];
       parsed.querySelectorAll('a[href^="#"]').forEach(link=>{
        const fragment=decodeURIComponent(link.getAttribute("href").slice(1));
        if(fragment&&!parsed.getElementById(fragment))brokenFragments.push(fragment);
       });
-      if(brokenFragments.length)warnings.push(brokenFragments.length+" in-page link(s) point to missing sections");
+      if(brokenFragments.length)errors.push(brokenFragments.length+" in-page link(s) point to missing sections");
       const missingAlt=parsed.querySelectorAll("img:not([alt])").length;
       if(missingAlt)warnings.push(missingAlt+" image(s) missing alt text");
       let unlabeled=0;
@@ -653,18 +653,18 @@ const fullDiagnosticSteps=[
         if(url.origin===location.origin)targets.add(url.pathname);
        }catch(_){}
       });
-      return {path,ok:true,detail:"HTTP "+response.status+" · HTML parsed · "+body.length.toLocaleString()+" characters",warnings,targets:[...targets]};
+      return {path,ok:true,detail:"HTTP "+response.status+" · HTML parsed · "+body.length.toLocaleString()+" characters",warnings,errors,targets:[...targets]};
      }
      if(path.endsWith(".png")){
       const type=response.headers.get("content-type")||"";
-      if(type&&!type.includes("image/"))return {path,ok:false,detail:"Unexpected content type: "+type,warnings:[],targets:[]};
+      if(type&&!type.includes("image/"))return {path,ok:false,detail:"Unexpected content type: "+type,warnings:[],errors:[],targets:[]};
      }else{
       const body=await response.text();
-      if(path.endsWith(".js")&&body.trim().length<40)return {path,ok:false,detail:"Script response was unexpectedly short",warnings:[],targets:[]};
-      if(path.endsWith(".json")){try{JSON.parse(body);}catch(_){return {path,ok:false,detail:"Invalid JSON response",warnings:[],targets:[]};}}
+      if(path.endsWith(".js")&&body.trim().length<40)return {path,ok:false,detail:"Script response was unexpectedly short",warnings:[],errors:[],targets:[]};
+      if(path.endsWith(".json")){try{JSON.parse(body);}catch(_){return {path,ok:false,detail:"Invalid JSON response",warnings:[],errors:[],targets:[]};}}
      }
-     return {path,ok:true,detail:"HTTP "+response.status+" · asset reachable",warnings:[],targets:[]};
-    }catch(error){return {path,ok:false,detail:error.message||"Request failed",warnings:[],targets:[]};}
+     return {path,ok:true,detail:"HTTP "+response.status+" · asset reachable",warnings:[],errors:[],targets:[]};
+    }catch(error){return {path,ok:false,detail:error.message||"Request failed",warnings:[],errors:[],targets:[]};}
    }));
    const knownPaths=new Set(FULL_DIAGNOSTIC_PAGE_PATHS.map(path=>new URL(path,location.href).pathname));
    const targets=[...new Set(checks.flatMap(item=>item.targets||[]))].filter(path=>!knownPaths.has(path));
@@ -673,6 +673,7 @@ const fullDiagnosticSteps=[
     catch(error){return {path,ok:false,detail:error.message||"Request failed"};}
    }));
    const failures=checks.filter(item=>!item.ok).map(item=>item.path+": "+item.detail);
+   checks.flatMap(item=>(item.errors||[]).map(note=>item.path+": "+note)).forEach(note=>failures.push(note));
    targetChecks.filter(item=>!item.ok).forEach(item=>failures.push(item.path+": "+(item.detail||"HTTP "+item.status)));
    const warnings=checks.flatMap(item=>(item.warnings||[]).map(note=>item.path+": "+note));
    if(failures.length)return fullDiagResult("Website pages, scripts, links, and accessibility","fail",failures.slice(0,10).join(" · ")+(failures.length>10?" · +"+(failures.length-10)+" more broken route/resource(s)":""));
