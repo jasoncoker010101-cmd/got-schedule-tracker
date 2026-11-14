@@ -21,6 +21,11 @@ button.secondary{background:var(--raised);color:var(--text);border:1px solid var
 .report{margin:12px 0}.report h3{margin:0 0 8px}.report-meta{color:var(--muted);font-size:13px}.report p{white-space:pre-wrap;line-height:1.55}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row select{max-width:180px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 @media(max-width:600px){header{padding:15px}.row>*{flex:1}.row select{max-width:none}}
+  .feed-panel{margin:22px 0}.feed-panel h2{margin:0 0 6px}.feed-panel>p{margin:0 0 14px;color:var(--muted);line-height:1.5}
+  .status-card .status-detail{display:block;color:var(--muted);font-size:12px;line-height:1.45;margin-top:5px}
+  .status-card strong{overflow-wrap:anywhere}.status-card:focus-within{outline:2px solid rgba(239,189,50,.4);outline-offset:2px}
+  #refresh:disabled{opacity:.6;cursor:wait}
+  @media(prefers-reduced-motion:no-preference){.status-card{transition:border-color .18s ease,transform .18s ease}.status-card:hover{border-color:rgba(239,189,50,.4);transform:translateY(-2px)}}
 </style></head>
 <body>
 <header><div class="logo">G.O.T. <span>Games</span> · Admin</div><a href="anime.html">Back to Anime</a></header>
@@ -44,6 +49,15 @@ button.secondary{background:var(--raised);color:var(--text);border:1px solid var
 <article class="status-card">New reports<strong id="newReports">—</strong><span class="muted">Waiting for your review</span></article>
 <article class="status-card">Pending reaction links<strong id="pendingLinks">—</strong><span class="muted">Owner review queue</span></article>
 </div>
+<section class="panel feed-panel" aria-labelledby="feedHealthTitle">
+ <h2 id="feedHealthTitle">Schedule and live feeds</h2>
+ <p>These checks verify that the published data files can be reached and parsed. A feed timestamp is the file's last data update, not a guarantee that a background job ran at that exact time.</p>
+ <div class="grid">
+  <article class="status-card"><span class="dot" id="scheduleFeedDot"></span>Schedule feed<strong id="scheduleFeedStatus">Checking…</strong><span class="status-detail" id="scheduleFeedDetail">Reading schedule.json</span></article>
+  <article class="status-card"><span class="dot" id="liveFeedDot"></span>Live-status feed<strong id="liveFeedStatus">Checking…</strong><span class="status-detail" id="liveFeedDetail">Reading live.json</span></article>
+  <article class="status-card"><span class="dot" id="animeActivityDot"></span>Recent anime data<strong id="animeActivityStatus">Checking…</strong><span class="status-detail" id="animeActivityDetail">Checking latest saved reaction and watch records</span></article>
+ </div>
+</section>
 <h2>Data diagnostics</h2><p class="muted">Read-only checks for watch-history quality, season mapping, reaction links, and queue health.</p><div class="grid"><article class="status-card"><span class="dot" id="watchDataDot"></span>Watch-history integrity<strong id="watchDataStatus">Checking…</strong><span class="muted" id="watchDataDetail">Checking episode ranges and anime IDs</span></article><article class="status-card"><span class="dot" id="seasonDataDot"></span>Season mapping<strong id="seasonDataStatus">Checking…</strong><span class="muted" id="seasonDataDetail">Checking season and episode data</span></article><article class="status-card"><span class="dot" id="linkDataDot"></span>Link validation<strong id="linkDataStatus">Checking…</strong><span class="muted" id="linkDataDetail">Checking saved YouTube and Patreon URLs</span></article><article class="status-card"><span class="dot" id="queueDataDot"></span>Queue health<strong id="queueDataStatus">Checking…</strong><span class="muted" id="queueDataDetail">Checking reports and pending links</span></article></div><div class="section-head"><h2>Visitor reports</h2><select id="reportFilter"><option value="all">All reports</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="fixed">Fixed</option><option value="dismissed">Dismissed</option></select></div>
 <p class="muted" id="reportMessage">Loading reports…</p><div id="reports"></div>
 </section>
@@ -90,8 +104,45 @@ async function verifyOwner(){
  $("login").hidden=true;$("dashboard").hidden=false;return true;
 }
 function validWebUrl(value,allowedHosts){try{const u=new URL(value);return u.protocol==="https:"&&allowedHosts.some(host=>u.hostname===host||u.hostname.endsWith("."+host));}catch(_){return false;}}
+async function checkPublishedFeeds(){
+ const [scheduleResult,liveResult]=await Promise.allSettled([
+  fetchWithTimeout("schedule.json?health="+Date.now(),{cache:"no-store"},8000),
+  fetchWithTimeout("live.json?health="+Date.now(),{cache:"no-store"},8000)
+ ]);
+
+ try{
+  if(scheduleResult.status!=="fulfilled")throw scheduleResult.reason;
+  const response=scheduleResult.value;
+  if(!response.ok)throw Error("HTTP "+response.status);
+  const payload=await response.json();
+  if(!payload||!Array.isArray(payload.events))throw Error("Unexpected schedule data format");
+  const updated=payload.updated?new Date(payload.updated):null;
+  const ageHours=updated&&!Number.isNaN(updated.getTime())?(Date.now()-updated.getTime())/3600000:null;
+  const detail=payload.events.length+" events · "+(updated&&!Number.isNaN(updated.getTime())?"data updated "+updated.toLocaleString():"no update timestamp");
+  const stale=ageHours!==null&&ageHours>24*8;
+  setHealth("scheduleFeed",!stale,stale?"Old data":"Available",detail+(stale?" · older than eight days":""));
+ }catch(error){
+  setHealth("scheduleFeed",false,"Unavailable",error?.message||"Could not read schedule.json");
+ }
+
+ try{
+  if(liveResult.status!=="fulfilled")throw liveResult.reason;
+  const response=liveResult.value;
+  if(!response.ok)throw Error("HTTP "+response.status);
+  const payload=await response.json();
+  if(!payload||!payload.platforms||typeof payload.platforms!=="object")throw Error("Unexpected live feed format");
+  const states=["twitch","youtube","rumble"].map(name=>name.toUpperCase()+": "+(payload.platforms[name]?"LIVE":"offline")).join(" · ");
+  const updated=payload.updated?new Date(payload.updated):null;
+  const snapshot=updated&&!Number.isNaN(updated.getTime())?"last state change "+updated.toLocaleString():"timestamp unavailable";
+  setHealth("liveFeed",true,"Available",states+" · "+snapshot);
+ }catch(error){
+  setHealth("liveFeed",false,"Unavailable",error?.message||"Could not read live.json");
+ }
+}
+
 async function health(){
  setHealth("anilist",false,"Checking…","AniList catalogue API");
+ await checkPublishedFeeds();
  try{
   // A Page query needs a data field as well as optional pageInfo.
   const query="query AdminAniListHealth { Page(page:1,perPage:1) { pageInfo { hasNextPage } media(type:ANIME) { id } } }";
@@ -132,8 +183,8 @@ async function health(){
   safeQuery(db.from("got_anime_watch_history").select("id",{count:"exact",head:true}),"Watch-history count"),
   safeQuery(db.from("got_anime_episode_links").select("id",{count:"exact",head:true}),"Reaction-link count"),
   safeQuery(db.from("got_anime_pending_episode_links").select("id",{count:"exact",head:true}).in("status",["pending","needs_checking"]),"Pending-link count"),
-  safeQuery(db.from("got_anime_watch_history").select("id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,watched_at").limit(5000),"Watch-history diagnostics"),
-  safeQuery(db.from("got_anime_episode_links").select("id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type").limit(5000),"Reaction-link diagnostics"),
+  safeQuery(db.from("got_anime_watch_history").select("id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,platform,watched_at,created_at").limit(5000),"Watch-history diagnostics"),
+  safeQuery(db.from("got_anime_episode_links").select("id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type,created_at").limit(5000),"Reaction-link diagnostics"),
   safeQuery(db.from("got_anime_pending_episode_links").select("id,status,confidence").limit(5000),"Pending-link diagnostics"),
   safeQuery(db.from("got_site_reports").select("id,status").limit(5000),"Report-queue diagnostics")
  ]);
@@ -158,6 +209,15 @@ async function health(){
   const missingSeason=watch.filter(x=>!Number.isInteger(x.season_number)||x.season_number<1).length;
   setHealth("watchData",badRange===0&&missingAnime===0,badRange===0&&missingAnime===0?"Clean":"Review needed",badRange+" invalid episode ranges · "+missingAnime+" missing anime IDs/titles · "+watch.length+" rows checked");
   setHealth("seasonData",missingSeason===0&&badRange===0,missingSeason===0&&badRange===0?"Consistent":"Review needed",missingSeason+" missing/invalid season numbers · "+badRange+" invalid episode ranges");
+ }
+ if(watchRows.error||linkRows.error){
+  setHealth("animeActivity",false,"Unavailable",(watchRows.error||linkRows.error).message);
+ }else{
+  const latestWatchWrite=watch.reduce((best,row)=>!best||Date.parse(row.created_at||0)>Date.parse(best)?row.created_at:best,null);
+  const latestLinkWrite=linksData.reduce((best,row)=>!best||Date.parse(row.created_at||0)>Date.parse(best)?row.created_at:best,null);
+  const watchLabel=latestWatchWrite?new Date(latestWatchWrite).toLocaleString():"no watch-history rows";
+  const linkLabel=latestLinkWrite?new Date(latestLinkWrite).toLocaleString():"no reaction-link rows";
+  setHealth("animeActivity",true,"Records available","Latest watch-history write: "+watchLabel+" · Latest reaction-link write: "+linkLabel);
  }
  if(linkRows.error){setHealth("linkData",false,"Unavailable",linkRows.error.message);}
  else {
