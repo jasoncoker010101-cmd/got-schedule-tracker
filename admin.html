@@ -119,15 +119,27 @@ async function health(){
   $("newReports").textContent="—";
   return;
  }
- const {count:watched,error:wErr}=await db.from("got_anime_watch_history").select("id",{count:"exact",head:true});
- const {count:links,error:lErr}=await db.from("got_anime_episode_links").select("id",{count:"exact",head:true});
- const {count:pending,error:pErr}=await db.from("got_anime_pending_episode_links").select("id",{count:"exact",head:true}).in("status",["pending","needs_checking"]);
- const [watchRows,linkRows,pendingRows,reportRows]=await Promise.all([
-  db.from("got_anime_watch_history").select("id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,watched_at").limit(5000),
-  db.from("got_anime_episode_links").select("id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type").limit(5000),
-  db.from("got_anime_pending_episode_links").select("id,status,confidence").limit(5000),
-  db.from("got_site_reports").select("id,status").limit(5000)
+ // Every database read has its own deadline. A stalled query must never leave cards on "Checking…" forever.
+ const safeQuery=(query,label,milliseconds=10000)=>{
+  let timer;
+  const timeout=new Promise(resolve=>{
+   timer=setTimeout(()=>resolve({data:null,count:null,error:{message:label+" timed out after "+Math.round(milliseconds/1000)+" seconds."}}),milliseconds);
+  });
+  return Promise.race([Promise.resolve(query).then(result=>result,err=>({data:null,count:null,error:{message:err?.message||String(err)}})),timeout])
+   .finally(()=>clearTimeout(timer));
+ };
+ const [watchCount,linkCount,pendingCount,watchRows,linkRows,pendingRows,reportRows]=await Promise.all([
+  safeQuery(db.from("got_anime_watch_history").select("id",{count:"exact",head:true}),"Watch-history count"),
+  safeQuery(db.from("got_anime_episode_links").select("id",{count:"exact",head:true}),"Reaction-link count"),
+  safeQuery(db.from("got_anime_pending_episode_links").select("id",{count:"exact",head:true}).in("status",["pending","needs_checking"]),"Pending-link count"),
+  safeQuery(db.from("got_anime_watch_history").select("id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,watched_at").limit(5000),"Watch-history diagnostics"),
+  safeQuery(db.from("got_anime_episode_links").select("id,anime_title,anilist_id,season_number,episode_start,episode_end,youtube_url,patreon_url,link_type").limit(5000),"Reaction-link diagnostics"),
+  safeQuery(db.from("got_anime_pending_episode_links").select("id,status,confidence").limit(5000),"Pending-link diagnostics"),
+  safeQuery(db.from("got_site_reports").select("id,status").limit(5000),"Report-queue diagnostics")
  ]);
+ const watched=watchCount.count, wErr=watchCount.error;
+ const links=linkCount.count, lErr=linkCount.error;
+ const pending=pendingCount.count, pErr=pendingCount.error;
  const dbOk=!wErr&&!lErr&&!pErr;
  const dbProblems=[
   wErr?("Watch history: "+(wErr.message||wErr.code||"query failed")):null,
