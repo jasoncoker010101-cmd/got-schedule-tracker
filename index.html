@@ -1153,7 +1153,25 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
  .schedule-result-count{width:100%;margin:0}
 }
 
-  </style>
+  
+@media print{
+  @page{margin:12mm}
+  body{background:#fff!important;color:#111!important}
+  body::before,.hero,.week-overview,.next,.schedule-tools,.notes,.site-foot,.account-menu,.modal-backdrop{display:none!important}
+  .wrap{width:100%!important;max-width:none!important;padding:0!important}
+  .schedule-section{margin:0!important}
+  .section-heading{border-color:#aaa!important}
+  .section-heading h2,.section-heading h2 span,.section-heading p,.section-kicker,.legend{color:#111!important}
+  .week{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .day{break-inside:avoid;border:1px solid #999!important;background:#fff!important;color:#111!important;box-shadow:none!important}
+  .day h2,.ev .n a,.ev .t,.ev .k,.none{color:#111!important}
+  .ev{break-inside:avoid;background:#fff!important;border:1px solid #bbb!important;opacity:1!important}
+  .ev.past{opacity:1!important}
+  .thumb{display:none!important}
+  .ev{grid-template-columns:minmax(0,1fr)!important}
+}
+
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -1297,6 +1315,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
           <button type="button" class="schedule-utility" id="todayJump">↳ Today</button>
           <button type="button" class="schedule-utility" id="resetScheduleFilters">Reset</button>
           <button type="button" class="schedule-utility" id="exportCalendar" title="Download schedule events for your calendar">↓ Calendar</button>
+          <button type="button" class="schedule-utility" id="printSchedule" title="Print the weekly schedule">▤ Print</button>
         </div>
         <span class="schedule-result-count" id="scheduleResultCount" role="status" aria-live="polite">All scheduled events</span>
       </div>
@@ -2022,7 +2041,7 @@ function exportScheduleCalendar(){
     return;
   }
   const now=new Date();
-  const events=data.events.filter(ev=>ev&&ev.title&&(ev.start||/^\d{4}-\d{2}-\d{2}$/.test(ev.date||"")));
+  const events=data.events.filter(ev=>ev&&ev.title&&((ev.start&&!Number.isNaN(new Date(ev.start).getTime()))||/^\d{4}-\d{2}-\d{2}$/.test(ev.date||"")));
   if(!events.length){
     document.getElementById("scheduleResultCount").textContent="No dated events are available to export";
     return;
@@ -2103,6 +2122,7 @@ async function load(){
 
 refreshScheduleButton.addEventListener("click",()=>load());
 document.getElementById("exportCalendar").addEventListener("click",exportScheduleCalendar);
+document.getElementById("printSchedule").addEventListener("click",()=>window.print());
 
 document.getElementById("scheduleSearch").addEventListener("input",applyScheduleFilters);
 document.getElementById("schedulePlatformFilter").addEventListener("change",applyScheduleFilters);
