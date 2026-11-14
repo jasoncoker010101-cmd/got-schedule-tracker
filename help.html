@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111923">
+<meta name="description" content="G.O.T Games Help Center: fixes for account, anime, watch history, schedule and website problems.">
+<title>Help Center | G.O.T Games</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0b1219;--panel:#131f29;--panel2:#192833;--ink:#f2efe6;--muted:#a2adb5;--line:rgba(220,232,236,.13);--gold:#efbd32;--cyan:#8edce0;--font:"Bricolage Grotesque",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 12% 0%,rgba(239,189,50,.09),transparent 35%),radial-gradient(ellipse at 100% 12%,rgba(142,220,224,.08),transparent 34%),var(--bg);color:var(--ink);font-family:var(--font);line-height:1.55}
+a{color:var(--cyan)}.wrap{width:min(1060px,calc(100% - 32px));margin:auto;padding:24px 0 50px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(18,27,36,.92)}
+.logo{color:var(--ink);font-weight:900;font-size:20px;text-decoration:none}.logo span{color:var(--gold)}nav{display:flex;gap:7px;flex-wrap:wrap}nav a{padding:8px 12px;border-radius:9px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:800}nav a:hover,nav a.active{background:var(--gold);color:#211a0b}
+main{max-width:900px;margin:42px auto 0}.eyebrow{color:var(--cyan);font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+h1{font-size:clamp(34px,6vw,54px);line-height:1.05;letter-spacing:-.04em;margin:7px 0}.lead{color:var(--muted);margin:0 0 24px}
+.search{display:flex;gap:10px;margin:22px 0}.search input{flex:1;min-width:0;padding:15px 17px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font:inherit}.search input:focus{outline:2px solid var(--cyan);outline-offset:2px}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}.quick button{border:1px solid var(--line);border-radius:99px;padding:8px 13px;background:var(--panel);color:var(--muted);font:700 12px var(--font);cursor:pointer}.quick button:hover,.quick button.active{border-color:var(--gold);color:var(--gold)}
+.section{margin:24px 0}.section h2{font-size:20px;margin:0 0 12px}.item{border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,rgba(25,40,51,.97),rgba(15,24,33,.97));margin:9px 0;overflow:hidden}.item summary{cursor:pointer;padding:16px 18px;font-weight:800;list-style:none}.item summary::-webkit-details-marker{display:none}.item summary:after{content:"＋";float:right;color:var(--gold)}.item[open] summary:after{content:"−"}.answer{padding:0 18px 17px;color:#c3ccd0}.answer ol,.answer ul{padding-left:22px}.answer li{margin:6px 0}.tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-weight:900;padding:0 18px}
+.empty{padding:20px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}.contact{margin-top:28px;padding:20px;border:1px solid rgba(239,189,50,.3);border-radius:14px;background:rgba(239,189,50,.06)}.contact h2{margin:0 0 6px}.contact p{margin:0;color:var(--muted)}
+footer{margin:50px 0 0;padding:20px 0;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}footer a{color:var(--gold);font-weight:800;text-decoration:none}
+@media(max-width:600px){.wrap{padding-top:12px}.topbar{align-items:flex-start}.search{margin-top:16px}main{margin-top:30px}}
+</style>
+</head>
+<body><div class="wrap">
+<header class="topbar"><a class="logo" href="index.html">G.O.T <span>GAMES</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="anime.html">Anime</a><a href="player-directory.html">Fanbase</a><a href="notifications.html">Notifications</a><a class="active" href="help.html">Help</a></nav></header>
+<main>
+<div class="eyebrow">G.O.T Games Support</div><h1>How can we help?</h1><p class="lead">Search common problems or choose a topic below. These guides cover the most common things you can fix yourself.</p>
+<div class="search"><input id="helpSearch" type="search" placeholder="Search for a problem… (e.g. missing episode)" aria-label="Search help articles"></div>
+<div class="quick" aria-label="Help topics"><button class="active" data-filter="all">All topics</button><button data-filter="account">Account</button><button data-filter="anime">Anime & episodes</button><button data-filter="history">Watch history</button><button data-filter="website">Website</button></div>
+<div id="helpArticles">
+<section class="section" data-category="account"><h2>Account & sign-in</h2>
+<details class="item" data-terms="login sign in account password session"><summary>I can't sign in</summary><div class="answer"><ol><li>Check that you are using the same sign-in method and email you used when you registered.</li><li>Refresh the page and try again. If the session expired, sign in again.</li><li>If the password is the problem, use the account provider's password-reset option.</li><li>Make sure cookies and site data are not being blocked for this site.</li></ol></div></details>
+<details class="item" data-terms="profile avatar username save changes"><summary>My profile changes are not showing</summary><div class="answer"><ol><li>Open your profile and check whether you are signed into the correct account.</li><li>Save the changes and wait for the success message before leaving the page.</li><li>Refresh the profile. If it still looks old, close and reopen the page.</li></ol></div></details>
+</section>
+<section class="section" data-category="anime"><h2>Anime, seasons & episodes</h2>
+<details class="item" data-terms="anime missing search catalogue not found"><summary>An anime is missing from search</summary><div class="answer"><ol><li>Try the official or alternate title, and search using fewer words.</li><li>Check spelling and remove punctuation or season labels from the search.</li><li>If it still does not appear, the external anime catalogue may not have a matching entry yet.</li></ol></div></details>
+<details class="item" data-terms="wrong season part season number part 1 part 7"><summary>The season or part number is wrong</summary><div class="answer"><ol><li>Check the anime's actual season/part naming. A story part is not always the same thing as a streaming season.</li><li>For playlist review items, check the video title and thumbnail before approving the detected season.</li><li>If you are an admin, correct the season in the review queue rather than approving a guess.</li></ol></div></details>
+<details class="item" data-terms="episode missing reaction link video youtube patreon"><summary>An episode or reaction link is missing</summary><div class="answer"><ol><li>Check the anime title, season and episode range on the Anime page.</li><li>Some links may be waiting for admin review before they appear publicly.</li><li>For a missing or incorrect link, report the anime, season, episode number and what you expected to see.</li></ol></div></details>
+<details class="item" data-terms="anime details needed anilist id pending playlist review"><summary>Playlist review says “Anime details needed”</summary><div class="answer"><ol><li>Open the review item and check the detected anime title and video title.</li><li>Confirm the AniList match is the correct series or stage, not just a similar name.</li><li>Check the season/part and episode number against the video title and thumbnail.</li><li>Only approve after the details match. If no exact match exists, leave it for manual review.</li></ol></div></details>
+</section>
+<section class="section" data-category="history"><h2>Watch history</h2>
+<details class="item" data-terms="watched episodes not showing count history verified"><summary>My watched episode count looks wrong</summary><div class="answer"><ol><li>Confirm the correct anime, season and episode range are recorded.</li><li>Check whether the episode is verified or still waiting for review.</li><li>Refresh the page after the record is updated. The verified count should reflect verified episode records, not just a video being listed.</li></ol></div></details>
+<details class="item" data-terms="watch history missing anime title anilist id"><summary>A watch-history entry has missing anime details</summary><div class="answer"><ol><li>Check that the entry has the correct anime title and AniList identity.</li><li>Confirm the season and episode range are valid.</li><li>Ask an admin to repair the record if the identity cannot be matched confidently. Do not guess an AniList ID.</li></ol></div></details>
+</section>
+<section class="section" data-category="website"><h2>Website & loading</h2>
+<details class="item" data-terms="page blank loading stuck refresh connection"><summary>A page is blank or stuck loading</summary><div class="answer"><ol><li>Refresh the page once and check your internet connection.</li><li>Close duplicate tabs, then reopen the page.</li><li>Try a private/incognito tab to check whether a cached page or browser extension is interfering.</li><li>If one page fails while others work, report which page and what you clicked.</li></ol></div></details>
+<details class="item" data-terms="old version cache updates not showing"><summary>Updates are not appearing</summary><div class="answer"><ol><li>Refresh the page. On a browser, a hard refresh may clear an old cached copy.</li><li>Close the tab completely and reopen the site.</li><li>Wait a little if a site update was just published; deployment and browser caching can take time.</li></ol></div></details>
+<details class="item" data-terms="notifications not showing alerts"><summary>Notifications are not appearing</summary><div class="answer"><ol><li>Open the Notifications page and make sure you are signed in.</li><li>Refresh the page and check again.</li><li>Browser push notifications, if supported, also require permission in your browser/device settings. In-site notifications do not necessarily use push alerts.</li></ol></div></details>
+</section>
+</div>
+<div class="empty" id="noResults" hidden>No help articles match that search. Try a different phrase.</div>
+<div class="contact"><h2>Still stuck?</h2><p>Send the site owner a report with the page name, what you were trying to do, what happened, and the anime/season/episode details if relevant. Never include your password or private account credentials.</p></div>
+</main>
+<footer><span>G.O.T Games Help Center · Community support</span><a href="index.html">Back to G.O.T Home ↗</a></footer>
+</div>
+<script>
+(()=>{
+ const input=document.getElementById("helpSearch"),buttons=[...document.querySelectorAll("[data-filter]")],sections=[...document.querySelectorAll(".section")],articles=[...document.querySelectorAll(".item")],empty=document.getElementById("noResults");
+ let category="all";
+ function apply(){
+  const query=input.value.trim().toLowerCase();let visible=0;
+  sections.forEach(section=>{
+   const sectionCategory=section.dataset.category;let sectionVisible=0;
+   section.querySelectorAll(".item").forEach(item=>{
+    const matchCategory=category==="all"||category===sectionCategory;
+    const haystack=(item.textContent+" "+(item.dataset.terms||"")).toLowerCase();
+    const matchText=!query||haystack.includes(query);
+    item.hidden=!(matchCategory&&matchText);if(!item.hidden){sectionVisible++;visible++;}
+   });
+   section.hidden=sectionVisible===0;
+  });
+  empty.hidden=visible!==0;
+ }
+ buttons.forEach(button=>button.addEventListener("click",()=>{category=button.dataset.filter;buttons.forEach(b=>b.classList.toggle("active",b===button));apply();}));
+ input.addEventListener("input",apply);apply();
+})();
+</script>
+</body></html>
