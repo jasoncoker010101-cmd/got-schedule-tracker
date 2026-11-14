@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111923">
+<title>Notifications | G.O.T Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#0b1219;--panel:#131f29;--panel2:#192833;--ink:#f2efe6;--muted:#a2adb5;--line:rgba(220,232,236,.13);--gold:#efbd32;--cyan:#8edce0;--font:"Bricolage Grotesque",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 12% 0%,rgba(239,189,50,.09),transparent 35%),radial-gradient(ellipse at 100% 12%,rgba(142,220,224,.08),transparent 34%),var(--bg);color:var(--ink);font-family:var(--font);line-height:1.5}
+.wrap{width:min(1100px,calc(100% - 32px));margin:0 auto;padding:24px 0 64px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(18,27,36,.92);box-shadow:0 14px 38px rgba(0,0,0,.2)}
+.logo{color:var(--ink);font-weight:900;font-size:20px;letter-spacing:.02em;text-decoration:none;white-space:nowrap}.logo span{color:var(--gold)}
+.site-nav{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.site-nav a{display:flex;align-items:center;justify-content:center;min-height:40px;padding:8px 12px;border:1px solid transparent;border-radius:9px;color:#c8d0d2;text-decoration:none;font-size:13px;font-weight:800;transition:.18s}
+.site-nav a:hover{border-color:rgba(239,189,50,.55);background:#25271f;color:#fff1c7}
+.site-nav a.active{background:var(--gold);border-color:var(--gold);color:#211a0b}
+main{max-width:860px;margin:42px auto 0}
+.eyebrow{color:var(--cyan);font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+h1{margin:5px 0 4px;font-size:clamp(32px,6vw,48px);line-height:1.08;letter-spacing:-.04em}
+.lead{margin:0;color:var(--muted)}
+.panel{margin-top:22px;padding:22px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,rgba(25,40,51,.97),rgba(15,24,33,.97));box-shadow:0 18px 44px rgba(0,0,0,.2)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.panel-head h2{margin:0;font-size:19px}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+button,.button{border:1px solid rgba(239,189,50,.45);border-radius:9px;padding:9px 13px;background:rgba(239,189,50,.12);color:#f7e7b5;font:800 13px var(--font);cursor:pointer;text-decoration:none;transition:background .18s,border-color .18s,transform .18s}
+button:hover,.button:hover{background:rgba(239,189,50,.2);border-color:var(--gold);transform:translateY(-1px)}
+button:disabled{opacity:.55;cursor:wait;transform:none}
+button.secondary{border-color:var(--line);background:rgba(255,255,255,.04);color:#dce4e5}
+.filters{display:flex;gap:7px;margin-bottom:14px}
+.filters button{border-color:var(--line);background:transparent;color:var(--muted)}
+.filters button.active{border-color:var(--cyan);background:rgba(142,220,224,.12);color:#dffbfc}
+.notice-list{display:grid;gap:10px}
+.notice{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:start;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(7,14,20,.32)}
+.notice.unread{border-color:rgba(239,189,50,.38);background:linear-gradient(100deg,rgba(239,189,50,.09),rgba(7,14,20,.28))}
+.notice-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(142,220,224,.12);font-size:17px}
+.notice.unread .notice-icon{background:rgba(239,189,50,.15)}
+.notice h3{margin:0 0 3px;font-size:15px;line-height:1.3}
+.notice p{margin:0;color:#c0c9cb;font-size:13px;overflow-wrap:anywhere}
+.notice time{display:block;margin-top:7px;color:#82919a;font-size:11px}
+.notice-actions{display:flex;gap:6px;align-items:center}
+.notice-actions button{padding:7px 9px;font-size:11px;white-space:nowrap}
+.empty,.status{padding:28px 12px;text-align:center;color:var(--muted)}
+.status.error{color:#ff9b9b}
+.login-form{display:grid;gap:12px;max-width:420px;margin:0 auto}
+.login-form label{display:grid;gap:5px;color:var(--muted);font-size:13px;font-weight:700}
+.login-form input{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;background:#0b141d;color:var(--ink);font:inherit}
+.login-form input:focus{outline:2px solid rgba(142,220,224,.45);border-color:var(--cyan)}
+.login-message{min-height:1.3em;color:var(--muted);font-size:13px}
+.account-line{color:var(--muted);font-size:12px}
+@media(max-width:640px){.wrap{width:min(100% - 22px,1100px);padding-top:12px}.topbar{align-items:flex-start}.site-nav{width:100%;justify-content:stretch}.site-nav a{flex:1 1 100px;padding:8px 6px;font-size:12px}.panel{padding:15px}.notice{grid-template-columns:30px minmax(0,1fr)}.notice-icon{width:30px;height:30px}.notice-actions{grid-column:2;justify-content:flex-start}.panel-head{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="topbar">
+  <a class="logo" href="index.html">G.O.T <span>Games</span></a>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="index.html">Schedule</a>
+    <a href="profile.html">Profile</a>
+    <a href="player-directory.html">Fanbase</a>
+    <a href="anime.html">Anime</a>
+    <a href="notifications.html" class="active" aria-current="page" data-got-alert-link>Alerts <span class="got-alert-count" hidden></span></a>
+  </nav>
+</header>
+<main>
+  <div class="eyebrow">Signal room / inbox</div>
+  <h1>Notifications</h1>
+  <p class="lead">New reaction links, G.O.T announcements, and important site updates in one place.</p>
+
+  <section class="panel" id="loginPanel" hidden>
+    <div class="panel-head"><h2>Sign in to view your alerts</h2></div>
+    <form class="login-form" id="loginForm">
+      <label>Email<input id="loginEmail" type="email" autocomplete="username" required></label>
+      <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+      <button id="loginSubmit" type="submit">Sign in</button>
+      <div class="login-message" id="loginMessage" role="status" aria-live="polite"></div>
+      <a class="button" href="index.html">Back to G.O.T Schedule</a>
+    </form>
+  </section>
+
+  <section class="panel" id="inboxPanel" hidden>
+    <div class="panel-head">
+      <div><h2>Your inbox</h2><div class="account-line" id="accountLine"></div></div>
+      <div class="actions">
+        <button class="secondary" id="refreshButton" type="button">↻ Refresh</button>
+        <button class="secondary" id="markAllButton" type="button">Mark all read</button>
+        <button class="secondary" id="logoutButton" type="button">Sign out</button>
+      </div>
+    </div>
+    <div class="filters" role="group" aria-label="Filter notifications">
+      <button type="button" class="active" data-filter="all">All</button>
+      <button type="button" data-filter="unread">Unread</button>
+    </div>
+    <div class="status" id="inboxStatus" role="status" aria-live="polite">Loading notifications…</div>
+    <div class="notice-list" id="noticeList"></div>
+  </section>
+</main>
+</div>
+<script>
+const GOT_SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
+const GOT_SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
+const gotClient = window.supabase.createClient(GOT_SUPABASE_URL, GOT_SUPABASE_KEY);
+window.GOT_SUPABASE = gotClient;
+const $ = id => document.getElementById(id);
+let currentUser = null;
+let notices = [];
+let readIds = new Set();
+let activeFilter = "all";
+
+function showLogin(message=""){
+  $("loginPanel").hidden = false;
+  $("inboxPanel").hidden = true;
+  $("loginMessage").textContent = message;
+}
+function showInbox(){
+  $("loginPanel").hidden = true;
+  $("inboxPanel").hidden = false;
+  $("accountLine").textContent = currentUser?.email || "Signed in";
+}
+function safeHref(value){
+  const allowed = ["index.html","anime.html","profile.html","player-directory.html","notifications.html"];
+  return allowed.includes(value) ? value : "notifications.html";
+}
+function formatDate(value){
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return "Date unavailable";
+  return date.toLocaleString([], {dateStyle:"medium",timeStyle:"short"});
+}
+function iconFor(kind){
+  return kind === "episode" ? "▶" : kind === "announcement" ? "📢" : "✦";
+}
+function renderNotices(){
+  const list = $("noticeList");
+  list.replaceChildren();
+  const visible = notices.filter(item => activeFilter === "all" || !readIds.has(item.id));
+  $("markAllButton").disabled = !notices.some(item => !readIds.has(item.id));
+  if(!visible.length){
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = activeFilter === "unread" ? "You're all caught up. No unread alerts." : "No notifications yet. New G.O.T updates will appear here.";
+    list.append(empty);
+    return;
+  }
+  for(const item of visible){
+    const isRead = readIds.has(item.id);
+    const card = document.createElement("article");
+    card.className = "notice" + (isRead ? "" : " unread");
+    const icon = document.createElement("div");
+    icon.className = "notice-icon";
+    icon.setAttribute("aria-hidden","true");
+    icon.textContent = iconFor(item.kind);
+    const content = document.createElement("div");
+    const heading = document.createElement("h3");
+    heading.textContent = item.title;
+    const message = document.createElement("p");
+    message.textContent = item.message || "";
+    const time = document.createElement("time");
+    time.dateTime = item.created_at;
+    time.textContent = formatDate(item.created_at);
+    content.append(heading,message,time);
+    const actions = document.createElement("div");
+    actions.className = "notice-actions";
+    const open = document.createElement("a");
+    open.className = "button";
+    open.href = safeHref(item.href);
+    open.textContent = "Open";
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "secondary";
+    toggle.textContent = isRead ? "Mark unread" : "Mark read";
+    toggle.addEventListener("click",()=>toggleRead(item.id,isRead,toggle));
+    actions.append(open,toggle);
+    card.append(icon,content,actions);
+    list.append(card);
+  }
+}
+async function loadNotices(){
+  if(!currentUser) return;
+  $("inboxStatus").textContent = "Checking for new alerts…";
+  $("inboxStatus").className = "status";
+  $("refreshButton").disabled = true;
+  try{
+    const {data,error} = await gotClient.from("got_notifications")
+      .select("id,kind,title,message,href,created_at,metadata")
+      .order("created_at",{ascending:false}).limit(100);
+    if(error) throw error;
+    notices = data || [];
+    readIds = new Set();
+    if(notices.length){
+      const ids = notices.map(item=>item.id);
+      const {data:reads,error:readError} = await gotClient.from("got_notification_reads")
+        .select("notification_id").eq("user_id",currentUser.id).in("notification_id",ids);
+      if(readError) throw readError;
+      for(const row of reads || []) readIds.add(row.notification_id);
+    }
+    const unread = notices.filter(item=>!readIds.has(item.id)).length;
+    $("inboxStatus").textContent = unread ? unread + " unread · " + notices.length + " recent notifications" : notices.length + " recent notifications · all caught up";
+    renderNotices();
+  }catch(error){
+    $("inboxStatus").textContent = "Couldn't load notifications: " + (error.message || "Connection error");
+    $("inboxStatus").className = "status error";
+    $("noticeList").replaceChildren();
+  }finally{
+    $("refreshButton").disabled = false;
+  }
+}
+async function toggleRead(id,isRead,button){
+  button.disabled = true;
+  try{
+    if(isRead){
+      const {error} = await gotClient.from("got_notification_reads").delete()
+        .eq("user_id",currentUser.id).eq("notification_id",id);
+      if(error) throw error;
+    }else{
+      const {error} = await gotClient.from("got_notification_reads").insert({user_id:currentUser.id,notification_id:id});
+      if(error) throw error;
+    }
+    await loadNotices();
+  }catch(error){
+    $("inboxStatus").textContent = "Couldn't update that alert: " + (error.message || "Please retry.");
+    $("inboxStatus").className = "status error";
+    button.disabled = false;
+  }
+}
+async function markAllRead(){
+  const unread = notices.filter(item=>!readIds.has(item.id));
+  if(!unread.length) return;
+  $("markAllButton").disabled = true;
+  const rows = unread.map(item=>({user_id:currentUser.id,notification_id:item.id}));
+  const {error} = await gotClient.from("got_notification_reads").insert(rows);
+  if(error){
+    $("inboxStatus").textContent = "Couldn't mark all alerts read: " + error.message;
+    $("inboxStatus").className = "status error";
+    $("markAllButton").disabled = false;
+    return;
+  }
+  await loadNotices();
+}
+$("loginForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  $("loginSubmit").disabled = true;
+  $("loginMessage").textContent = "Signing in…";
+  const {data,error} = await gotClient.auth.signInWithPassword({
+    email:$("loginEmail").value.trim(),
+    password:$("loginPassword").value
+  });
+  $("loginSubmit").disabled = false;
+  if(error){$("loginMessage").textContent = error.message;return;}
+  currentUser = data.user;
+  showInbox();
+  await loadNotices();
+});
+$("logoutButton").addEventListener("click",async()=>{
+  await gotClient.auth.signOut();
+  currentUser = null;
+  notices = [];
+  readIds.clear();
+  showLogin("You have been signed out.");
+});
+$("refreshButton").addEventListener("click",loadNotices);
+$("markAllButton").addEventListener("click",markAllRead);
+document.querySelectorAll("[data-filter]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    activeFilter = button.dataset.filter;
+    document.querySelectorAll("[data-filter]").forEach(item=>item.classList.toggle("active",item===button));
+    renderNotices();
+  });
+});
+async function initializeInbox(){
+  const {data,error} = await gotClient.auth.getSession();
+  if(error){showLogin("Couldn't check your sign-in. Please retry.");return;}
+  currentUser = data.session?.user || null;
+  if(!currentUser){showLogin();return;}
+  showInbox();
+  await loadNotices();
+}
+gotClient.auth.onAuthStateChange((_event,session)=>{
+  setTimeout(async()=>{
+    currentUser = session?.user || null;
+    if(currentUser){showInbox();await loadNotices();}
+    else showLogin();
+  },0);
+});
+initializeInbox();
+</script>
+<script src="notifications.js"></script>
+</body>
+</html>
