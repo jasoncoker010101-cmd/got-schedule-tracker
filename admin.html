@@ -111,6 +111,17 @@ input,select,textarea{accent-color:var(--got-gold)}
 .diag-console-line.fail{color:#ff887e}
 .diag-console-prompt{color:#f2bd55}
 .diag-console-cursor{display:inline-block;width:7px;height:13px;margin-left:4px;vertical-align:-2px;background:#8edce0;animation:diagBlink .85s steps(2,start) infinite}
+.diag-filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+.diag-filter-label{margin-right:4px;color:#9fb1bc;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.diag-filter-btn{display:inline-flex;align-items:center;gap:8px;margin:0;padding:8px 11px;border:1px solid rgba(142,220,224,.18);border-radius:7px;background:#101923;color:#c5d2d8;font-size:12px;font-weight:800}
+.diag-filter-btn b{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:5px;background:rgba(142,220,224,.12);color:#8edce0;font-size:10px}
+.diag-filter-btn[data-diag-filter="warning"] b{background:rgba(242,189,85,.14);color:#f2bd55}
+.diag-filter-btn[data-diag-filter="fail"] b{background:rgba(255,120,104,.14);color:#ff887e}
+.diag-filter-btn[aria-pressed="true"]{border-color:#8edce0;background:rgba(142,220,224,.1);color:#fff}
+.diag-filter-btn[data-diag-filter="warning"][aria-pressed="true"]{border-color:#f2bd55}
+.diag-filter-btn[data-diag-filter="fail"][aria-pressed="true"]{border-color:#ff7868}
+.diag-filter-btn.copy{margin-left:auto;border-color:rgba(242,189,85,.35);color:#f2bd55}
+.diag-no-results{padding:16px;border:1px dashed rgba(142,220,224,.18);border-radius:8px;color:#9fb1bc;text-align:center;font-size:12px}
 .diag-results{display:grid;gap:8px;margin-top:14px}
 .diag-result{display:grid;grid-template-columns:minmax(180px,.75fr) minmax(0,2fr) auto;align-items:start;gap:12px;padding:11px 12px;border:1px solid rgba(142,220,224,.13);border-radius:8px;background:rgba(5,12,19,.42)}
 .diag-result-name{font-size:13px;font-weight:800;color:#eef5f3}
@@ -123,7 +134,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 .diag-footnote{margin:12px 0 0;color:#8295a1;font-size:11px;line-height:1.5}
 @keyframes diagBlink{to{visibility:hidden}}
 @keyframes diagPulse{50%{opacity:.35;transform:scale(.72)}}
-@media(max-width:700px){.diag-result{grid-template-columns:minmax(0,1fr) auto}.diag-result-detail{grid-column:1/-1;grid-row:2}.diag-result-status{grid-column:2;grid-row:1}.full-diagnostics-head{align-items:flex-start}.full-diagnostics-actions{width:100%}.full-diagnostics-actions button{flex:1}}
+@media(max-width:700px){.diag-result{grid-template-columns:minmax(0,1fr) auto}.diag-result-detail{grid-column:1/-1;grid-row:2}.diag-result-status{grid-column:2;grid-row:1}.full-diagnostics-head{align-items:flex-start}.full-diagnostics-actions{width:100%}.full-diagnostics-actions button{flex:1}.diag-filter-label{width:100%}.diag-filter-btn{flex:1;justify-content:center}.diag-filter-btn.copy{margin-left:0;flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.diag-console-cursor,.diag-run-state[data-state="running"] .diag-pulse{animation:none}.diag-progress-fill{transition:none}}
 
 </style></head>
@@ -194,11 +205,19 @@ input,select,textarea{accent-color:var(--got-gold)}
    <button type="button" id="runFullDiagnostics">Run full diagnostics</button>
   </div>
  </div>
- <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 8</span></div>
+ <div class="diag-progress-meta"><span id="fullDiagCurrentStep">Ready to scan the G.O.T Games systems.</span><span id="fullDiagProgressText">0 / 9</span></div>
  <div class="diag-progress-track" role="progressbar" aria-label="Full diagnostics progress" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" id="fullDiagProgress"><div class="diag-progress-fill" id="fullDiagProgressFill"></div></div>
  <div class="diag-console" id="fullDiagTerminal" role="log" aria-live="polite" aria-relevant="additions text">
-  <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v1.0</div>
-  <div class="diag-console-line dim">Read-only mode · Waiting for operator command…</div>
+  <div class="diag-console-line dim">G.O.T GAMES // SYSTEM DIAGNOSTICS v2.0</div>
+  <div class="diag-console-line dim">Read-only mode · Findings will be grouped by severity.</div>
+ </div>
+ <div class="diag-filter-bar" id="fullDiagFilters" hidden aria-label="Filter diagnostic results">
+  <span class="diag-filter-label">Show results</span>
+  <button type="button" class="diag-filter-btn" data-diag-filter="all" aria-pressed="true">All <b id="fullDiagFilterAllCount">0</b></button>
+  <button type="button" class="diag-filter-btn" data-diag-filter="warning" aria-pressed="false">Warnings <b id="fullDiagFilterWarningCount">0</b></button>
+  <button type="button" class="diag-filter-btn" data-diag-filter="fail" aria-pressed="false">Errors <b id="fullDiagFilterErrorCount">0</b></button>
+  <button type="button" class="diag-filter-btn" data-diag-filter="pass" aria-pressed="false">Passed <b id="fullDiagFilterPassCount">0</b></button>
+  <button type="button" class="diag-filter-btn copy" id="copyFullDiagReport">Copy report</button>
  </div>
  <div class="diag-results" id="fullDiagResults" aria-live="polite"></div>
  <div class="diag-summary" id="fullDiagSummary" role="status">No scan has been run yet.</div>
@@ -388,15 +407,18 @@ async function health(){
 }
 
 // =========================================================
-// FULL DIAGNOSTICS — SEQUENTIAL, READ-ONLY SYSTEM AUDIT
+// FULL DIAGNOSTICS — SEQUENTIAL, READ-ONLY SITE AUDIT v2
 // =========================================================
 const FULL_DIAGNOSTIC_PAGE_PATHS = [
  "index.html","anime.html","notifications.html","profile.html",
- "player-directory.html","nexus.html","admin.html","notifications.js"
+ "player-directory.html","nexus.html","admin.html",
+ "notifications.js","nexus.js","patreon-links.js",
+ "schedule.json","live.json","shows.json","favicon.png","schedule/latest.png"
 ];
 const fullDiagSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let fullDiagRunning=false;
 let fullDiagRows=[];
+let fullDiagActiveFilter="all";
 
 function fullDiagSetState(state,label){
  const node=$("fullDiagState");
@@ -426,7 +448,7 @@ async function fullDiagTypeLine(message,index,total){
  for(let i=0;i<full.length;i++){
   typed.textContent+=full[i];
   $("fullDiagTerminal").scrollTop=$("fullDiagTerminal").scrollHeight;
-  await fullDiagSleep(7);
+  await fullDiagSleep(5);
  }
  cursor.remove();
 }
@@ -440,18 +462,67 @@ function fullDiagSetProgress(done,total){
 function fullDiagRenderResults(){
  const target=$("fullDiagResults");
  target.replaceChildren();
- for(const result of fullDiagRows){
-  const row=document.createElement("article");row.className="diag-result";
-  const name=document.createElement("div");name.className="diag-result-name";name.textContent=result.name;
-  const detail=document.createElement("div");detail.className="diag-result-detail";detail.textContent=result.detail;
-  const status=document.createElement("div");status.className="diag-result-status "+result.status;
-  status.textContent=result.status==="pass"?"PASS":result.status==="warning"?"WARNING":"FAILED";
-  row.append(name,detail,status);target.append(row);
- }
  const passed=fullDiagRows.filter(x=>x.status==="pass").length;
  const warnings=fullDiagRows.filter(x=>x.status==="warning").length;
  const failed=fullDiagRows.filter(x=>x.status==="fail").length;
- $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failed+" failures";
+ $("fullDiagFilterAllCount").textContent=String(fullDiagRows.length);
+ $("fullDiagFilterWarningCount").textContent=String(warnings);
+ $("fullDiagFilterErrorCount").textContent=String(failed);
+ $("fullDiagFilterPassCount").textContent=String(passed);
+ $("fullDiagFilters").hidden=fullDiagRows.length===0;
+ const visible=fullDiagRows.filter(result=>fullDiagActiveFilter==="all"||result.status===fullDiagActiveFilter);
+ for(const result of visible){
+  const row=document.createElement("article");
+  row.className="diag-result";
+  row.dataset.status=result.status;
+  const name=document.createElement("div");
+  name.className="diag-result-name";
+  name.textContent=result.name;
+  const detail=document.createElement("div");
+  detail.className="diag-result-detail";
+  detail.textContent=result.detail;
+  const status=document.createElement("div");
+  status.className="diag-result-status "+result.status;
+  status.textContent=result.status==="pass"?"PASS":result.status==="warning"?"WARNING":"ERROR";
+  row.append(name,detail,status);
+  target.append(row);
+ }
+ if(!visible.length){
+  const empty=document.createElement("div");
+  empty.className="diag-no-results";
+  empty.textContent=fullDiagActiveFilter==="warning"?"No warnings were found in this scan.":fullDiagActiveFilter==="fail"?"No errors were found in this scan.":fullDiagActiveFilter==="pass"?"No passed checks to show yet.":"No diagnostic results yet.";
+  target.append(empty);
+ }
+ document.querySelectorAll("[data-diag-filter]").forEach(button=>{
+  button.setAttribute("aria-pressed",String(button.dataset.diagFilter===fullDiagActiveFilter));
+ });
+ $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failed+" errors";
+}
+function fullDiagCopyFallback(value){
+ const field=document.createElement("textarea");
+ field.value=value;
+ field.style.position="fixed";
+ field.style.opacity="0";
+ document.body.append(field);
+ field.select();
+ let copied=false;
+ try{copied=document.execCommand("copy");}catch(_){}
+ field.remove();
+ const button=$("copyFullDiagReport");
+ button.textContent=copied?"Copied":"Copy unavailable";
+ setTimeout(()=>button.textContent="Copy report",1800);
+}
+function fullDiagCopyReport(){
+ const lines=["G.O.T GAMES FULL DIAGNOSTICS",new Date().toLocaleString(),$("fullDiagSummary").textContent,""];
+ fullDiagRows.forEach(result=>lines.push("["+result.status.toUpperCase()+"] "+result.name+" — "+result.detail));
+ const value=lines.join("\n");
+ const button=$("copyFullDiagReport");
+ if(navigator.clipboard&&window.isSecureContext){
+  navigator.clipboard.writeText(value).then(()=>{
+   button.textContent="Copied";
+   setTimeout(()=>button.textContent="Copy report",1800);
+  }).catch(()=>fullDiagCopyFallback(value));
+ }else fullDiagCopyFallback(value);
 }
 async function fullDiagWithTimeout(promise,label,milliseconds=9000){
  let timer;
@@ -467,11 +538,13 @@ async function fullDiagFetch(path,milliseconds=7000){
  url.searchParams.set("got_diag",String(Date.now()));
  return fetchWithTimeout(url.toString(),{cache:"no-store"},milliseconds);
 }
-async function fullDiagReadAll(table,columns,maxRows=25000){
+async function fullDiagReadAll(table,columns,maxRows=25000,orderColumn="id"){
  const pageSize=1000,rows=[];
  for(let offset=0;offset<maxRows;offset+=pageSize){
+  let query=db.from(table).select(columns);
+  if(orderColumn)query=query.order(orderColumn,{ascending:true});
   const result=await fullDiagWithTimeout(
-   db.from(table).select(columns).order("id",{ascending:true}).range(offset,Math.min(offset+pageSize,maxRows)-1),
+   query.range(offset,Math.min(offset+pageSize,maxRows)-1),
    table+" read",12000
   );
   if(result.error)throw new Error(table+": "+result.error.message);
@@ -487,11 +560,13 @@ function fullDiagSafeUrl(value,hosts){
   return url.protocol==="https:"&&hosts.some(host=>url.hostname===host||url.hostname.endsWith("."+host));
  }catch(_){return false;}
 }
-function fullDiagResult(name,status,detail){return {name,status,detail:String(detail||"No additional detail.")};}
+function fullDiagResult(name,status,detail){
+ return {name,status,detail:String(detail||"No additional detail.")};
+}
 
 const fullDiagnosticSteps=[
  {
-  name:"Admin access and owner security",
+  name:"Admin session and owner permissions",
   run:async()=>{
    if(!db)throw new Error("Supabase client did not load.");
    const {data,error}=await fullDiagWithTimeout(db.auth.getSession(),"Owner session check");
@@ -504,54 +579,130 @@ const fullDiagnosticSteps=[
    );
    if(roleResult.error)throw new Error("Owner role lookup: "+roleResult.error.message);
    if(!roleResult.data)throw new Error("The signed-in account no longer has the owner role.");
-   return fullDiagResult("Admin access and owner security","pass","Active session verified · owner role confirmed · account "+(user.email||"authenticated user"));
+   return fullDiagResult("Admin session and owner permissions","pass","Active session verified · owner role confirmed");
   }
  },
  {
-  name:"Website pages and shared notification script",
+  name:"Website pages, scripts, links, and accessibility",
   run:async()=>{
    const checks=await Promise.all(FULL_DIAGNOSTIC_PAGE_PATHS.map(async path=>{
     try{
      const response=await fullDiagFetch(path);
-     if(!response.ok)return {path,ok:false,detail:"HTTP "+response.status};
-     const body=await response.text();
-     if(path.endsWith(".html")&&!body.toLowerCase().includes("<html"))return {path,ok:false,detail:"Response did not look like an HTML page"};
-     if(path.endsWith(".js")&&body.trim().length<40)return {path,ok:false,detail:"Script response was unexpectedly short"};
-     return {path,ok:true,detail:"HTTP "+response.status+" · "+body.length.toLocaleString()+" characters"};
-    }catch(error){return {path,ok:false,detail:error.message||"Request failed"};}
+     if(!response.ok)return {path,ok:false,detail:"HTTP "+response.status,warnings:[],targets:[]};
+     if(path.endsWith(".html")){
+      const body=await response.text();
+      if(!body.toLowerCase().includes("<html"))return {path,ok:false,detail:"Response did not look like an HTML page",warnings:[],targets:[]};
+      const parsed=new DOMParser().parseFromString(body,"text/html");
+      const warnings=[];
+      if(!parsed.title.trim())warnings.push("page title missing");
+      if(!parsed.querySelector('meta[name="viewport"]'))warnings.push("mobile viewport meta missing");
+      const seenIds=new Set(),duplicateIds=new Set();
+      parsed.querySelectorAll("[id]").forEach(node=>{
+       if(seenIds.has(node.id))duplicateIds.add(node.id);
+       seenIds.add(node.id);
+      });
+      if(duplicateIds.size)warnings.push(duplicateIds.size+" duplicate element ID(s)");
+      const missingAlt=parsed.querySelectorAll("img:not([alt])").length;
+      if(missingAlt)warnings.push(missingAlt+" image(s) missing alt text");
+      let unlabeled=0;
+      parsed.querySelectorAll("input:not([type='hidden']),select,textarea").forEach(field=>{
+       if(!field.labels?.length&&!field.hasAttribute("aria-label")&&!field.hasAttribute("aria-labelledby"))unlabeled++;
+      });
+      if(unlabeled)warnings.push(unlabeled+" form control(s) without an accessible label");
+      const targets=new Set();
+      parsed.querySelectorAll("a[href],script[src],img[src],link[href]").forEach(node=>{
+       const raw=node.getAttribute(node.hasAttribute("href")?"href":"src");
+       if(!raw||raw.startsWith("#")||/^(mailto:|tel:|javascript:|data:|blob:)/i.test(raw))return;
+       try{
+        const base=new URL(path,location.href);
+        const url=new URL(raw,base);
+        if(url.origin===location.origin)targets.add(url.pathname);
+       }catch(_){}
+      });
+      return {path,ok:true,detail:"HTTP "+response.status+" · HTML parsed · "+body.length.toLocaleString()+" characters",warnings,targets:[...targets]};
+     }
+     if(path.endsWith(".png")){
+      const type=response.headers.get("content-type")||"";
+      if(type&&!type.includes("image/"))return {path,ok:false,detail:"Unexpected content type: "+type,warnings:[],targets:[]};
+     }else{
+      const body=await response.text();
+      if(path.endsWith(".js")&&body.trim().length<40)return {path,ok:false,detail:"Script response was unexpectedly short",warnings:[],targets:[]};
+      if(path.endsWith(".json")){try{JSON.parse(body);}catch(_){return {path,ok:false,detail:"Invalid JSON response",warnings:[],targets:[]};}}
+     }
+     return {path,ok:true,detail:"HTTP "+response.status+" · asset reachable",warnings:[],targets:[]};
+    }catch(error){return {path,ok:false,detail:error.message||"Request failed",warnings:[],targets:[]};}
    }));
-   const failed=checks.filter(x=>!x.ok);
-   if(failed.length)throw new Error(failed.map(x=>x.path+": "+x.detail).join(" · "));
-   return fullDiagResult("Website pages and shared notification script","pass",checks.length+" routes/assets reachable · "+checks.map(x=>x.path).join(", "));
+   const knownPaths=new Set(FULL_DIAGNOSTIC_PAGE_PATHS.map(path=>new URL(path,location.href).pathname));
+   const targets=[...new Set(checks.flatMap(item=>item.targets||[]))].filter(path=>!knownPaths.has(path));
+   const targetChecks=await Promise.all(targets.map(async path=>{
+    try{const response=await fullDiagFetch(path);return {path,ok:response.ok,status:response.status};}
+    catch(error){return {path,ok:false,detail:error.message||"Request failed"};}
+   }));
+   const failures=checks.filter(item=>!item.ok).map(item=>item.path+": "+item.detail);
+   targetChecks.filter(item=>!item.ok).forEach(item=>failures.push(item.path+": "+(item.detail||"HTTP "+item.status)));
+   const warnings=checks.flatMap(item=>(item.warnings||[]).map(note=>item.path+": "+note));
+   if(failures.length)return fullDiagResult("Website pages, scripts, links, and accessibility","fail",failures.slice(0,10).join(" · ")+(failures.length>10?" · +"+(failures.length-10)+" more broken route/resource(s)":""));
+   const warningDetail=warnings.slice(0,8).join(" · ")+(warnings.length>8?" · +"+(warnings.length-8)+" more markup warning(s)":"");
+   const detail=checks.length+" page/feed/asset files reachable · "+targetChecks.length+" discovered internal targets checked · "+(warnings.length?warningDetail:"no duplicate IDs or basic markup issues found");
+   return fullDiagResult("Website pages, scripts, links, and accessibility",warnings.length?"warning":"pass",detail);
   }
  },
  {
-  name:"Schedule and live-status feeds",
+  name:"Schedule, live status, show catalogue, and artwork",
   run:async()=>{
-   const [schedule,live]=await Promise.all([
+   const [schedule,live,shows]=await Promise.all([
     fullDiagFetch("schedule.json").then(async response=>({response,payload:response.ok?await response.json():null})),
-    fullDiagFetch("live.json").then(async response=>({response,payload:response.ok?await response.json():null}))
+    fullDiagFetch("live.json").then(async response=>({response,payload:response.ok?await response.json():null})),
+    fullDiagFetch("shows.json").then(async response=>({response,payload:response.ok?await response.json():null}))
    ]);
    if(!schedule.response.ok)throw new Error("schedule.json returned HTTP "+schedule.response.status);
    if(!schedule.payload||!Array.isArray(schedule.payload.events))throw new Error("Schedule feed has an unexpected structure; events[] is missing.");
    if(!live.response.ok)throw new Error("live.json returned HTTP "+live.response.status);
    if(!live.payload||!live.payload.platforms||typeof live.payload.platforms!=="object")throw new Error("Live feed has an unexpected structure; platforms{} is missing.");
+   if(!shows.response.ok)throw new Error("shows.json returned HTTP "+shows.response.status);
+   if(!shows.payload||!shows.payload.shows||typeof shows.payload.shows!=="object")throw new Error("Show catalogue has an unexpected structure; shows{} is missing.");
    const events=schedule.payload.events;
-   const malformedEvents=events.filter(event=>!event||typeof event!=="object"||!event.title||!event.platform||!event.start||Number.isNaN(Date.parse(event.start))).length;
+   const malformedEvents=events.filter(event=>!event||typeof event!=="object"||!String(event.title||"").trim()||!String(event.platform||"").trim()||!event.start||Number.isNaN(Date.parse(event.start))).length;
+   const keys=events.map(event=>event&&[String(event.title||"").trim().toLowerCase(),String(event.platform||"").toLowerCase(),String(event.start||"")].join("|"));
+   const duplicateEvents=keys.length-new Set(keys).size;
    const updated=schedule.payload.updated?new Date(schedule.payload.updated):null;
    const age=updated&&!Number.isNaN(updated.getTime())?(Date.now()-updated.getTime())/3600000:null;
    const stale=age!==null&&age>192;
+   const liveUpdated=live.payload.updated?new Date(live.payload.updated):null;
+   const liveAge=liveUpdated&&!Number.isNaN(liveUpdated.getTime())?(Date.now()-liveUpdated.getTime())/3600000:null;
+   const staleLive=liveAge!==null&&liveAge>24;
    const platformNames=["twitch","youtube","rumble"];
    const platforms=Object.keys(live.payload.platforms).length;
    const missingLiveStates=platformNames.filter(name=>typeof live.payload.platforms[name]!=="boolean").length;
+   const details=live.payload.details||{};
+   const malformedLiveDetails=platformNames.filter(name=>!details[name]||typeof details[name].ok!=="boolean"||typeof details[name].live!=="boolean").length;
+   const showRows=Object.entries(shows.payload.shows);
+   const malformedShows=showRows.filter(([name,item])=>!name||!item||(!item.skipped&&(!Number.isInteger(Number(item.tmdb_id))||Number(item.tmdb_id)<1))).length;
    const issues=[];
    if(malformedEvents)issues.push(malformedEvents+" malformed schedule events");
-   if(events.length===0)issues.push("schedule has no events");
-   if(missingLiveStates)issues.push(missingLiveStates+" live platform states missing or invalid");
+   if(duplicateEvents)issues.push(duplicateEvents+" duplicate schedule entries");
+   if(!events.length)issues.push("schedule has no events");
+   if(missingLiveStates)issues.push(missingLiveStates+" missing/invalid live platform states");
+   if(malformedLiveDetails)issues.push(malformedLiveDetails+" malformed live platform detail records");
    if(stale)issues.push("schedule data is older than eight days");
+   if(staleLive)issues.push("live-status data is older than 24 hours");
    if(!updated||Number.isNaN(updated.getTime()))issues.push("schedule timestamp missing or invalid");
-   const detail=events.length+" schedule events · "+platforms+" live platform states · "+malformedEvents+" malformed events · "+missingLiveStates+" invalid live states · "+(updated&&!Number.isNaN(updated.getTime())?"schedule updated "+updated.toLocaleString():"schedule timestamp unavailable")+(issues.length?" · "+issues.join(" · "):"");
-   return fullDiagResult("Schedule and live-status feeds",issues.length?"warning":"pass",detail);
+   if(!liveUpdated||Number.isNaN(liveUpdated.getTime()))issues.push("live-status timestamp missing or invalid");
+   if(malformedShows)issues.push(malformedShows+" malformed show catalogue records");
+   let artwork="schedule artwork path not provided";
+   if(schedule.payload.image){
+    try{
+     const imageUrl=new URL(schedule.payload.image,location.href);
+     if(imageUrl.origin!==location.origin)issues.push("schedule artwork points outside this website");
+     else{
+      const imageResponse=await fullDiagFetch(imageUrl.pathname);
+      artwork=imageResponse.ok?"schedule artwork reachable":"schedule artwork returned HTTP "+imageResponse.status;
+      if(!imageResponse.ok)issues.push("schedule artwork is unavailable");
+     }
+    }catch(_){issues.push("schedule artwork path is invalid");}
+   }
+   const detail=events.length+" schedule events · "+platforms+" live-state flags · "+showRows.length+" show catalogue entries · "+malformedEvents+" malformed events · "+malformedShows+" malformed show entries · "+artwork+(issues.length?" · "+issues.join(" · "):"");
+   return fullDiagResult("Schedule, live status, show catalogue, and artwork",issues.length?"warning":"pass",detail);
   }
  },
  {
@@ -565,19 +716,20 @@ const fullDiagnosticSteps=[
     const payload=await response.json().catch(()=>null);
     if(!response.ok)throw new Error("AniList HTTP "+response.status);
     if(payload?.errors?.length||!payload?.data?.Page?.media?.length)throw new Error(payload?.errors?.[0]?.message||"AniList returned no valid media result.");
-    return "AniList query succeeded";
    })();
    const junbanTask=(async()=>{
     const response=await fetchWithTimeout("https://junban.moe/api/v1/lookup?site=anilist&id=16498",{},8000);
     if(!response.ok)throw new Error("Junban HTTP "+response.status);
     const payload=await response.json();
     if(!payload||typeof payload!=="object")throw new Error("Junban returned an unexpected response.");
-    return "Junban lookup responded";
    })();
    const results=await Promise.allSettled([aniTask,junbanTask]);
-   const errors=results.filter(x=>x.status==="rejected").map(x=>x.reason?.message||"API request failed");
-   if(errors.length)throw new Error(errors.join(" · "));
-   return fullDiagResult("AniList and Junban external APIs","pass","AniList query succeeded · Junban lookup responded");
+   const failures=results.map((item,index)=>item.status==="rejected"?{name:index===0?"AniList":"Junban",detail:item.reason?.message||"API request failed"}:null).filter(Boolean);
+   if(failures.length){
+    const transportOnly=failures.every(item=>/failed to fetch|network|load failed|timed out|cors/i.test(item.detail));
+    return fullDiagResult("AniList and Junban external APIs",transportOnly?"warning":"fail",failures.map(item=>item.name+": "+item.detail).join(" · "));
+   }
+   return fullDiagResult("AniList and Junban external APIs","pass","AniList catalogue query succeeded · Junban season lookup responded");
   }
  },
  {
@@ -597,11 +749,19 @@ const fullDiagnosticSteps=[
   }
  },
  {
-  name:"Core database tables and permissions",
+  name:"Website database tables and permissions",
   run:async()=>{
    const {data:{session},error:sessionError}=await db.auth.getSession();
    if(sessionError||!session?.user)throw new Error(sessionError?.message||"Owner session unavailable.");
    const tables=[
+    ["Profiles","profiles","id"],
+    ["User roles","user_roles","user_id"],
+    ["Achievements","achievements","id"],
+    ["Player statistics","player_stats","user_id"],
+    ["Player achievements","player_achievements","id"],
+    ["Chat rooms","got_chat_rooms","id"],
+    ["Chat messages","got_chat_messages","id"],
+    ["Chat moderation reports","got_chat_reports","id"],
     ["Watch history","got_anime_watch_history","id"],
     ["Reaction links","got_anime_episode_links","id"],
     ["Pending reaction links","got_anime_pending_episode_links","id"],
@@ -610,21 +770,21 @@ const fullDiagnosticSteps=[
     ["Notification read receipts","got_notification_reads","notification_id"]
    ];
    const checks=await Promise.all(tables.map(async([label,table,column])=>{
-    const query=db.from(table).select(column,{count:"exact",head:true});
-    const scoped=table==="got_notification_reads"?query.eq("user_id",session.user.id):query;
+    let query=db.from(table).select(column,{count:"exact",head:true});
+    if(table==="got_notification_reads")query=query.eq("user_id",session.user.id);
     try{
-     const result=await fullDiagWithTimeout(scoped,table+" permission probe",10000);
+     const result=await fullDiagWithTimeout(query,table+" permission probe",10000);
      if(result.error)throw new Error(result.error.message);
      return {label,count:result.count??0};
     }catch(error){return {label,error:error.message||"Query failed"};}
    }));
-   const failed=checks.filter(x=>x.error);
-   if(failed.length)throw new Error(failed.map(x=>x.label+": "+x.error).join(" · "));
-   return fullDiagResult("Core database tables and permissions","pass",checks.length+" table reads succeeded · "+checks.map(x=>x.label+": "+x.count).join(" · "));
+   const failed=checks.filter(item=>item.error);
+   if(failed.length)throw new Error(failed.map(item=>item.label+": "+item.error).join(" · "));
+   return fullDiagResult("Website database tables and permissions","pass",checks.length+" table permission checks succeeded · "+checks.map(item=>item.label+": "+item.count).join(" · "));
   }
  },
  {
-  name:"Watch history and anime reaction-link integrity",
+  name:"Anime IDs, seasons, episode ranges, and video links",
   run:async()=>{
    const [watchResult,linkResult]=await Promise.all([
     fullDiagReadAll("got_anime_watch_history","id,event_key,anime_title,anilist_id,season_number,episode_start,episode_end,platform,watched_at,created_at"),
@@ -632,19 +792,39 @@ const fullDiagnosticSteps=[
    ]);
    const watch=watchResult.rows,links=linkResult.rows;
    const badWatchRanges=watch.filter(row=>!Number.isInteger(Number(row.episode_start))||!Number.isInteger(Number(row.episode_end))||Number(row.episode_start)<1||Number(row.episode_end)<Number(row.episode_start)).length;
-   const weakWatchIdentity=watch.filter(row=>!row.anime_title||!row.anilist_id).length;
+   const missingWatchTitles=watch.filter(row=>!String(row.anime_title||"").trim()).length;
+   const missingWatchIds=watch.filter(row=>row.anilist_id==null||!Number.isInteger(Number(row.anilist_id))||Number(row.anilist_id)<1).length;
    const missingWatchSeasons=watch.filter(row=>!Number.isInteger(Number(row.season_number))||Number(row.season_number)<1).length;
    const badLinkRanges=links.filter(row=>!Number.isInteger(Number(row.episode_start))||!Number.isInteger(Number(row.episode_end))||Number(row.episode_start)<1||Number(row.episode_end)<Number(row.episode_start)).length;
-   const weakLinkIdentity=links.filter(row=>!row.anime_title||!row.anilist_id).length;
+   const missingLinkTitles=links.filter(row=>!String(row.anime_title||"").trim()).length;
+   const missingLinkIds=links.filter(row=>row.anilist_id==null||!Number.isInteger(Number(row.anilist_id))||Number(row.anilist_id)<1).length;
    const noLink=links.filter(row=>!row.youtube_url&&!row.patreon_url).length;
    const badYoutube=links.filter(row=>row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
    const badPatreon=links.filter(row=>row.patreon_url&&!fullDiagSafeUrl(row.patreon_url,["patreon.com"])).length;
-   const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&!row.youtube_url)||(row.link_type==="patreon"&&!row.patreon_url)).length;
+   const wrongProvider=links.filter(row=>(row.link_type==="youtube"&&!row.youtube_url)||(row.link_type==="patreon"&&!row.patreon_url)||!["youtube","patreon"].includes(row.link_type)).length;
+   const invalidWatchTimes=watch.filter(row=>!row.watched_at||Number.isNaN(Date.parse(row.watched_at))).length;
+   const invalidLinkTimes=links.filter(row=>!row.created_at||Number.isNaN(Date.parse(row.created_at))).length;
+   const eventKeys=watch.map(row=>row.event_key).filter(Boolean);
+   const duplicateEventKeys=eventKeys.length-new Set(eventKeys).size;
+   const canonicalIds=new Map([
+    ["attack on titan",16498],
+    ["demon slayer: kimetsu no yaiba",101922],
+    ["one piece",21],
+    ["jujutsu kaisen",113415],
+    ["my hero academia",21459]
+   ]);
+   const knownIdFor=row=>canonicalIds.get(String(row.anime_title||"").trim().toLowerCase());
+   const wrongKnownIds=watch.filter(row=>knownIdFor(row)!=null&&Number(row.anilist_id)!==knownIdFor(row)).length
+    +links.filter(row=>knownIdFor(row)!=null&&Number(row.anilist_id)!==knownIdFor(row)).length;
    const warnings=[];
-   if(weakWatchIdentity)warnings.push(weakWatchIdentity+" watch-history records missing an anime title or AniList ID");
-   if(weakLinkIdentity)warnings.push(weakLinkIdentity+" reaction-link records missing an anime title or AniList ID");
-   if(missingWatchSeasons)warnings.push(missingWatchSeasons+" watch-history records missing a valid season number");
-   if(watchResult.truncated||linkResult.truncated)warnings.push("the 25,000-row safety scan limit was reached");
+   if(missingWatchTitles)warnings.push(missingWatchTitles+" watch-history rows have no anime title");
+   if(missingWatchIds)warnings.push(missingWatchIds+" watch-history rows have no valid AniList ID");
+   if(missingLinkTitles)warnings.push(missingLinkTitles+" reaction-link rows have no anime title");
+   if(missingLinkIds)warnings.push(missingLinkIds+" reaction-link rows have no valid AniList ID");
+   if(missingWatchSeasons)warnings.push(missingWatchSeasons+" watch-history rows have no valid season assignment; the season was not guessed");
+   if(duplicateEventKeys)warnings.push(duplicateEventKeys+" duplicate watch-history event key(s)");
+   if(wrongKnownIds)warnings.push(wrongKnownIds+" known-series AniList ID mismatch(es)");
+   if(watchResult.truncated||linkResult.truncated)warnings.push("one or more anime tables reached the 25,000-row scan limit");
    const failures=[];
    if(badWatchRanges)failures.push(badWatchRanges+" invalid watch-history episode ranges");
    if(badLinkRanges)failures.push(badLinkRanges+" invalid reaction-link episode ranges");
@@ -652,36 +832,94 @@ const fullDiagnosticSteps=[
    if(badYoutube)failures.push(badYoutube+" invalid YouTube URLs");
    if(badPatreon)failures.push(badPatreon+" invalid Patreon URLs");
    if(wrongProvider)failures.push(wrongProvider+" provider type/URL mismatches");
-   const detail=watch.length+" watch-history rows scanned · "+links.length+" reaction-link rows scanned · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link problems · "+weakWatchIdentity+" watch IDs/titles missing · "+weakLinkIdentity+" reaction-link IDs/titles missing · "+missingWatchSeasons+" seasons missing"+(warnings.length?" · "+warnings.join(" · "):"");
-   if(failures.length)throw new Error(failures.join(" · "));
-   return fullDiagResult("Watch history and anime reaction-link integrity",warnings.length?"warning":"pass",detail);
+   if(invalidWatchTimes||invalidLinkTimes)failures.push((invalidWatchTimes+invalidLinkTimes)+" records have missing or invalid timestamps");
+   const detail=watch.length+" watch-history rows · "+links.length+" reaction-link rows · missing AniList IDs: "+missingWatchIds+" watch / "+missingLinkIds+" links · missing titles: "+missingWatchTitles+" watch / "+missingLinkTitles+" links · "+badWatchRanges+" invalid watch ranges · "+(badLinkRanges+noLink+badYoutube+badPatreon+wrongProvider)+" reaction-link errors · "+missingWatchSeasons+" missing season assignments · "+wrongKnownIds+" known ID mismatches";
+   return fullDiagResult("Anime IDs, seasons, episode ranges, and video links",failures.length?"fail":warnings.length?"warning":"pass",failures.length?failures.join(" · ")+" · "+detail:detail+(warnings.length?" · "+warnings.join(" · "):""));
   }
  },
  {
-  name:"Notifications, reports, and review queues",
+  name:"Notifications, visitor reports, and review queues",
   run:async()=>{
    const [notificationResult,reportResult,pendingResult]=await Promise.all([
-    fullDiagReadAll("got_notifications","id,kind,title,href,created_at,metadata"),
+    fullDiagReadAll("got_notifications","id,kind,title,message,href,created_at,metadata"),
     fullDiagReadAll("got_site_reports","id,status"),
-    fullDiagReadAll("got_anime_pending_episode_links","id,status,confidence")
+    fullDiagReadAll("got_anime_pending_episode_links","id,status,confidence,youtube_url")
    ]);
    const notifications=notificationResult.rows,reports=reportResult.rows,pending=pendingResult.rows;
-   const badNotifications=notifications.filter(row=>!row.title||!["episode","announcement","system"].includes(row.kind)).length;
+   const badNotifications=notifications.filter(row=>!String(row.title||"").trim()||!String(row.message||"").trim()||!["episode","announcement","system"].includes(row.kind)||!row.metadata||typeof row.metadata!=="object").length;
    const allowedTargets=new Set(["index.html","anime.html","notifications.html","profile.html","player-directory.html","nexus.html"]);
    const badTargets=notifications.filter(row=>{
     const target=String(row.href||"").split("?")[0].split("#")[0];
-    return Boolean(row.href)&&!allowedTargets.has(target);
+    return !allowedTargets.has(target);
    }).length;
    const badReportStatuses=reports.filter(row=>!["new","reviewing","fixed","dismissed"].includes(row.status)).length;
    const badQueueStatuses=pending.filter(row=>!["pending","needs_checking","approved","ignored"].includes(row.status)).length;
+   const badPendingUrls=pending.filter(row=>row.youtube_url&&!fullDiagSafeUrl(row.youtube_url,["youtube.com","youtu.be"])).length;
+   const badPendingConfidence=pending.filter(row=>row.confidence!=null&&(!Number.isInteger(Number(row.confidence))||Number(row.confidence)<0||Number(row.confidence)>100)).length;
    const problems=[];
-   if(badNotifications)problems.push(badNotifications+" notifications missing titles or valid types");
-   if(badTargets)problems.push(badTargets+" notifications have unexpected destinations");
+   if(badNotifications)problems.push(badNotifications+" notifications have missing content or invalid types/metadata");
+   if(badTargets)problems.push(badTargets+" notifications have missing or unexpected destinations");
    if(badReportStatuses)problems.push(badReportStatuses+" reports have unknown statuses");
    if(badQueueStatuses)problems.push(badQueueStatuses+" pending-link records have unknown statuses");
-   if(notificationResult.truncated||reportResult.truncated||pendingResult.truncated)problems.push("the 25,000-row safety scan limit was reached");
-   if(problems.length)return fullDiagResult("Notifications, reports, and review queues","warning",notifications.length+" notifications · "+reports.length+" reports · "+pending.length+" pending-link records · "+problems.join(" · "));
-   return fullDiagResult("Notifications, reports, and review queues","pass",notifications.length+" notifications · "+reports.length+" reports · "+pending.length+" pending-link records · record structures and workflow statuses look valid");
+   if(badPendingUrls)problems.push(badPendingUrls+" pending submissions have invalid YouTube URLs");
+   if(badPendingConfidence)problems.push(badPendingConfidence+" pending submissions have invalid confidence values");
+   if(notificationResult.truncated||reportResult.truncated||pendingResult.truncated)problems.push("one or more queue tables reached the 25,000-row scan limit");
+   return fullDiagResult("Notifications, visitor reports, and review queues",problems.length?"warning":"pass",notifications.length+" notifications · "+reports.length+" visitor reports · "+pending.length+" pending-link records · "+(problems.length?problems.join(" · "):"content, destinations, and workflow fields look valid"));
+  }
+ },
+ {
+  name:"Community, profiles, chat, and player systems",
+  run:async()=>{
+   const [profileResult,roleResult,roomResult,messageResult,chatReportResult,achievementResult,statsResult,playerAchievementResult]=await Promise.all([
+    fullDiagReadAll("profiles","id,username,avatar_url",10000),
+    fullDiagReadAll("user_roles","user_id,role",10000,"user_id"),
+    fullDiagReadAll("got_chat_rooms","id,name,is_readonly,sort_order",1000,"sort_order"),
+    fullDiagReadAll("got_chat_messages","id,room_id,author_id,body,created_at,deleted_at",25000),
+    fullDiagReadAll("got_chat_reports","id,message_id,status",10000),
+    fullDiagReadAll("achievements","id,slug,name,points,is_active",10000),
+    fullDiagReadAll("player_stats","user_id,games_played,events_attended,wins",10000,"user_id"),
+    fullDiagReadAll("player_achievements","id,user_id,achievement_id",25000)
+   ]);
+   const profiles=profileResult.rows,roles=roleResult.rows,rooms=roomResult.rows,messages=messageResult.rows;
+   const chatReports=chatReportResult.rows,achievements=achievementResult.rows,stats=statsResult.rows,playerAchievements=playerAchievementResult.rows;
+   const profileIds=new Set(profiles.map(row=>row.id));
+   const roomIds=new Set(rooms.map(row=>row.id));
+   const messageIds=new Set(messages.map(row=>row.id));
+   const achievementIds=new Set(achievements.map(row=>row.id));
+   const usernames=profiles.map(row=>String(row.username||"").trim().toLowerCase()).filter(Boolean);
+   const duplicateUsernames=usernames.length-new Set(usernames).size;
+   const missingUsernames=profiles.filter(row=>!String(row.username||"").trim()).length;
+   const orphanMessages=messages.filter(row=>!roomIds.has(row.room_id)).length;
+   const emptyMessages=messages.filter(row=>!String(row.body||"").trim()).length;
+   const missingAuthors=messages.filter(row=>!profileIds.has(row.author_id)).length;
+   const orphanChatReports=chatReports.filter(row=>!messageIds.has(row.message_id)).length;
+   const malformedRooms=rooms.filter(row=>!String(row.name||"").trim()||!String(row.id||"").trim()).length;
+   const malformedAchievements=achievements.filter(row=>!String(row.slug||"").trim()||!String(row.name||"").trim()||!Number.isFinite(Number(row.points))||Number(row.points)<0).length;
+   const slugs=achievements.map(row=>String(row.slug||"").trim().toLowerCase()).filter(Boolean);
+   const duplicateAchievementSlugs=slugs.length-new Set(slugs).size;
+   const badStats=stats.filter(row=>!Number.isFinite(Number(row.games_played))||!Number.isFinite(Number(row.events_attended))||!Number.isFinite(Number(row.wins))||Number(row.games_played)<0||Number(row.events_attended)<0||Number(row.wins)<0).length;
+   const orphanPlayerAchievements=playerAchievements.filter(row=>!achievementIds.has(row.achievement_id)||!profileIds.has(row.user_id)).length;
+   const duplicatePlayerAchievements=playerAchievements.length-new Set(playerAchievements.map(row=>String(row.user_id)+"|"+String(row.achievement_id))).size;
+   const missingRoleUsers=roles.filter(row=>!profileIds.has(row.user_id)).length;
+   const warnings=[];
+   if(!rooms.length)warnings.push("no chat rooms are configured");
+   if(duplicateUsernames)warnings.push(duplicateUsernames+" duplicate case-insensitive profile usernames");
+   if(missingUsernames)warnings.push(missingUsernames+" profiles have no username");
+   if(missingAuthors)warnings.push(missingAuthors+" chat messages have no matching profile");
+   if(orphanChatReports)warnings.push(orphanChatReports+" chat reports reference missing messages");
+   if(duplicateAchievementSlugs)warnings.push(duplicateAchievementSlugs+" duplicate achievement slugs");
+   if(orphanPlayerAchievements)warnings.push(orphanPlayerAchievements+" player achievements reference missing users or achievements");
+   if(duplicatePlayerAchievements)warnings.push(duplicatePlayerAchievements+" duplicate player-achievement assignments");
+   if(missingRoleUsers)warnings.push(missingRoleUsers+" role records have no matching profile");
+   if(profileResult.truncated||roleResult.truncated||roomResult.truncated||messageResult.truncated||chatReportResult.truncated||achievementResult.truncated||statsResult.truncated||playerAchievementResult.truncated)warnings.push("one or more community tables reached the scan limit");
+   const failures=[];
+   if(orphanMessages)failures.push(orphanMessages+" chat messages reference missing rooms");
+   if(emptyMessages)failures.push(emptyMessages+" chat messages have empty content");
+   if(malformedRooms)failures.push(malformedRooms+" chat rooms have missing names or IDs");
+   if(malformedAchievements)failures.push(malformedAchievements+" achievements have invalid names, slugs, or point values");
+   if(badStats)failures.push(badStats+" player-stat records contain invalid or negative values");
+   const detail=profiles.length+" profiles · "+roles.length+" role records · "+rooms.length+" chat rooms · "+messages.length+" chat messages · "+chatReports.length+" chat reports · "+achievements.length+" achievements · "+stats.length+" player-stat rows · "+playerAchievements.length+" earned-achievement rows";
+   return fullDiagResult("Community, profiles, chat, and player systems",failures.length?"fail":warnings.length?"warning":"pass",failures.length?failures.join(" · ")+" · "+detail:detail+(warnings.length?" · "+warnings.join(" · "):""));
   }
  }
 ];
@@ -696,42 +934,56 @@ async function runFullDiagnostics(){
  fullDiagSetState("running","RUNNING");
  $("fullDiagTerminal").replaceChildren();
  $("fullDiagResults").replaceChildren();
+ $("fullDiagFilters").hidden=true;
+ fullDiagActiveFilter="all";
  $("fullDiagSummary").textContent="The system audit is running. Checks are read-only.";
  fullDiagRows=[];
  const total=fullDiagnosticSteps.length;
  fullDiagSetProgress(0,total);
- fullDiagLogLine("G.O.T GAMES // SYSTEM DIAGNOSTICS v1.0","good");
- fullDiagLogLine("AUTHENTICATED OWNER SESSION · READ-ONLY AUDIT","dim");
+ fullDiagLogLine("G.O.T GAMES // SYSTEM DIAGNOSTICS v2.0","good");
+ fullDiagLogLine("OWNER SESSION VERIFIED · READ-ONLY AUDIT · "+total+" CHECK GROUPS","dim");
  await fullDiagSleep(180);
- for(let index=0;index<total;index++){
-  const step=fullDiagnosticSteps[index];
-  $("fullDiagCurrentStep").textContent="Checking: "+step.name;
-  await fullDiagTypeLine(step.name,index+1,total);
-  fullDiagLogLine("  executing checks…","dim");
-  await fullDiagSleep(100);
-  let result;
-  try{result=await step.run();}
-  catch(error){result=fullDiagResult(step.name,"fail",error?.message||String(error));}
+ try{
+  for(let index=0;index<total;index++){
+   const step=fullDiagnosticSteps[index];
+   $("fullDiagCurrentStep").textContent="Checking: "+step.name;
+   await fullDiagTypeLine(step.name,index+1,total);
+   fullDiagLogLine("  running checks…","dim");
+   await fullDiagSleep(100);
+   let result;
+   try{result=await step.run();}
+   catch(error){result=fullDiagResult(step.name,"fail",error?.message||String(error));}
+   fullDiagRows.push(result);
+   const label=result.status==="pass"?"PASS":result.status==="warning"?"WARNING":"ERROR";
+   fullDiagLogLine("  ["+label+"] "+result.detail,result.status==="pass"?"good":result.status==="warning"?"warn":"fail");
+   fullDiagRenderResults();
+   fullDiagSetProgress(index+1,total);
+   await fullDiagSleep(160);
+  }
+ }catch(error){
+  const result=fullDiagResult("Diagnostic runner","fail",error?.message||String(error));
   fullDiagRows.push(result);
-  const label=result.status==="pass"?"PASS":result.status==="warning"?"WARNING":"FAILED";
-  fullDiagLogLine("  ["+label+"] "+result.detail,result.status==="pass"?"good":result.status==="warning"?"warn":"fail");
   fullDiagRenderResults();
-  fullDiagSetProgress(index+1,total);
-  await fullDiagSleep(180);
+  fullDiagLogLine("  [ERROR] "+result.detail,"fail");
  }
  const failures=fullDiagRows.filter(row=>row.status==="fail").length;
  const warnings=fullDiagRows.filter(row=>row.status==="warning").length;
- const passed=fullDiagRows.length-failures-warnings;
+ const passed=fullDiagRows.filter(row=>row.status==="pass").length;
  $("fullDiagCurrentStep").textContent="Diagnostics finished · "+new Date().toLocaleString();
- if(failures){fullDiagSetState("error","ISSUES FOUND");fullDiagLogLine("AUDIT COMPLETE · "+failures+" FAILURE(S) · "+warnings+" WARNING(S)","fail");}
- else if(warnings){fullDiagSetState("done","WARNINGS FOUND");fullDiagLogLine("AUDIT COMPLETE · "+passed+" PASSED · "+warnings+" WARNING(S)","warn");}
- else{fullDiagSetState("done","ALL CLEAR");fullDiagLogLine("AUDIT COMPLETE · ALL "+passed+" CHECKS PASSED","good");}
- $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failures+" failures · "+(failures?"Review the failed checks above.":warnings?"Review the warnings above.":"No issues detected in the tested systems.");
+ if(failures){fullDiagSetState("error","ERRORS FOUND");fullDiagLogLine("AUDIT COMPLETE · "+failures+" ERROR GROUP(S) · "+warnings+" WARNING GROUP(S)","fail");}
+ else if(warnings){fullDiagSetState("done","WARNINGS FOUND");fullDiagLogLine("AUDIT COMPLETE · "+passed+" PASSED · "+warnings+" WARNING GROUP(S)","warn");}
+ else{fullDiagSetState("done","ALL CLEAR");fullDiagLogLine("AUDIT COMPLETE · ALL "+passed+" CHECK GROUPS PASSED","good");}
+ $("fullDiagSummary").textContent=passed+" passed · "+warnings+" warnings · "+failures+" errors · "+(failures?"Use the Errors filter to see what needs fixing.":warnings?"Use the Warnings filter to review incomplete or risky items.":"No issues found in the tested systems.");
  button.disabled=false;
  button.textContent="Run diagnostics again";
  fullDiagRunning=false;
 }
 $("runFullDiagnostics").addEventListener("click",runFullDiagnostics);
+document.querySelectorAll("[data-diag-filter]").forEach(button=>button.addEventListener("click",()=>{
+ fullDiagActiveFilter=button.dataset.diagFilter||"all";
+ fullDiagRenderResults();
+}));
+$("copyFullDiagReport").addEventListener("click",fullDiagCopyReport);
 
 function renderReports(){
  const filter=$("reportFilter").value;
