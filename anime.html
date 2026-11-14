@@ -1085,6 +1085,7 @@ input,select,textarea{accent-color:var(--got-gold)}
       <a href="player-directory.html">Fanbase</a>
       <a href="anime.html" class="active" aria-current="page">Anime</a>
       <a href="admin.html">Admin</a>
+      <a href="notifications.html" data-got-alert-link>Alerts <span class="got-alert-count" hidden></span></a>
     </nav>
   </header>
 
@@ -1291,6 +1292,7 @@ input,select,textarea{accent-color:var(--got-gold)}
   let authClient = null;
   if (window.supabase && typeof window.supabase.createClient === "function") {
     authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.GOT_SUPABASE = authClient;
   } else {
     console.warn("Supabase auth SDK did not load. Catalogue and public history will continue without owner tools.");
   }
@@ -3992,5 +3994,6 @@ input,select,textarea{accent-color:var(--got-gold)}
   // cannot stop AniList search or watch-history display.
   initializeEpisodeLinks();
 </script>
+<script src="notifications.js"></script>
 </body>
 </html>
