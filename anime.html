@@ -1023,7 +1023,27 @@ main{max-width:1450px}
 .site-nav a.active::before{color:#33240d}
 @media(max-width:700px){.site-nav a{flex:1;min-width:0;padding:8px 4px;font-size:.66rem}.site-nav a::before{display:none}}
 
-  </style>
+  
+.topbar{position:sticky;top:0;z-index:30;background:rgba(7,13,20,.92);border-color:rgba(142,220,224,.15);box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.logo{letter-spacing:-.04em}.logo span{color:#f2bd55}
+.intro{scroll-margin-top:88px}
+
+
+/* SIGNAL ROOM // shared site-wide component language */
+:root{--got-ink:#f5f1e7;--got-muted:#98a5b3;--got-gold:#f2bd55;--got-cyan:#8edce0;--got-line:rgba(142,220,224,.14)}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{background-color:#080e15}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--got-cyan)!important;outline-offset:3px}
+.site-nav a,.main-nav a{transition:background .18s,border-color .18s,color .18s,transform .18s}
+.site-nav a:hover,.main-nav a:hover{transform:translateY(-1px)}
+.site-nav a.active,.main-nav a.active{box-shadow:0 7px 20px rgba(242,189,85,.14)}
+button:not(:disabled){transition:transform .18s,border-color .18s,filter .18s}
+button:hover:not(:disabled){filter:brightness(1.06)}
+input,select,textarea{accent-color:var(--got-gold)}
+::selection{background:rgba(242,189,85,.3);color:#fff}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+</style>
 </head>
 
 <body>
