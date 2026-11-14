@@ -809,7 +809,7 @@ const fullDiagnosticSteps=[
     body:JSON.stringify({title:"Wuthering Waves"})
    }),"Game cover Edge Function",12000);
    const payload=await response.json().catch(()=>null);
-   if(!response.ok&&/credentials have not been configured/i.test(String(payload?.error||""))){
+   if(!response.ok&&/RAWG_API_KEY has not been configured/i.test(String(payload?.error||""))){
     return fullDiagResult("Game cover lookup Edge Function","fail","Missing Supabase Edge Function secrets: RAWG_API_KEY · configure them in Supabase Edge Function secrets · never put these credentials in website JavaScript");
    }
    if(!response.ok)throw new Error("RAWG game-cover function returned HTTP "+response.status+(payload?.error?": "+payload.error:""));
