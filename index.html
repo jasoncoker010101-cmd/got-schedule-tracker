@@ -1113,6 +1113,46 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
   .day:hover,.ev:hover{transform:none!important}
 }
 
+
+/* Schedule tools: fast local filtering; does not alter the published feed. */
+.schedule-tools{
+  margin:0 0 16px;padding:13px;
+  border:1px solid rgba(142,220,224,.14);
+  border-radius:5px 14px 5px 14px;
+  background:linear-gradient(120deg,rgba(142,220,224,.045),rgba(9,16,23,.82));
+  box-shadow:0 12px 28px rgba(0,0,0,.17);
+}
+.schedule-tool-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,230px);gap:10px}
+.schedule-find,.schedule-platform{display:flex;align-items:center;gap:10px;min-width:0}
+.schedule-find{padding:0 12px;border:1px solid rgba(142,220,224,.17);border-radius:4px 10px 4px 10px;background:#0a121a;color:var(--signal-cyan);font-size:1.4rem}
+.schedule-find input{width:100%;min-width:0;padding:12px 0;border:0;outline:0;background:transparent;color:#f5f1e7;font:500 .86rem var(--font)}
+.schedule-find input::placeholder{color:#788a97}
+.schedule-platform{padding:0 10px;border:1px solid rgba(142,220,224,.17);border-radius:4px 10px 4px 10px;background:#0a121a}
+.schedule-platform span{color:var(--signal-cyan);font-size:.56rem;font-weight:900;letter-spacing:.15em}
+.schedule-platform select{width:100%;min-width:0;padding:11px 4px;border:0;background:transparent;color:#f5f1e7;font:700 .78rem var(--font)}
+.schedule-tool-bottom{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:11px}
+.schedule-mode-group,.schedule-tool-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.schedule-mode,.schedule-utility{
+  min-height:34px;padding:7px 11px;border:1px solid rgba(255,255,255,.09);
+  border-radius:3px 8px 3px 8px;background:rgba(255,255,255,.035);
+  color:#aab8c1;font:800 .68rem var(--font);cursor:pointer;
+  transition:background .18s,border-color .18s,color .18s,transform .18s;
+}
+.schedule-mode:hover,.schedule-utility:hover{transform:translateY(-1px);border-color:rgba(142,220,224,.3);color:#fff}
+.schedule-mode.active{border-color:rgba(242,189,85,.7);background:rgba(242,189,85,.14);color:#f8d995}
+.schedule-utility{color:var(--signal-cyan)}
+.schedule-result-count{margin-left:auto;color:#8295a2;font-size:.67rem;font-weight:700;letter-spacing:.04em}
+.filter-empty-note{margin:10px 0 0;padding:10px;border:1px dashed rgba(142,220,224,.17);border-radius:4px;color:#8396a2;font-size:.75rem}
+@media(max-width:600px){
+ .schedule-tools{padding:10px}
+ .schedule-tool-row{grid-template-columns:minmax(0,1fr)}
+ .schedule-tool-bottom{align-items:flex-start}
+ .schedule-mode-group{width:100%}
+ .schedule-mode{flex:1;padding:7px 5px;font-size:.63rem}
+ .schedule-tool-actions{flex:1}
+ .schedule-result-count{width:100%;margin:0}
+}
+
   </style>
 </head>
 <body>
@@ -1222,6 +1262,42 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
         <span><i class="dot live sm"></i>Live now</span>
         <span><i class="dot ended sm"></i>Ended</span>
         <span><i class="dot posted sm"></i>Posted</span>
+      </div>
+    </div>
+<div class="schedule-tools" aria-label="Schedule tools">
+      <div class="schedule-tool-row">
+        <label class="schedule-find" for="scheduleSearch">
+          <span aria-hidden="true">⌕</span>
+          <input id="scheduleSearch" type="search" placeholder="Find a stream, upload or reaction…" autocomplete="off">
+        </label>
+        <label class="schedule-platform" for="schedulePlatformFilter">
+          <span>PLATFORM</span>
+          <select id="schedulePlatformFilter">
+            <option value="all">All platforms</option>
+            <option value="youtube">YouTube</option>
+            <option value="youtube-live">YouTube Live</option>
+            <option value="twitch">Twitch</option>
+            <option value="rumble">Rumble</option>
+            <option value="patreon">Patreon</option>
+            <option value="x">X</option>
+            <option value="threads">Threads</option>
+            <option value="other">Other</option>
+            <option value="got">G.O.T</option>
+          </select>
+        </label>
+      </div>
+      <div class="schedule-tool-bottom">
+        <div class="schedule-mode-group" role="group" aria-label="Filter schedule view">
+          <button type="button" class="schedule-mode active" data-schedule-mode="all" aria-pressed="true">All</button>
+          <button type="button" class="schedule-mode" data-schedule-mode="upcoming" aria-pressed="false">Upcoming</button>
+          <button type="button" class="schedule-mode" data-schedule-mode="live" aria-pressed="false">Live now</button>
+          <button type="button" class="schedule-mode" data-schedule-mode="predicted" aria-pressed="false">Predicted</button>
+        </div>
+        <div class="schedule-tool-actions">
+          <button type="button" class="schedule-utility" id="todayJump">↳ Today</button>
+          <button type="button" class="schedule-utility" id="resetScheduleFilters">Reset</button>
+        </div>
+        <span class="schedule-result-count" id="scheduleResultCount" role="status" aria-live="polite">All scheduled events</span>
       </div>
     </div>
     <main class="week" id="week" aria-live="polite"></main>
@@ -1785,6 +1861,10 @@ function render(){
         (d && d<now && !live && status!=="delayed" ? " past" : "")+
         (live ? " live" : ""));
 
+      row.dataset.platform = ev.platform || "other";
+      row.dataset.status = predicted ? "predicted" : live ? "live" : (d && d > now ? "upcoming" : "past");
+      row.dataset.start = d ? String(d.getTime()) : "";
+      row.dataset.search = [ev.title || "", (ev.labels || []).join(" "), p.label].join(" ").toLowerCase();
       row.style.setProperty("--c",p.color);
 
       const src=posterFor(ev.title);
@@ -1839,6 +1919,8 @@ function render(){
     week.append(box);
   }
 
+  applyScheduleFilters();
+
   const nextEv=events.find(ev=>{
     const d=eventDate(ev);
     return d && d>now;
@@ -1878,6 +1960,47 @@ function render(){
   const notes=noteList(data.notes);
   document.getElementById("notesBody").replaceChildren(...notes.map(t=>el("p",null,t)));
   document.getElementById("notes").hidden=notes.length===0;
+}
+
+let activeScheduleMode = "all";
+
+function applyScheduleFilters(){
+  const query = document.getElementById("scheduleSearch").value.trim().toLowerCase();
+  const platform = document.getElementById("schedulePlatformFilter").value;
+  const days = [...document.querySelectorAll("#week .day")];
+  let total = 0;
+  let visible = 0;
+
+  for(const day of days){
+    const rows = [...day.querySelectorAll(".ev")];
+    let dayVisible = 0;
+    let emptyNote = day.querySelector(".filter-empty-note");
+    if(emptyNote) emptyNote.remove();
+
+    for(const row of rows){
+      total++;
+      const matchesText = !query || (row.dataset.search || "").includes(query);
+      const matchesPlatform = platform === "all" || row.dataset.platform === platform;
+      const matchesMode =
+        activeScheduleMode === "all" ||
+        (activeScheduleMode === "upcoming" && row.dataset.status === "upcoming") ||
+        (activeScheduleMode === "live" && row.dataset.status === "live") ||
+        (activeScheduleMode === "predicted" && row.dataset.status === "predicted");
+      const show = matchesText && matchesPlatform && matchesMode;
+      row.hidden = !show;
+      if(show){visible++;dayVisible++;}
+    }
+
+    if(rows.length && !dayVisible){
+      emptyNote = el("p","filter-empty-note","No matching events in this view");
+      day.append(emptyNote);
+    }
+  }
+
+  document.getElementById("scheduleResultCount").textContent =
+    visible === total
+      ? (total + " scheduled event" + (total === 1 ? "" : "s"))
+      : ("Showing " + visible + " of " + total + " events");
 }
 
 async function load(){
@@ -1922,6 +2045,38 @@ async function load(){
 }
 
 refreshScheduleButton.addEventListener("click",()=>load());
+
+document.getElementById("scheduleSearch").addEventListener("input",applyScheduleFilters);
+document.getElementById("schedulePlatformFilter").addEventListener("change",applyScheduleFilters);
+document.querySelectorAll("[data-schedule-mode]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    activeScheduleMode = button.dataset.scheduleMode;
+    document.querySelectorAll("[data-schedule-mode]").forEach(item=>{
+      const active = item === button;
+      item.classList.toggle("active",active);
+      item.setAttribute("aria-pressed",String(active));
+    });
+    applyScheduleFilters();
+  });
+});
+document.getElementById("todayJump").addEventListener("click",()=>{
+  const todayCard = document.querySelector("#week .day.today");
+  (todayCard || document.getElementById("weekTitle")).scrollIntoView({
+    behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    block:"center"
+  });
+});
+document.getElementById("resetScheduleFilters").addEventListener("click",()=>{
+  document.getElementById("scheduleSearch").value = "";
+  document.getElementById("schedulePlatformFilter").value = "all";
+  activeScheduleMode = "all";
+  document.querySelectorAll("[data-schedule-mode]").forEach(item=>{
+    const active = item.dataset.scheduleMode === "all";
+    item.classList.toggle("active",active);
+    item.setAttribute("aria-pressed",String(active));
+  });
+  applyScheduleFilters();
+});
 
 async function loadShows(){
   try{
