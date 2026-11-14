@@ -923,6 +923,99 @@
         transition-duration: .01ms!important;
       }
     }
+  
+/* SIGNAL ROOM visual system — shared with the main schedule page. */
+:root{--bg:#080e15;--surface:#111923;--raised:#17232d;--text:#f5f1e7;--muted:#98a5b3;--accent:#f2bd55;--line:rgba(142,220,224,.14);--green:#8edce0;--red:#ff7868}
+body{
+ background:radial-gradient(ellipse at 8% 0%,rgba(242,189,85,.12),transparent 31rem),radial-gradient(ellipse at 95% 18%,rgba(75,153,175,.12),transparent 34rem),#080e15;
+}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(151,203,214,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(151,203,214,.05) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}
+.topbar{
+ position:sticky;top:0;z-index:30;min-height:70px;
+ padding:12px max(4%,calc((100% - 1450px)/2));
+ border-bottom:1px solid rgba(142,220,224,.15);
+ background:rgba(7,13,20,.88);backdrop-filter:blur(18px);
+ box-shadow:0 12px 30px rgba(0,0,0,.19);
+}
+.logo{font-weight:900;letter-spacing:-.06em}
+.logo::before{content:"LIVE / ";color:#8edce0;font-size:.56em;letter-spacing:.18em;vertical-align:middle}
+.logo span{color:#f2bd55}
+.site-nav{gap:5px;padding:5px;border:1px solid rgba(142,220,224,.14);border-radius:5px 13px 5px 13px;background:rgba(5,10,16,.78)}
+.site-nav a{
+ position:relative;display:flex;align-items:center;justify-content:center;gap:7px;
+ min-height:42px;padding:9px 13px;border:1px solid transparent;border-radius:3px 9px 3px 9px;
+ background:transparent;color:#a9b8c2;font-size:.8rem;font-weight:800;letter-spacing:.02em;
+ transition:background .18s,border-color .18s,color .18s,transform .18s;
+}
+.site-nav a::before{color:#8edce0;font-size:.57rem;font-weight:900;letter-spacing:.08em}
+.site-nav a:nth-child(1)::before{content:"01"}.site-nav a:nth-child(2)::before{content:"02"}.site-nav a:nth-child(3)::before{content:"03"}.site-nav a:nth-child(4)::before{content:"04"}
+.site-nav a:hover{transform:translateY(-1px);border-color:rgba(142,220,224,.28);background:rgba(142,220,224,.06);color:#fff}
+.site-nav a.active{border-color:rgba(242,189,85,.7);background:linear-gradient(120deg,#f7d995,#eab44b);color:#20170b;box-shadow:0 7px 20px rgba(242,189,85,.15)}
+.site-nav a.active::before{color:#33240d}
+main{width:min(1450px,calc(100% - 42px));margin:32px auto 58px}
+h1,h2{letter-spacing:-.05em}
+input,select,textarea{border-radius:4px 10px 4px 10px!important;border-color:rgba(142,220,224,.16)!important;background:#0b141d!important;color:#f5f1e7!important}
+button{border-radius:4px 9px 4px 9px!important;transition:transform .18s,border-color .18s,background .18s}
+button:hover:not(:disabled){transform:translateY(-1px)}
+:focus-visible{outline:2px solid #8edce0!important;outline-offset:3px}
+@media(max-width:700px){
+ .topbar{position:relative;align-items:flex-start;flex-direction:column;gap:12px;padding:13px 15px}
+ .site-nav{width:100%;overflow-x:auto}
+ .site-nav a{flex:1;min-width:0;padding:8px 5px;font-size:.68rem}
+ .site-nav a::before{display:none}
+ main{width:calc(100% - 24px);margin:23px auto 42px}
+}
+
+.topbar .site-nav{margin-left:auto}
+main{max-width:1450px}
+.intro{
+ position:relative;isolation:isolate;overflow:hidden;
+ padding:clamp(24px,4vw,44px);margin:30px 0 23px;
+ border:1px solid rgba(242,189,85,.24);border-left:4px solid #f2bd55;
+ border-radius:5px 24px 5px 24px;
+ background:radial-gradient(ellipse at 85% 20%,rgba(242,189,85,.14),transparent 25rem),linear-gradient(120deg,#182631,#101923 70%);
+ box-shadow:0 24px 60px rgba(0,0,0,.25);
+}
+.intro::after{content:"ANIME INDEX  /  002";position:absolute;right:22px;bottom:19px;color:rgba(142,220,224,.38);font-size:.58rem;font-weight:900;letter-spacing:.2em}
+.intro .eyebrow{color:#8edce0;letter-spacing:.2em}
+.intro .eyebrow::before{content:"[ 02 ]";width:auto;height:auto;padding:4px 6px;border:1px solid rgba(142,220,224,.28);background:rgba(142,220,224,.05)}
+.intro h1{font-size:clamp(2.7rem,7vw,5rem);color:#f5f1e7}
+.intro p{color:#b3c0ca;max-width:640px}
+.history-overview{gap:12px}
+.overview-card,.continue-section{
+ border:1px solid rgba(142,220,224,.14);border-radius:5px 15px 5px 15px;
+ background:linear-gradient(145deg,#16232d,#0e1720);box-shadow:0 15px 36px rgba(0,0,0,.2)
+}
+.overview-card{position:relative;overflow:hidden}
+.overview-card::after{content:"";position:absolute;left:0;top:15px;bottom:15px;width:3px;background:#f2bd55}
+.overview-card:nth-child(2)::after{background:#8edce0}.overview-card:nth-child(3)::after{background:#ff7868}
+.overview-heading{color:#a8c0c8;letter-spacing:.16em}
+.overview-number{color:#f6d28a}
+.history-connection{color:#9eacb7}
+.connection-dot.online{background:#8edce0;box-shadow:0 0 0 4px rgba(142,220,224,.08)}
+.continue-section{padding:18px}
+.continue-heading h2{letter-spacing:-.05em}
+.continue-item,.card{
+ border:1px solid rgba(142,220,224,.13);border-radius:4px 13px 4px 13px;
+ background:linear-gradient(145deg,#17242e,#101923);
+ box-shadow:0 13px 30px rgba(0,0,0,.16);
+}
+.continue-item:hover{border-color:rgba(142,220,224,.35)}
+.toolbar{margin-top:22px}
+.search-wrap input,.anime-filters select{border-radius:4px 10px 4px 10px;background:#0b141d}
+.tab,.page-button{border-radius:4px 9px 4px 9px;background:#111d27}
+.tab.active,.page-button:hover:not(:disabled){background:#f2bd55;color:#20170b;border-color:#f2bd55}
+.card{overflow:hidden}
+.card:hover{border-color:rgba(242,189,85,.48);box-shadow:0 20px 42px rgba(0,0,0,.27)}
+.cover-wrap{background:#14232c}
+.favorite{border-radius:4px 12px 4px 12px;border-color:rgba(142,220,224,.25);background:rgba(6,13,20,.88)}
+.chip{border-radius:3px 8px 3px 8px;border-color:rgba(142,220,224,.16);color:#a8c0c8}
+.results-loading{border-radius:5px 14px 5px 14px;border-color:rgba(142,220,224,.25)}
+.results-loading-card{border-radius:4px 10px 4px 10px;border-color:rgba(142,220,224,.24)}
+.report-dialog{border-radius:5px 17px 5px 17px;border-color:rgba(142,220,224,.22);background:#111d27}
+.report-form input,.report-form select,.report-form textarea{background:#0b141d;color:#f5f1e7}
+@media(max-width:600px){.intro{margin:20px 0;padding:25px 18px}.intro::after{display:none}.history-overview{gap:7px}.overview-card{padding:12px 10px}.overview-number{font-size:1.35rem}.anime-filters select{min-width:calc(50% - 6px)}}
+
   </style>
 </head>
 
@@ -1037,6 +1130,7 @@
         <select id="formatFilter" aria-label="Filter by format"><option value="">All formats</option><option value="TV">TV</option><option value="TV_SHORT">TV Short</option><option value="MOVIE">Movie</option><option value="OVA">OVA</option><option value="ONA">ONA</option><option value="SPECIAL">Special</option></select>
         <select id="statusFilter" aria-label="Filter by release status"><option value="">Any status</option><option value="FINISHED">Completed</option><option value="RELEASING">Airing</option><option value="NOT_YET_RELEASED">Upcoming</option></select>
         <select id="seasonFilter" aria-label="Filter by number of related entries"><option value="">Any season count</option><option value="1">Single entry</option><option value="2">2+ related entries</option><option value="4">4+ related entries</option></select>
+        <button class="page-button" id="clearAnimeFilters" type="button">Clear filters</button>
         <button class="page-button" id="reportOpen" type="button">Report a problem</button>
       </div>
 
@@ -3762,6 +3856,16 @@
 
   [genreFilter,yearFilter,formatFilter,statusFilter,seasonFilter].forEach(control => {
     control.addEventListener("change", renderLastResults);
+  });
+
+  document.getElementById("clearAnimeFilters").addEventListener("click", () => {
+    searchInput.value = "";
+    [genreFilter,yearFilter,formatFilter,statusFilter,seasonFilter].forEach(control => { control.value = ""; });
+    clearTimeout(debounceTimer);
+    initialCatalogueLoad = false;
+    pageLoader.hidden = true;
+    resultsLoading.hidden = true;
+    setMode("discover");
   });
 
   document.getElementById("reportOpen").addEventListener("click",()=>reportDialog.showModal());
