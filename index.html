@@ -1497,6 +1497,12 @@ nav.main-nav .account-menu button{min-height:42px}
 .schedule-admin-message{min-height:1.3em;margin:12px 0 0;color:#8edce0;font-size:.82rem}
 @media(max-width:560px){.next-admin-row{margin:-10px 0 18px}.next-admin-button{width:100%;justify-content:center}.schedule-admin-modal{padding:18px}}
 
+.schedule-archive-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 12px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:color-mix(in srgb,var(--card) 88%,var(--bg))}
+.schedule-archive-nav label{font-size:.82rem;font-weight:800;color:var(--mute)}
+.schedule-archive-nav input{min-height:38px;max-width:170px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:600 .85rem var(--font)}
+.schedule-archive-nav button:disabled{opacity:.4;cursor:not-allowed}
+#archiveViewLabel{margin-left:auto;color:var(--mute);font-size:.78rem;font-weight:700}
+@media(max-width:560px){.schedule-archive-nav{gap:7px}.schedule-archive-nav button{flex:1 1 42%}.schedule-archive-nav input{flex:1 1 145px;max-width:none}#archiveViewLabel{flex:1 1 100%;margin-left:0}}
 </style>
 </head>
 <body>
@@ -1593,9 +1599,7 @@ nav.main-nav .account-menu button{min-height:42px}
   <section class="week-overview" aria-label="This week's schedule summary">
     <article class="overview-card"><span>Scheduled</span><strong id="statSessions">—</strong><small>Confirmed events</small></article>
     <article class="overview-card"><span>Platforms</span><strong id="statPlatforms">—</strong><small>Places to watch</small></article>
-    <article class="overview-card"><span>Predicted</span><strong id="statPredicted">—</strong><small>Not confirmed yet</small></article>
   </section>
-  <div class="next" id="next" hidden></div>
 
   <div class="next-admin-row">
     <button class="next-admin-button" id="manageNextStream" type="button">⚙ Manage next stream</button>
@@ -1652,7 +1656,6 @@ nav.main-nav .account-menu button{min-height:42px}
       </div>
       <div class="legend">
         <span><i class="sw"></i>Confirmed</span>
-        <span><i class="sw p"></i>Predicted</span>
         <span><i class="dot live sm"></i>Live now</span>
         <span><i class="dot ended sm"></i>Ended</span>
         <span><i class="dot posted sm"></i>Posted</span>
@@ -1680,12 +1683,18 @@ nav.main-nav .account-menu button{min-height:42px}
           </select>
         </label>
       </div>
+      <div class="schedule-archive-nav" aria-label="Browse schedule weeks">
+        <button type="button" class="schedule-utility" id="previousScheduleWeek" aria-label="Previous week">← Previous week</button>
+        <label for="scheduleDatePicker">Choose a date</label>
+        <input id="scheduleDatePicker" type="date">
+        <button type="button" class="schedule-utility" id="nextScheduleWeek" aria-label="Next week">Next week →</button>
+        <button type="button" class="schedule-utility" id="currentScheduleWeek">Current week</button>
+        <span id="archiveViewLabel" role="status">Current schedule</span>
+      </div>
       <div class="schedule-tool-bottom">
         <div class="schedule-mode-group" role="group" aria-label="Filter schedule view">
           <button type="button" class="schedule-mode active" data-schedule-mode="all" aria-pressed="true">All</button>
-          <button type="button" class="schedule-mode" data-schedule-mode="upcoming" aria-pressed="false">Upcoming</button>
           <button type="button" class="schedule-mode" data-schedule-mode="live" aria-pressed="false">Live now</button>
-          <button type="button" class="schedule-mode" data-schedule-mode="predicted" aria-pressed="false">Predicted</button>
         </div>
         <div class="schedule-tool-actions">
           <button type="button" class="schedule-utility" id="todayJump">↳ Today</button>
@@ -1705,7 +1714,7 @@ nav.main-nav .account-menu button{min-height:42px}
   </section>
 
   <footer class="site-foot">
-    <p>Unofficial fan-made schedule. Not affiliated with or endorsed by G.O.T Games. Checks for new schedules every few minutes. Predicted events are guesses based on past weeks.</p>
+    <p>Unofficial fan-made schedule. Not affiliated with or endorsed by G.O.T Games. Checks for new schedules every few minutes. Browse archived weeks to see previously posted lineups.</p>
     <p>Game data and artwork provided by <a href="https://thegamesdb.net/" target="_blank" rel="noopener noreferrer">TheGamesDB</a>.</p>
     <nav class="links" aria-label="Watch the games">
       <a class="yt" href="https://www.youtube.com/@GOTGames" target="_blank" rel="noopener noreferrer">YouTube</a>
@@ -2103,6 +2112,9 @@ let lastScheduleCheck = null;
 let scheduleOverrides = {};
 let canManageSchedule = false;
 let nextManageableStream = null;
+let latestScheduleData = null;
+let viewingArchivedWeek = false;
+let archiveWeekStart = null;
 
 
 const scheduleIndicator = document.getElementById("scheduleIndicator");
@@ -2439,7 +2451,6 @@ function render(){
   updateScheduleAdminButton();
 
   const confirmedCount = events.filter(ev => ev.status === "confirmed" || ev.status === "posted").length;
-  const predictedCount = events.filter(ev => ev.status === "predicted").length;
   const platformCount = new Set(events.map(ev => ev.platform).filter(Boolean)).size;
   document.getElementById("statSessions").textContent = String(confirmedCount);
   document.getElementById("statPlatforms").textContent = String(platformCount);
@@ -2581,45 +2592,10 @@ function render(){
 
   applyScheduleFilters();
 
-  const nextEv=events.find(ev=>{
-    const d=eventDate(ev);
-    return d && d>now && !["cancelled","canceled"].includes(String(ev.status||"").toLowerCase());
-  });
-
-  const nx=document.getElementById("next");
-
-  if(nextEv){
-    const d=eventDate(nextEv);
-    const mins=Math.round((d-now)/60000);
-    const when=mins<60 ? "in "+mins+" min" :
-      mins<1440 ? "in "+Math.floor(mins/60)+" h "+(mins%60)+" min" :
-      new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"long"}).format(utc(dayKey(d)))+
-      " at "+fmtTime.format(d);
-
-    const info=el("div");
-    info.append(
-      el("span",null,"Next up"),
-      el("b",null,nextEv.title),
-      el("span",null,(gameFor(nextEv.title) ? "GAME · " : "")+(PLATFORMS[nextEv.platform] || PLATFORMS.other).label+" · "+when)
-    );
-
-    nx.replaceChildren(info);
-
-    const nextPoster=posterFor(nextEv.title);
-    if(nextPoster){
-      const img=el("img","poster");
-      img.src=nextPoster;img.alt="";img.loading="lazy";
-      nx.append(img);
-    }
-
-    nx.hidden=false;
-  }else{
-    nx.hidden=true;
-  }
-
   const notes=noteList(data.notes);
   document.getElementById("notesBody").replaceChildren(...notes.map(t=>el("p",null,t)));
   document.getElementById("notes").hidden=notes.length===0;
+  updateArchiveNavigation();
 }
 
 let activeScheduleMode = "all";
@@ -2643,9 +2619,7 @@ function applyScheduleFilters(){
       const matchesPlatform = platform === "all" || row.dataset.platform === platform;
       const matchesMode =
         activeScheduleMode === "all" ||
-        (activeScheduleMode === "upcoming" && row.dataset.status === "upcoming") ||
-        (activeScheduleMode === "live" && row.dataset.status === "live") ||
-        (activeScheduleMode === "predicted" && row.dataset.status === "predicted");
+        (activeScheduleMode === "live" && row.dataset.status === "live");
       const show = matchesText && matchesPlatform && matchesMode;
       row.hidden = !show;
       if(show){visible++;dayVisible++;}
@@ -2734,10 +2708,15 @@ async function load(){
     const nextData=await r.json();
     if(!nextData||!Array.isArray(nextData.events))throw new Error("Schedule data has an unexpected format.");
 
-    data=nextData;
+    latestScheduleData=nextData;
+    if(!viewingArchivedWeek){
+      data=latestScheduleData;
+      archiveWeekStart=data.weekStart||mondayOf(dayKey(new Date()));
+    }
     await loadScheduleOverrides();
     lastScheduleCheck=new Date();
     render();
+    updateArchiveNavigation();
     resolveGameArtwork();
 
     const sourceUpdated=data.updated?new Date(data.updated):null;
@@ -2761,6 +2740,86 @@ async function load(){
     refreshScheduleButton.textContent="↻ Refresh";
   }
 }
+
+
+function mondayForDate(dateString){
+  const d=utc(dateString);
+  const day=d.getUTCDay();
+  d.setUTCDate(d.getUTCDate()-(day===0?6:day-1));
+  return d.toISOString().slice(0,10);
+}
+
+function updateArchiveNavigation(){
+  const picker=document.getElementById("scheduleDatePicker");
+  const label=document.getElementById("archiveViewLabel");
+  const previous=document.getElementById("previousScheduleWeek");
+  const next=document.getElementById("nextScheduleWeek");
+  if(!data||!picker)return;
+  const start=data.weekStart||mondayOf(dayKey(new Date()));
+  const end=addDays(start,6);
+  picker.value=picker.value||dayKey(new Date());
+  label.textContent=viewingArchivedWeek
+    ? "Archive · "+start+" to "+end
+    : "Current posted schedule";
+  previous.disabled=!viewingArchivedWeek&&!hasEarlierArchive(start);
+  next.disabled=!viewingArchivedWeek;
+}
+
+async function hasEarlierArchive(currentStart){
+  return false;
+}
+
+async function showScheduleWeek(weekStart,forceArchive=false){
+  const currentStart=latestScheduleData?.weekStart||mondayOf(dayKey(new Date()));
+  if(weekStart===currentStart&&!forceArchive){
+    viewingArchivedWeek=false;
+    data=latestScheduleData;
+    archiveWeekStart=currentStart;
+    render();
+    updateArchiveNavigation();
+    return;
+  }
+  const label=document.getElementById("archiveViewLabel");
+  label.textContent="Loading archived week…";
+  try{
+    const response=await fetch("schedule/archive/"+weekStart+".json?t="+Date.now(),{cache:"no-store"});
+    if(!response.ok)throw new Error("No saved schedule was found for the week of "+weekStart+".");
+    const archived=await response.json();
+    if(!archived||!Array.isArray(archived.events))throw new Error("That archived schedule is invalid.");
+    data=archived;
+    viewingArchivedWeek=true;
+    archiveWeekStart=weekStart;
+    document.getElementById("scheduleSearch").value="";
+    activeScheduleMode="all";
+    document.querySelectorAll("[data-schedule-mode]").forEach(button=>{
+      const active=button.dataset.scheduleMode==="all";
+      button.classList.toggle("active",active);
+      button.setAttribute("aria-pressed",String(active));
+    });
+    render();
+    updateArchiveNavigation();
+    document.getElementById("scheduleResultCount").textContent="Archived schedule · "+data.events.length+" events";
+  }catch(error){
+    label.textContent=error.message||"Archive unavailable";
+  }
+}
+
+document.getElementById("scheduleDatePicker").addEventListener("change",event=>{
+  if(!event.target.value)return;
+  showScheduleWeek(mondayForDate(event.target.value));
+});
+document.getElementById("previousScheduleWeek").addEventListener("click",()=>{
+  if(!data)return;
+  showScheduleWeek(addDays(data.weekStart||mondayOf(dayKey(new Date())),-7),true);
+});
+document.getElementById("nextScheduleWeek").addEventListener("click",()=>{
+  if(!viewingArchivedWeek||!data)return;
+  const target=addDays(data.weekStart,7);
+  showScheduleWeek(target,target!==(latestScheduleData?.weekStart||""));
+});
+document.getElementById("currentScheduleWeek").addEventListener("click",()=>{
+  if(latestScheduleData)showScheduleWeek(latestScheduleData.weekStart||mondayOf(dayKey(new Date())));
+});
 
 refreshScheduleButton.addEventListener("click",()=>load());
 document.getElementById("exportCalendar").addEventListener("click",exportScheduleCalendar);
