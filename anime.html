@@ -1473,6 +1473,7 @@ input,select,textarea{accent-color:var(--got-gold)}
         }
         description(asHtml: false)
         episodes
+        nextAiringEpisode { episode }
         seasonYear
         format
         averageScore
@@ -2456,14 +2457,29 @@ input,select,textarea{accent-color:var(--got-gold)}
   // EXPANDABLE EPISODE LIST
   // =========================================================
 
+  function getKnownEpisodeCount(anime) {
+    const recordedCount = Number(anime?.episodes);
+    if (Number.isInteger(recordedCount) && recordedCount > 0 && recordedCount <= 5000) {
+      return recordedCount;
+    }
+
+    // Ongoing anime often have a null total episode count. When the catalogue
+    // provides the next scheduled episode, all earlier numbered episodes have aired.
+    const nextEpisode = Number(anime?.nextAiringEpisode?.episode);
+    if (Number.isInteger(nextEpisode) && nextEpisode > 1 && nextEpisode <= 5001) {
+      return nextEpisode - 1;
+    }
+
+    return null;
+  }
+
   function makeEpisodeList(historyGroups, anime, seasonNumber, historyMapping = null) {
     const list = document.createElement("div");
     list.className = "episode-list";
     list.hidden = true;
 
-    const episodeCount = Number(anime.episodes);
-    const hasEpisodeCount = Number.isInteger(episodeCount) &&
-      episodeCount > 0 && episodeCount <= 5000;
+    const episodeCount = getKnownEpisodeCount(anime);
+    const hasEpisodeCount = episodeCount !== null;
     const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
     const seasonKey = historySeason == null ? "overall" : String(historySeason);
     const episodeOffset = Math.max(0, Number(historyMapping?.episodeOffset) || 0);
@@ -2625,9 +2641,8 @@ input,select,textarea{accent-color:var(--got-gold)}
       detail.textContent = "No episodes recorded yet.";
     }
 
-    const episodeCount = Number(anime.episodes);
-    const hasEpisodes = Number.isInteger(episodeCount) &&
-      episodeCount > 0 && episodeCount <= 5000;
+    const episodeCount = getKnownEpisodeCount(anime);
+    const hasEpisodes = episodeCount !== null;
 
     box.append(top, detail);
 
@@ -2836,6 +2851,7 @@ input,select,textarea{accent-color:var(--got-gold)}
       coverImage: record.coverImage || { large: null },
       description: record.description || "",
       episodes: record.episodes ?? null,
+      nextAiringEpisode: record.nextAiringEpisode || null,
       seasonYear: record.seasonYear ?? null,
       format: record.format || "",
       averageScore: record.averageScore ?? null,
@@ -2880,6 +2896,7 @@ input,select,textarea{accent-color:var(--got-gold)}
               format
               seasonYear
               episodes
+              nextAiringEpisode { episode }
               coverImage { large }
               averageScore
               genres { name }
