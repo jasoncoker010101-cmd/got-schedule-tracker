@@ -407,7 +407,13 @@ def main():
     now = utc_now()
     previous = read_json(LIVE_FILE, {})
     schedule = read_json(SCHEDULE_FILE, {})
-    overrides = load_schedule_cancellation_overrides()
+    # Only fetch the small cancellation overlay while a scheduled stream is
+    # inside the live-check window; no extra request is made all day.
+    overrides = (
+        load_schedule_cancellation_overrides()
+        if has_live_check_window(schedule, now)
+        else {}
+    )
     events = schedule.get("events", [])
     if isinstance(events, list):
         for item in events:
