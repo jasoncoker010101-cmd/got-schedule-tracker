@@ -72,7 +72,7 @@
         "extra_episodes": [
           40
         ],
-        "checked_at": "2026-11-15T08:37:01.985854Z",
+        "checked_at": "2026-11-15T16:00:30.301386Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
       }
     },
@@ -118,16 +118,30 @@
       "status": "confirmed",
       "url": "",
       "patreon_check": {
-        "status": "pending",
-        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
-        "covered_episodes": [],
-        "missing_episodes": [
+        "status": "partial",
+        "message": "Some announced episodes were found; the remaining episodes are still being checked.",
+        "url": "https://www.patreon.com/gotgames/posts/hells-paradise-7-175383640",
+        "posts": [
+          {
+            "title": "Hell's Paradise S2 - Episodes 7-9 | LIVESTREAM REACTION!",
+            "url": "https://www.patreon.com/gotgames/posts/hells-paradise-7-175383640",
+            "episodes": [
+              7,
+              8,
+              9
+            ]
+          }
+        ],
+        "covered_episodes": [
           7,
           8,
-          9,
+          9
+        ],
+        "missing_episodes": [
           10
         ],
-        "checked_at": "2026-11-15T08:37:01.985854Z",
+        "extra_episodes": [],
+        "checked_at": "2026-11-15T16:00:30.301386Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
       }
     },
@@ -151,7 +165,7 @@
           12,
           13
         ],
-        "checked_at": "2026-11-15T08:37:01.985854Z",
+        "checked_at": "2026-11-15T16:00:30.301386Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
       }
     }
@@ -163,13 +177,13 @@
     "March/dr stone to be covered on stream.",
     "Tanya to be caught up with as soon as available"
   ],
-  "patreonChecked": "2026-11-15T08:37:01.985854Z",
+  "patreonChecked": "2026-11-15T16:00:30.301386Z",
   "patreonCheckSummary": {
     "source": "https://www.patreon.com/cw/gotgames/sitemap",
     "posts_scanned": 500,
     "events_checked": 3,
     "verified": 1,
-    "partial": 0,
-    "pending": 2
+    "partial": 1,
+    "pending": 1
   }
 }
