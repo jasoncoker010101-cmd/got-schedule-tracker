@@ -45,6 +45,94 @@
     "Wuthering Waves": {
       "poster": null,
       "skipped": true
+    },
+    "Anime Tournament": {
+      "poster": null,
+      "searched_as": "Anime Tournament"
+    },
+    "Bookworm": {
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx108268-Dtt82uOi3vq5.jpg",
+      "anilist_id": 108268,
+      "matched_name": "Ascendance of a Bookworm",
+      "source": "anilist",
+      "searched_as": "Bookworm"
+    },
+    "Chicago (Musical)": {
+      "poster": "https://image.tmdb.org/t/p/w500/bAvyThPuBKtdbzoxbPZPLMwzIjO.jpg",
+      "tmdb_id": 1148074,
+      "tmdb_type": "movie",
+      "matched_name": "Chicago: The Musical",
+      "source": "tmdb",
+      "searched_as": "Chicago (Musical)"
+    },
+    "Coraline": {
+      "poster": "https://image.tmdb.org/t/p/w500/4jeFXQYytChdZYE9JYO7Un87IlW.jpg",
+      "tmdb_id": 14836,
+      "tmdb_type": "movie",
+      "matched_name": "Coraline",
+      "source": "tmdb",
+      "searched_as": "Coraline"
+    },
+    "Cyberpunk: Edgerunners 2": {
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx195539-4LdfmKIHzuxr.png",
+      "anilist_id": 195539,
+      "matched_name": "Cyberpunk: Edgerunners 2",
+      "source": "anilist",
+      "searched_as": "Cyberpunk: Edgerunners 2"
+    },
+    "Gaming Charity Stream (Halloween)": {
+      "poster": null,
+      "searched_as": "Gaming Charity Stream (Halloween)"
+    },
+    "HAIKYU!! The Dumpster Battle (Movie)": {
+      "poster": "https://image.tmdb.org/t/p/w500/ntRU0OA4etGGiMMmH1Yw0bnaMdW.jpg",
+      "tmdb_id": 1012201,
+      "tmdb_type": "movie",
+      "matched_name": "HAIKYU!! The Dumpster Battle",
+      "source": "tmdb",
+      "searched_as": "HAIKYU!! The Dumpster Battle (Movie)"
+    },
+    "Hololive (Concert & community picks)": {
+      "poster": null,
+      "searched_as": "Hololive (Concert & community picks)"
+    },
+    "Horror Sampler": {
+      "poster": null,
+      "searched_as": "Horror Sampler"
+    },
+    "Movie (TBD)": {
+      "poster": null,
+      "searched_as": "Movie (TBD)"
+    },
+    "Movie night (Chat vote)": {
+      "poster": null,
+      "searched_as": "Movie night (Chat vote)"
+    },
+    "Movie night Vote!": {
+      "poster": null,
+      "searched_as": "Movie night Vote!"
+    },
+    "Re:Zero": {
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21355-wRVUrGxpvIQQ.jpg",
+      "anilist_id": 21355,
+      "matched_name": "Re:ZERO -Starting Life in Another World-",
+      "source": "anilist",
+      "searched_as": "Re:Zero"
+    },
+    "Sentenced to Be a Hero": {
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx167152-O1pm6DWwifBD.jpg",
+      "anilist_id": 167152,
+      "matched_name": "Sentenced to Be a Hero",
+      "source": "anilist",
+      "searched_as": "Sentenced to Be a Hero"
+    },
+    "Spooky Movie": {
+      "poster": "https://image.tmdb.org/t/p/w500/zoT6Rx57gS5zUjIymUrU5RZLMUz.jpg",
+      "tmdb_id": 1598766,
+      "tmdb_type": "movie",
+      "matched_name": "Crayon Shinchan the Movie: Spooky! My Yokai Vacation",
+      "source": "tmdb",
+      "searched_as": "Spooky Movie"
     }
   }
 }
