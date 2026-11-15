@@ -2761,12 +2761,8 @@ function updateArchiveNavigation(){
   label.textContent=viewingArchivedWeek
     ? "Archive · "+start+" to "+end
     : "Current posted schedule";
-  previous.disabled=!viewingArchivedWeek&&!hasEarlierArchive(start);
+  previous.disabled=false;
   next.disabled=!viewingArchivedWeek;
-}
-
-async function hasEarlierArchive(currentStart){
-  return false;
 }
 
 async function showScheduleWeek(weekStart,forceArchive=false){
