@@ -143,16 +143,25 @@
       "searched_as": "Anime Mix"
     },
     "Haikyuu S4 Finale (S4 P2 E9-12)": {
-      "poster": null,
-      "searched_as": "Haikyuu S4 Finale (S4 P2 E9-12)"
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx106625-UR22wB2NuNVi.png",
+      "anilist_id": 106625,
+      "matched_name": "HAIKYU!! TO THE TOP",
+      "source": "anilist",
+      "searched_as": "Haikyu!! To the Top"
     },
     "Haikyuu!! S4 P1": {
-      "poster": null,
-      "searched_as": "Haikyuu!! S4 P1"
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx106625-UR22wB2NuNVi.png",
+      "anilist_id": 106625,
+      "matched_name": "HAIKYU!! TO THE TOP",
+      "source": "anilist",
+      "searched_as": "Haikyu!! To the Top"
     },
     "Haikyuu!! S4 P2": {
-      "poster": null,
-      "searched_as": "Haikyuu!! S4 P2"
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx106625-UR22wB2NuNVi.png",
+      "anilist_id": 106625,
+      "matched_name": "HAIKYU!! TO THE TOP",
+      "source": "anilist",
+      "searched_as": "Haikyu!! To the Top"
     },
     "Movie": {
       "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx192809-wRlqABGsx2Qs.jpg",
@@ -177,8 +186,12 @@
       "searched_as": "Prince of Egypt"
     },
     "Princess and the Frog (Movie)": {
-      "poster": null,
-      "searched_as": "Princess and the Frog (Movie)"
+      "poster": "https://image.tmdb.org/t/p/w500/yprv5PbnEksoVj2v6XEnDBg9joR.jpg",
+      "tmdb_id": 10198,
+      "tmdb_type": "movie",
+      "matched_name": "The Princess and the Frog",
+      "source": "tmdb",
+      "searched_as": "The Princess and the Frog"
     },
     "Surprise Movie": {
       "poster": "https://image.tmdb.org/t/p/w500/vbc8H3SR3BM6TZkJw6UBN4ekdjK.jpg",
