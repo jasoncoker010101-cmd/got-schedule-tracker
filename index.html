@@ -2521,6 +2521,7 @@ function render(){
     if(!list.length)box.append(el("p","none","Nothing posted yet"));
 
     for(const ev of list){
+      const game=gameFor(ev.title);
       const p=PLATFORMS[ev.platform] || PLATFORMS.other;
       const predicted=ev.status==="predicted";
       const cancelled=["cancelled","canceled"].includes(String(ev.status||"").toLowerCase());
