@@ -2586,6 +2586,20 @@ function render(){
       box.append(row);
     }
 
+    const noStreamDays=Array.isArray(data.noStreamDays)?data.noStreamDays:[];
+    if(noStreamDays.includes(ds)){
+      const row=el("div","ev no-stream");
+      row.dataset.platform="all";
+      row.dataset.status="past";
+      row.dataset.start="";
+      row.dataset.search="no stream";
+      row.append(el("div","thumb empty"));
+      const body=el("div");
+      body.append(el("div","t","No Stream"),el("div","k","No stream scheduled"));
+      row.append(body);
+      box.append(row);
+    }
+
     week.append(box);
   }
 
