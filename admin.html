@@ -2034,10 +2034,11 @@ function reviewVerified(row){
 }
 function updateReviewBulkControls(visibleRows=[]){
  const eligible=visibleRows.filter(reviewVerified);
- const selected=eligible.filter(row=>selectedPlaylistReviewIds.has(Number(row.id)));
- const allSelected=eligible.length>0&&selected.length===eligible.length;
+ const selected= currentPlaylistReviewRows.filter(row=>selectedPlaylistReviewIds.has(Number(row.id))&&reviewVerified(row));
+ const selectedVisible=eligible.filter(row=>selectedPlaylistReviewIds.has(Number(row.id)));
+ const allSelected=eligible.length>0&&selectedVisible.length===eligible.length;
  const selectAll=$("playlistReviewSelectAll"),approve=$("playlistReviewBulkApprove");
- if(selectAll){selectAll.checked=allSelected;selectAll.indeterminate=selected.length>0&&!allSelected;selectAll.disabled=!eligible.length;}
+ if(selectAll){selectAll.checked=allSelected;selectAll.indeterminate=selectedVisible.length>0&&!allSelected;selectAll.disabled=!eligible.length;}
  if(approve){approve.textContent="Approve selected ("+selected.length+")";approve.disabled=!selected.length;}
 }
 function renderPlaylistReviewQueue(){
