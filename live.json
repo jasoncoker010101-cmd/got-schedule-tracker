@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-15T20:59:26.572329Z",
+  "updated": "2026-11-15T21:40:28.734215Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,34 +19,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 1,
-      "next_page": 2,
+      "page_checked": 2,
+      "next_page": 3,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "MatrixQdeBreaker X Spaceshot-11/15/26 (1pm)",
-          "channel_name": "Spaceshot76",
-          "channel_url": "https://rumble.com/user/Spaceshot76"
+          "title": "BREAKING: U.S. EMBASSY IN BAHRAIN ISSUES NEW ALERT AS IRAN AND U.S. TRADE FIRE w/Bobby Jones Edit",
+          "channel_name": "Mario Nawfal",
+          "channel_url": "https://rumble.com/c/marionawfal"
         },
         {
-          "title": "RT DE Live-TV",
-          "channel_name": "RT DE",
-          "channel_url": "https://rumble.com/c/RTDE"
+          "title": "30\u20ac Rembourser sur Celsius et LuckyBit !! II Start 5 000\u20ac sur Celsius !lucky !stake !celsius !discord",
+          "channel_name": "AdelMontanna",
+          "channel_url": "https://rumble.com/user/AdelMontanna"
         },
         {
-          "title": "Alex Jones Live",
-          "channel_name": "The Alex Jones Show Live",
-          "channel_url": "https://rumble.com/c/TheAlexJonesShowLive"
+          "title": "DCTS #143",
+          "channel_name": "DirtyGarageGuy",
+          "channel_url": "https://rumble.com/user/DirtyGarageGuy"
         },
         {
-          "title": "LIVE! - Starlink Team Series: Challenge Cup - Day 1",
-          "channel_name": "Major League Fishing",
-          "channel_url": "https://rumble.com/c/MajorLeagueFishing"
+          "title": "Live Saturday Emergency Broadcast: Communist China Was Behind Friday The 13th\u2019s Historic Cyber Outages According To High Level Pentagon Sources, DHS\u2019s AI Update Claim Is A Cover Story \u2013 Tune In Now As Alex Jones Breaks Down The Latest & What Com",
+          "channel_name": "AJNLIVE",
+          "channel_url": "https://rumble.com/c/AJNetworkFeed"
         },
         {
-          "title": "The SpaceShot~QdeBreaker Sunday Show #41",
-          "channel_name": "MatrixQdeBreaker",
-          "channel_url": "https://rumble.com/user/MatrixQdeBreaker"
+          "title": "COFFEZILLA CANCELLED! Nick Fuentes Goes viral, UK in Shambles. LIVE",
+          "channel_name": "RealMetatron",
+          "channel_url": "https://rumble.com/user/RealMetatron"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -62,8 +62,8 @@
     "state": "waiting",
     "twitch_seen_live": false,
     "rumble_seen_live": false,
-    "rumble_page": 2,
-    "next_rumble_check_at": "2026-11-15T21:04:26.572329Z",
+    "rumble_page": 3,
+    "next_rumble_check_at": "2026-11-15T21:45:28.734215Z",
     "message": "Waiting for the Twitch stream to start."
   }
 }
