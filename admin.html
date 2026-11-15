@@ -2157,7 +2157,7 @@ announcementForm.addEventListener("submit",async event=>{
 async function runYoutubeTestScan(){
  const button=$("runYoutubeTestScan"),status=$("youtubeTestScanStatus"),results=$("youtubeTestScanResults");
  if(!db||button.disabled)return;
- button.disabled=true;button.textContent="Scanning latest uploads…";status.textContent="Authenticating owner and checking the newest 10 videos…";results.hidden=true;results.replaceChildren();
+ button.disabled=true;button.textContent="Scanning both channels…";status.textContent="Authenticating owner, checking both channels, and scanning the next archive batch…";results.hidden=true;results.replaceChildren();
  try{
   const {data:{session},error:sessionError}=await db.auth.getSession();
   if(sessionError)throw sessionError;
@@ -2167,7 +2167,10 @@ async function runYoutubeTestScan(){
   if(!data?.success)throw new Error(data?.error||"The test scan did not complete.");
   const lines=[
    "Test scan completed · no database changes made",
-   "Newest channel uploads checked: "+(data.latest_channel_videos_checked??"—"),
+   "Channels checked: "+((data.channels_scanned||[]).join(", ")||"—"),
+   "Newest uploads checked: "+(data.latest_channel_videos_checked??"—"),
+   "Older archive pages scanned this run: "+(data.channel_pages_scanned??"—"),
+   "Archive backfill status: "+Object.entries(data.channel_backfill_complete||{}).map(([name,done])=>name+": "+(done?"complete":"more pages remain")).join(" · "),
    "FirstWatchers title pages checked: "+(data.title_pages_checked??"—"),
    "FirstWatchers videos seen: "+(data.videos_seen??"—"),
    "Episode candidates detected: "+(data.all_episode_candidates_found??"—"),
@@ -2185,7 +2188,7 @@ async function runYoutubeTestScan(){
   }else{const empty=document.createElement("p");empty.textContent="No episode candidates were detected in this scan.";results.append(empty);}
   const warnings=Array.isArray(data.warnings)?data.warnings:[];
   if(warnings.length){const heading=document.createElement("h3");heading.textContent="Warnings";results.append(heading);const list=document.createElement("ul");for(const warning of warnings){const li=document.createElement("li");li.textContent=warning;list.append(li);}results.append(list);}
-  results.hidden=false;status.textContent="Test scan finished · "+(data.latest_channel_videos_checked??0)+" newest uploads checked · dry run only";
+  results.hidden=false;status.textContent="Test scan finished · both channels checked · "+(data.channel_pages_scanned??0)+" archive page(s) scanned · dry run only";
  }catch(error){status.textContent="Test scan failed: "+(error?.message||String(error));}
  finally{button.disabled=false;button.textContent="Run test scan";}
 }
