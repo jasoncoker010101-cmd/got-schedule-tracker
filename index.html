@@ -232,6 +232,9 @@ h1{font-size:clamp(1.9rem,6vw,3rem);line-height:1.05;margin:0 0 6px;font-weight:
 }
 .thumb{width:44px;aspect-ratio:2/3;object-fit:contain;border-radius:4px;background:color-mix(in srgb, var(--c) 18%, transparent)}
 .thumb.empty{display:block}
+.thumb.movie-thumb{display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#343434,#111);border:1px solid #777;
+  color:#ffd33d;font-size:22px;line-height:1;object-fit:contain}
 .ev .t{font-weight:600;font-size:.95rem}
 .ev .n{font-weight:400;display:block;margin:1px 0}
 .ev .k{font-size:.8rem;color:var(--mute)}
@@ -2359,7 +2362,17 @@ function showFor(title){
   return key ? shows[key] : null;
 }
 
+function isGenericMovieTitle(title){
+  const value=normalizedPosterTitle(title);
+  // These are schedule placeholders, not the titles of actual films.
+  // Never send them through anime/game poster matching.
+  return ["movie","surprisemovie","movienight","movienightvote",
+    "film","surprisefilm","filmn night"].includes(value);
+}
+
 function posterFor(title){
+  // Generic movie slots use the dedicated clapperboard thumbnail below.
+  if(isGenericMovieTitle(title))return null;
   // Anime wins over game/franchise matches. This matters for anime such as
   // Cyberpunk: Edgerunners, whose wider franchise also has video games.
   const show=showFor(title);
@@ -2530,9 +2543,12 @@ function render(){
       row.style.setProperty("--c",p.color);
       if(cancelled)row.classList.add("cancelled");
 
-      const game=gameFor(ev.title);
       const src=posterFor(ev.title);
-      if(src){
+      if(isGenericMovieTitle(ev.title)){
+        const movieThumb=el("div","thumb movie-thumb","🎬");
+        movieThumb.setAttribute("aria-label","Movie");
+        row.append(movieThumb);
+      }else if(src){
         const img=el("img","thumb");
         img.src=src;img.alt="";img.loading="lazy";img.decoding="async";
         row.append(img);
