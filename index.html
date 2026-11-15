@@ -2275,19 +2275,21 @@ function render(){
     for(const ev of list){
       const p=PLATFORMS[ev.platform] || PLATFORMS.other;
       const predicted=ev.status==="predicted";
+      const cancelled=["cancelled","canceled"].includes(String(ev.status||"").toLowerCase());
       const d=eventDate(ev);
-      const status=predicted ? "none" : liveStatus(ev,now,liveKeys);
+      const status=cancelled ? "cancelled" : predicted ? "none" : liveStatus(ev,now,liveKeys);
       const live=status==="live";
       const posted=!live && !predicted && !!d && d<=now &&
         (isPatreon(ev) || ev.status==="posted");
 
       const row=el("div","ev"+
         (predicted ? " predicted" : "")+
-        (d && d<now && !live && status!=="delayed" ? " past" : "")+
+        (cancelled ? " cancelled" : "")+
+        (d && d<now && !live && status!=="delayed" && !cancelled ? " past" : "")+
         (live ? " live" : ""));
 
       row.dataset.platform = ev.platform || "other";
-      row.dataset.status = predicted ? "predicted" : live ? "live" : (d && d > now ? "upcoming" : "past");
+      row.dataset.status = cancelled ? "cancelled" : predicted ? "predicted" : live ? "live" : (d && d > now ? "upcoming" : "past");
       row.dataset.start = d ? String(d.getTime()) : "";
       row.dataset.search = [ev.title || "", (ev.labels || []).join(" "), p.label].join(" ").toLowerCase();
       row.style.setProperty("--c",p.color);
@@ -2306,10 +2308,10 @@ function render(){
       const t=el("div","t",d ? fmtTime.format(d) : "All day");
 
       const dotClass=live ? " live" :
-        status==="ended" ? " ended" : posted ? " posted" : "";
+        status==="ended" || cancelled ? " ended" : posted ? " posted" : "";
 
       const dot=el("span","dot"+dotClass);
-      const dotLabel=live ? "Live now" :
+      const dotLabel=cancelled ? "Cancelled" : live ? "Live now" :
         status==="ended" ? "Ended" :
         posted ? "Posted" : "Not live";
 
@@ -2330,7 +2332,7 @@ function render(){
 
       t.append(name);
 
-      const statusText=predicted ? "Predicted" :
+      const statusText=cancelled ? "Cancelled" : predicted ? "Predicted" :
         posted ? "Posted" :
         live ? "Live now" :
         status==="ended" ? "Ended" : "Confirmed";
@@ -2370,7 +2372,7 @@ function render(){
 
   const nextEv=events.find(ev=>{
     const d=eventDate(ev);
-    return d && d>now;
+    return d && d>now && !["cancelled","canceled"].includes(String(ev.status||"").toLowerCase());
   });
 
   const nx=document.getElementById("next");
@@ -2683,7 +2685,7 @@ currentLiveKeys=function(events,now){
   if(!twitchIsLive())return keys;
   for(const platform of SIMULCAST_PLATFORMS){
     const started=events
-      .filter(ev=>ev.platform===platform&&!isPatreon(ev)&&eventDate(ev)&&eventDate(ev)<=now&&now-eventDate(ev)<=SIMULCAST_WINDOW_MS)
+      .filter(ev=>ev.platform===platform&&!isPatreon(ev)&&!["cancelled","canceled"].includes(String(ev.status||"").toLowerCase())&&eventDate(ev)&&eventDate(ev)<=now&&now-eventDate(ev)<=SIMULCAST_WINDOW_MS)
       .sort((a,b)=>eventDate(b)-eventDate(a));
     if(started.length)keys.add(eventKey(started[0]));
   }
@@ -2693,6 +2695,7 @@ currentLiveKeys=function(events,now){
 liveStatus=function(ev,now,liveKeys){
   const d=eventDate(ev);
   if(!d||isPatreon(ev)||!liveFeed||!SIMULCAST_PLATFORMS.includes(ev.platform))return "none";
+  if(["cancelled","canceled"].includes(String(ev.status||"").toLowerCase()))return "cancelled";
   if(now<d)return "upcoming";
   const key=eventKey(ev);
   if(liveKeys.has(key)){
