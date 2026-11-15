@@ -9,6 +9,9 @@ on:
     paths:
       - "Script/check_patreon.py"
       - "Script/parse_schedule.py"
+      - "Script/fetch_posters.py"
+      - "Script/show_overrides.json"
+      - "schedule/archive/**"
       - ".github/workflows/update-schedule.yml"
 
   workflow_dispatch:
