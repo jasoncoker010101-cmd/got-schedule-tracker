@@ -117,10 +117,22 @@ def main():
     shows = shows_data.get("shows", {})
     original = json.dumps(shows_data, sort_keys=True)
 
+    # Include every saved historical schedule, not just the current week.
+    schedule_sources = [schedule]
+    archive_dir = os.path.join("schedule", "archive")
+    if os.path.isdir(archive_dir):
+        for filename in sorted(os.listdir(archive_dir)):
+            if not filename.endswith(".json"):
+                continue
+            archive = load_json(os.path.join(archive_dir, filename), {})
+            if isinstance(archive, dict):
+                schedule_sources.append(archive)
+
     names = sorted({
         clean_title(event["title"])
-        for event in schedule.get("events", [])
-        if event.get("title")
+        for source in schedule_sources
+        for event in source.get("events", [])
+        if isinstance(event, dict) and event.get("title")
     })
 
     for name in names:
@@ -135,20 +147,21 @@ def main():
 
         search_name = override.get("search", name)
 
+        # Search the anime-only catalogue first so an anime based on a game
+        # is never accidentally assigned game/movie franchise artwork.
         found = None
         errors = 0
-        if token:
+        try:
+            found = find_anilist_poster(search_name)
+        except Exception as error:
+            errors += 1
+            print(f"AniList lookup failed for {name!r}: {error!r}")
+        if not found and token:
             try:
                 found = find_poster(search_name, token)
             except Exception as error:
                 errors += 1
                 print(f"TMDB lookup failed for {name!r}: {error!r}")
-        if not found:
-            try:
-                found = find_anilist_poster(search_name)
-            except Exception as error:
-                errors += 1
-                print(f"AniList lookup failed for {name!r}: {error!r}")
 
         if found:
             found["searched_as"] = search_name
