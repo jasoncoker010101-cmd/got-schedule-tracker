@@ -1,0 +1,126 @@
+{
+  "updated": "2026-11-15T22:45:00Z",
+  "image": "",
+  "sourceUrl": "",
+  "source": "User-provided historical schedule image",
+  "displayedTimeZone": "BST",
+  "noStreamDays": [],
+  "weekStart": "2026-09-14",
+  "events": [
+    {
+      "title": "My Hero Academia Season 4 E9",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-14T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Wuthering Waves",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-15T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E10",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-16T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Re:Zero S4 E17",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-16T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Haikyuu!! S4 P2 E6-8",
+      "platform": "twitch",
+      "labels": [
+        "Twitch"
+      ],
+      "start": "2026-09-17T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Prince of Egypt",
+      "platform": "patreon",
+      "labels": [
+        "Patreon"
+      ],
+      "start": "2026-09-18T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E11",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-19T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Movie night Vote!",
+      "platform": "twitch",
+      "labels": [
+        "Twitch"
+      ],
+      "start": "2026-09-19T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Mushoku Tensei S3 E13",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-20T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Anime Mix",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-09-20T19:30:00.000Z",
+      "status": "confirmed",
+      "url": "",
+      "cancelled": true,
+      "cancellation_note": "Tonight's stream was cancelled."
+    }
+  ],
+  "notes": [
+    "Streams at 8:30 PM BST/3:30 PM EDT",
+    "One piece subathon on hold until Twitch strike removed. Updates to come soon.",
+    "Sunday slots are flexible.",
+    "March/dr stone to be covered on stream.",
+    "Tanya to be caught up with as soon as available"
+  ]
+}
