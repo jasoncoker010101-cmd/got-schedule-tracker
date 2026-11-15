@@ -2805,15 +2805,24 @@ document.getElementById("scheduleDatePicker").addEventListener("change",event=>{
 });
 document.getElementById("previousScheduleWeek").addEventListener("click",()=>{
   if(!data)return;
+  const picker=document.getElementById("scheduleDatePicker");
+  const selected=picker.value||data.weekStart;
+  picker.value=addDays(selected,-7);
   showScheduleWeek(addDays(data.weekStart||mondayOf(dayKey(new Date())),-7),true);
 });
 document.getElementById("nextScheduleWeek").addEventListener("click",()=>{
   if(!viewingArchivedWeek||!data)return;
+  const picker=document.getElementById("scheduleDatePicker");
+  const selected=picker.value||data.weekStart;
+  picker.value=addDays(selected,7);
   const target=addDays(data.weekStart,7);
   showScheduleWeek(target,target!==(latestScheduleData?.weekStart||""));
 });
 document.getElementById("currentScheduleWeek").addEventListener("click",()=>{
-  if(latestScheduleData)showScheduleWeek(latestScheduleData.weekStart||mondayOf(dayKey(new Date())));
+  if(latestScheduleData){
+    document.getElementById("scheduleDatePicker").value=dayKey(new Date());
+    showScheduleWeek(latestScheduleData.weekStart||mondayOf(dayKey(new Date())));
+  }
 });
 
 refreshScheduleButton.addEventListener("click",()=>load());
