@@ -850,6 +850,13 @@
       outline-offset: 2px;
     }
 
+    .episode-chip.watched {
+      border-color: rgba(130,214,160,.9);
+      background: rgba(130,214,160,.2);
+      color: var(--green);
+      box-shadow: 0 0 10px rgba(130,214,160,.35), inset 0 0 7px rgba(130,214,160,.08);
+    }
+
     .episode-note {
       margin-top: 8px;
       color: var(--muted);
@@ -2470,6 +2477,11 @@ input,select,textarea{accent-color:var(--got-gold)}
       return nextEpisode - 1;
     }
 
+    // One Piece is an actively airing long-run series, and AniList can omit
+    // nextAiringEpisode between schedule updates. Keep its known aired count
+    // visible rather than falling back to "unknown".
+    if (Number(anime?.id) === 21) return 1180;
+
     return null;
   }
 
@@ -2525,7 +2537,8 @@ input,select,textarea{accent-color:var(--got-gold)}
         if (reactionLink?.link_type === "patreon") {
           chip = window.GOTPatreonLinks.createEpisodeLink(
             reactionLink,
-            episode
+            episode,
+            isWatched
           );
         } else if (reactionLink?.link_type === "youtube" || reactionLink?.link_type === "external" || reactionLink?.youtube_url) {
           chip = document.createElement("a");
@@ -2538,6 +2551,7 @@ input,select,textarea{accent-color:var(--got-gold)}
           chip.title = videoTitle ? `Open G.O.T's ${linkKind}: ${videoTitle}` : `Open G.O.T's ${linkKind} for episode ${episode}`;
           chip.setAttribute("aria-label", `Episode ${episode}. Open G.O.T's ${linkKind} in a new tab.`);
           chip.textContent = `EP ${episode}`;
+          if (isWatched) chip.classList.add("watched");
         } else {
           chip = document.createElement("span");
           chip.className = isWatched
@@ -2786,7 +2800,7 @@ input,select,textarea{accent-color:var(--got-gold)}
       seasonLabel,
       anime.seasonYear,
       anime.format,
-      anime.episodes ? `${anime.episodes} eps` : "",
+      getKnownEpisodeCount(anime) ? `${getKnownEpisodeCount(anime).toLocaleString()} eps` : "",
       anime.averageScore ? `★ ${anime.averageScore}%` : ""
     ].filter(Boolean).forEach(value => {
       const chip = document.createElement("span");
