@@ -1,0 +1,68 @@
+{
+  "updated": "2026-11-15T22:32:00Z",
+  "weekStart": "2026-10-26",
+  "image": "",
+  "sourceUrl": "",
+  "source": "User-provided historical schedule image",
+  "displayedTimeZone": "GMT",
+  "events": [
+    {
+      "title": "My Hero Academia Season 5 E2",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-26T18:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Wuthering Waves",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-27T20:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 5 E3",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-28T18:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 5 E4",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-31T18:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    }
+  ],
+  "notes": [
+    "Streams at 8:30 PM BST/4:30 PM EDT",
+    "Luke away, schedule back to normal next week",
+    "Subathon on hold due to twitch, restart with current amount when resolved.",
+    "Saturday slot is flexible.",
+    "March/dr stone to be covered on stream.",
+    "Tanya to be caught up with as soon as available",
+    "Jojo likely doubledrop next friday"
+  ],
+  "noStreamDays": [
+    "2026-10-29",
+    "2026-10-31",
+    "2026-11-01"
+  ]
+}
