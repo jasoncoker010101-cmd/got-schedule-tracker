@@ -13,9 +13,11 @@ YOUTUBE_HANDLE = "@GOTGames"      # YouTube handle, with "@"
 RUMBLE_CHANNEL_URL = "https://rumble.com/c/GOTGames"
 RUMBLE_API_URL = "https://api.api.sh/rumble/v1/live"
 
-# A scheduled Rumble event starts tracking Twitch at its scheduled start.
-# Rumble checks begin five minutes later and then run every five minutes.
-RUMBLE_FIRST_CHECK_DELAY_MINUTES = 5
+# Start provider checks ten minutes before a scheduled stream.
+# Keep checking for up to eight hours after its scheduled start.
+LIVE_CHECK_EARLY_MINUTES = 10
+LIVE_CHECK_GRACE_HOURS = 8
+RUMBLE_FIRST_CHECK_DELAY_MINUTES = -10
 RUMBLE_CHECK_INTERVAL_MINUTES = 5
 
 # The API lists live streams 25 at a time. Check one page per workflow run
@@ -306,6 +308,31 @@ def rumble_event_key(event):
     return f"{start}|rumble|{title}"
 
 
+def has_live_check_window(schedule, now):
+    """Only call streaming providers shortly before or during scheduled streams."""
+    events = schedule.get("events", [])
+    if not isinstance(events, list):
+        return False
+
+    ignored_statuses = {
+        "predicted", "ended", "complete", "completed", "cancelled", "canceled"
+    }
+    earliest = now - timedelta(hours=LIVE_CHECK_GRACE_HOURS)
+    latest = now + timedelta(minutes=LIVE_CHECK_EARLY_MINUTES)
+
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        if str(event.get("platform") or "").lower() not in {"twitch", "rumble"}:
+            continue
+        if str(event.get("status") or "").lower() in ignored_statuses:
+            continue
+        start = parse_datetime(event.get("start") or event.get("date"))
+        if start and earliest <= start <= latest:
+            return True
+    return False
+
+
 def active_rumble_event(schedule, now):
     candidates = []
     events = schedule.get("events", [])
@@ -325,7 +352,7 @@ def active_rumble_event(schedule, now):
             continue
 
         start = parse_datetime(event.get("start") or event.get("date"))
-        if start and start <= now:
+        if start and now - timedelta(hours=LIVE_CHECK_GRACE_HOURS) <= start <= now + timedelta(minutes=LIVE_CHECK_EARLY_MINUTES):
             candidates.append((start, event))
 
     if not candidates:
@@ -345,9 +372,25 @@ def main():
     if not isinstance(old_session, dict):
         old_session = {}
 
-    # These are checked on every five-minute GitHub Actions run.
-    twitch = check_twitch()
-    youtube = check_youtube()
+    # GitHub Actions wakes every five minutes, but provider APIs are only
+    # called ten minutes before a scheduled stream through its eight-hour window.
+    live_check_window_open = has_live_check_window(schedule, now)
+    if live_check_window_open:
+        twitch = check_twitch()
+        youtube = check_youtube()
+    else:
+        twitch = {
+            "ok": True,
+            "live": False,
+            "skipped": "No scheduled stream in the live-check window",
+            "url": f"https://www.twitch.tv/{TWITCH_USER}",
+        }
+        youtube = {
+            "ok": True,
+            "live": False,
+            "skipped": "No scheduled stream in the live-check window",
+            "url": f"https://www.youtube.com/{YOUTUBE_HANDLE}/live",
+        }
 
     # Keep the last known website value during an API error, but do not use an
     # errored check as proof that Twitch went offline.
@@ -523,8 +566,7 @@ def main():
                 elif now < first_rumble_check_at:
                     session["state"] = "waiting"
                     session["message"] = (
-                        "Twitch is checked at the scheduled time. "
-                        "Rumble checks begin five minutes later."
+                        "Live checks begin ten minutes before the scheduled start."
                     )
                 elif not session.get("last_rumble_error"):
                     session["state"] = "waiting"
