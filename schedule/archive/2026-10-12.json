@@ -1,0 +1,114 @@
+{
+  "updated": "2026-11-15T22:32:00Z",
+  "weekStart": "2026-10-12",
+  "image": "",
+  "sourceUrl": "",
+  "source": "User-provided historical schedule image",
+  "displayedTimeZone": "BST",
+  "events": [
+    {
+      "title": "My Hero Academia Season 4 E21",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-12T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Wuthering Waves",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-13T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E22",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-14T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "ONE PIECE E21-24",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-10-15T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Movie (TBD)",
+      "platform": "patreon",
+      "labels": [
+        "Patreon"
+      ],
+      "start": "2026-10-16T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Jojo's P7 (SBR) E5",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-16T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E23",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-17T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Coraline",
+      "platform": "twitch",
+      "labels": [
+        "Twitch"
+      ],
+      "start": "2026-10-17T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Anime Tournament",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-18T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    }
+  ],
+  "notes": [
+    "Streams at 8:30 PM BST/3:30 PM EDT",
+    "Subathon on hold due to twitch, restart with current amount when resolved.",
+    "Saturday slot is flexible.",
+    "March/dr stone to be covered on stream.",
+    "Tanya to be caught up with as soon as available"
+  ],
+  "noStreamDays": []
+}
