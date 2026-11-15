@@ -26,6 +26,10 @@ RUMBLE_PAGES_PER_RUN = 1
 
 LIVE_FILE = Path("live.json")
 SCHEDULE_FILE = Path("schedule.json")
+SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E"
+SCHEDULE_ADMIN_URL = SUPABASE_URL + "/functions/v1/schedule-admin"
+
 
 
 def utc_now():
@@ -361,10 +365,58 @@ def active_rumble_event(schedule, now):
     return max(candidates, key=lambda item: item[0])[1]
 
 
+
+def schedule_event_key(event):
+    start = event.get("start") or event.get("date") or ""
+    platform = event.get("platform") or ""
+    title = event.get("title") or ""
+    return f"{start}|{platform}|{title}"
+
+
+def load_schedule_cancellation_overrides():
+    """Read administrator cancellations so cancelled streams stop being polled."""
+    request = urllib.request.Request(
+        SCHEDULE_ADMIN_URL,
+        headers={
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Accept": "application/json",
+        },
+        method="GET",
+    )
+    try:
+        payload = request_json(request, timeout=12)
+        rows = payload.get("overrides", []) if isinstance(payload, dict) else []
+        overrides = {
+            row.get("event_key"): row
+            for row in rows
+            if isinstance(row, dict)
+            and row.get("event_key")
+            and row.get("status") == "cancelled"
+        }
+        print(f"Loaded {len(overrides)} administrator schedule cancellation(s).")
+        return overrides
+    except Exception as error:
+        # Keep the regular schedule check running if the optional overlay service
+        # is temporarily unavailable. Existing cancellations in schedule.json
+        # are still honoured by the normal event filters.
+        print("Schedule cancellation overlay unavailable:", repr(error))
+        return {}
+
+
 def main():
     now = utc_now()
     previous = read_json(LIVE_FILE, {})
     schedule = read_json(SCHEDULE_FILE, {})
+    overrides = load_schedule_cancellation_overrides()
+    events = schedule.get("events", [])
+    if isinstance(events, list):
+        for item in events:
+            if not isinstance(item, dict):
+                continue
+            override = overrides.get(schedule_event_key(item))
+            if override:
+                item["status"] = "cancelled"
+                item["cancellation_note"] = override.get("cancellation_note", "This stream has been cancelled.")
     old_platforms = previous.get("platforms") or {}
     old_session = previous.get("rumble_session") or {}
     if not isinstance(old_platforms, dict):
