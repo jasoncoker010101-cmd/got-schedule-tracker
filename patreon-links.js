@@ -16,9 +16,9 @@
     }
   }
 
-  function createEpisodeLink(row, episode) {
+  function createEpisodeLink(row, episode, isWatched = false) {
     const link = document.createElement("a");
-    link.className = "episode-chip patreon-link";
+    link.className = "episode-chip patreon-link" + (isWatched ? " watched" : "");
     link.href = safePatreonUrl(row.patreon_url);
     link.target = "_blank";
     link.rel = "noopener noreferrer";
