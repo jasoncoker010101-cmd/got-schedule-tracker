@@ -2215,7 +2215,7 @@ async function refreshScheduleAdminAccess(){
 function updateScheduleAdminButton(){
   const button=document.getElementById("manageNextStream");
   if(!button)return;
-  const visible=canManageSchedule&&!!nextManageableStream;
+  const visible=canManageSchedule;
   button.classList.toggle("visible",visible);
   button.setAttribute("aria-hidden",String(!visible));
 }
@@ -2244,25 +2244,39 @@ function streamEvents(events){
 }
 
 function openScheduleAdmin(){
-  if(!canManageSchedule||!nextManageableStream)return;
+  if(!canManageSchedule)return;
+  const eventBox=document.getElementById("scheduleAdminEvent");
+  const reason=document.getElementById("scheduleCancellationReason");
+  const cancelButton=document.getElementById("cancelNextStream");
+  const restoreButton=document.getElementById("restoreNextStream");
+  const message=document.getElementById("scheduleAdminMessage");
+  message.textContent="";
+  if(!nextManageableStream){
+    eventBox.replaceChildren(
+      el("strong",null,"No upcoming stream is scheduled yet."),
+      el("span",null,"When the next schedule is posted, this panel will show the next Twitch, YouTube Live or Rumble stream here.")
+    );
+    reason.value="";
+    cancelButton.hidden=true;
+    restoreButton.hidden=true;
+    message.textContent="Waiting for the next schedule.";
+    document.getElementById("scheduleAdminBackdrop").hidden=false;
+    return;
+  }
   const ev=nextManageableStream;
   const override=scheduleOverrides[eventKey(ev)];
   const d=eventDate(ev);
   const dateText=d?new Intl.DateTimeFormat("en-US",{timeZone:tz,dateStyle:"full",timeStyle:"short"}).format(d):"Time not specified";
   const platform=(PLATFORMS[ev.platform]||PLATFORMS.other).label;
-  const eventBox=document.getElementById("scheduleAdminEvent");
   eventBox.replaceChildren(
     el("strong",null,ev.title||"Untitled stream"),
     el("span",null,platform+" · "+dateText)
   );
-  if(override||["cancelled","canceled"].includes(String(ev.status||"").toLowerCase())){
-    eventBox.append(el("span","schedule-admin-status","Currently marked cancelled"));
-  }
-  document.getElementById("scheduleCancellationReason").value=
-    override?.cancellation_note||ev.cancellation_note||"";
-  document.getElementById("cancelNextStream").hidden=!!override;
-  document.getElementById("restoreNextStream").hidden=!override;
-  document.getElementById("scheduleAdminMessage").textContent="";
+  const isCancelled=!!override||["cancelled","canceled"].includes(String(ev.status||"").toLowerCase());
+  if(isCancelled)eventBox.append(el("span","schedule-admin-status","Currently marked cancelled"));
+  reason.value=override?.cancellation_note||ev.cancellation_note||"";
+  cancelButton.hidden=isCancelled;
+  restoreButton.hidden=!override;
   document.getElementById("scheduleAdminBackdrop").hidden=false;
 }
 
