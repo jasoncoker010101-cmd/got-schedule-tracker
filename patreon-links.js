@@ -97,6 +97,12 @@
       border-color: #efbd32;
       background: rgba(239, 189, 50, .24);
     }
+    .episode-chip.patreon-link.watched {
+      border-color: rgba(130,214,160,.9);
+      background: rgba(130,214,160,.2);
+      color: #82d6a0;
+      box-shadow: 0 0 10px rgba(130,214,160,.35), inset 0 0 7px rgba(130,214,160,.08);
+    }
   `;
   document.head.append(style);
 
