@@ -4,7 +4,7 @@
   "image": "",
   "sourceUrl": "",
   "source": "User-provided historical schedule image",
-  "displayedTimeZone": "BST",
+  "displayedTimeZone": "BST, changing to GMT on Oct 25",
   "events": [
     {
       "title": "My Hero Academia Season 4 E24",
@@ -108,7 +108,7 @@
       "labels": [
         "Rumble"
       ],
-      "start": "2026-10-25T19:30:00.000Z",
+      "start": "2026-10-25T20:30:00Z",
       "status": "confirmed",
       "url": ""
     }
