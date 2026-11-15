@@ -1,0 +1,135 @@
+{
+  "updated": "2026-11-15T22:45:00Z",
+  "image": "",
+  "sourceUrl": "",
+  "source": "User-provided historical schedule image",
+  "displayedTimeZone": "BST",
+  "noStreamDays": [],
+  "weekStart": "2026-09-21",
+  "events": [
+    {
+      "title": "My Hero Academia Season 4 E12",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-21T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Wuthering Waves",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-22T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E13",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-23T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Re:Zero S4 E18",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-23T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Haikyuu S4 Finale (S4 P2 E9-12)",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-09-24T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Jojo's P7 (SBR) E2",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-25T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Surprise Movie",
+      "platform": "patreon",
+      "labels": [
+        "Patreon"
+      ],
+      "start": "2026-09-25T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E14",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-26T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Movie night Vote!",
+      "platform": "twitch",
+      "labels": [
+        "Twitch"
+      ],
+      "start": "2026-09-26T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Mushoku Tensei S3 E14",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-09-27T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Anime Mix",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-09-27T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    }
+  ],
+  "notes": [
+    "Streams at 8:30 PM BST/3:30 PM EDT",
+    "One piece subathon on hold until Twitch strike removed. Updates to come soon.",
+    "Sunday slots are flexible.",
+    "March/dr stone to be covered on stream.",
+    "Tanya to be caught up with as soon as available"
+  ]
+}
