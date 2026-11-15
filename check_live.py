@@ -368,6 +368,30 @@ def main():
         "skipped": "No active scheduled Rumble event",
     }
 
+    # If the event being tracked was cancelled, close its session immediately.
+    # This prevents stale "waiting" status from surviving after cancellation.
+    tracked_key = session.get("event_key")
+    cancelled_event = next((
+        item for item in schedule.get("events", [])
+        if isinstance(item, dict)
+        and str(item.get("platform") or "").lower() == "rumble"
+        and str(item.get("status") or "").lower() in {"cancelled", "canceled"}
+        and rumble_event_key(item) == tracked_key
+    ), None)
+    if event is None and cancelled_event:
+        session["state"] = "cancelled"
+        session["cancelled_at"] = iso_utc(now)
+        session["next_rumble_check_at"] = None
+        session["message"] = (
+            "This scheduled stream was cancelled. No further Rumble checks "
+            "will be made for this event. A makeup stream is unconfirmed."
+        )
+        rumble_check = {
+            "ok": True,
+            "live": False,
+            "skipped": "Scheduled Rumble event was cancelled",
+        }
+
     if event:
         event_start = parse_datetime(event.get("start") or event.get("date"))
         event_key = rumble_event_key(event)
