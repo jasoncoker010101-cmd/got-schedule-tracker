@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-15T20:16:28.665132Z",
+  "updated": "2026-11-15T20:59:26.572329Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,25 +19,51 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "skipped": "This scheduled Rumble session has already ended",
-      "url": "https://rumble.com/v7icoik--the-anme-reactor-king-of-the-world-is-here-.html",
+      "page_checked": 1,
+      "next_page": 2,
+      "streams_scanned": 25,
+      "live_candidates": [
+        {
+          "title": "MatrixQdeBreaker X Spaceshot-11/15/26 (1pm)",
+          "channel_name": "Spaceshot76",
+          "channel_url": "https://rumble.com/user/Spaceshot76"
+        },
+        {
+          "title": "RT DE Live-TV",
+          "channel_name": "RT DE",
+          "channel_url": "https://rumble.com/c/RTDE"
+        },
+        {
+          "title": "Alex Jones Live",
+          "channel_name": "The Alex Jones Show Live",
+          "channel_url": "https://rumble.com/c/TheAlexJonesShowLive"
+        },
+        {
+          "title": "LIVE! - Starlink Team Series: Challenge Cup - Day 1",
+          "channel_name": "Major League Fishing",
+          "channel_url": "https://rumble.com/c/MajorLeagueFishing"
+        },
+        {
+          "title": "The SpaceShot~QdeBreaker Sunday Show #41",
+          "channel_name": "MatrixQdeBreaker",
+          "channel_url": "https://rumble.com/user/MatrixQdeBreaker"
+        }
+      ],
+      "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "session_state": "ended",
-      "message": "The Twitch stream ended, so this Rumble event is marked ended."
+      "session_state": "waiting",
+      "message": "Waiting for the Twitch stream to start."
     }
   },
   "rumble_session": {
-    "event_key": "2026-11-14T20:30:00Z|rumble|Hell's Paradise S2 E7-10",
-    "title": "Hell's Paradise S2 E7-10",
-    "scheduled_start": "2026-11-14T20:30:00Z",
-    "state": "ended",
-    "twitch_seen_live": true,
-    "rumble_seen_live": true,
-    "rumble_page": 3,
-    "next_rumble_check_at": null,
-    "message": "The Twitch stream ended, so this Rumble event is marked ended.",
-    "rumble_stream_url": "https://rumble.com/v7icoik--the-anme-reactor-king-of-the-world-is-here-.html",
-    "rumble_stream_title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6",
-    "ended_at": "2026-11-14T22:45:15.342263Z"
+    "event_key": "2026-11-15T20:30:00Z|rumble|Charlotte E9-13",
+    "title": "Charlotte E9-13",
+    "scheduled_start": "2026-11-15T20:30:00Z",
+    "state": "waiting",
+    "twitch_seen_live": false,
+    "rumble_seen_live": false,
+    "rumble_page": 2,
+    "next_rumble_check_at": "2026-11-15T21:04:26.572329Z",
+    "message": "Waiting for the Twitch stream to start."
   }
 }
