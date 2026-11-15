@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-15T20:23:21.712349Z",
+  "updated": "2026-11-15T21:57:11.021154Z",
   "checks": {
     "2026-11-12T20:30:00Z|one piece": {
       "status": "verified",
@@ -27,7 +27,7 @@
       "extra_episodes": [
         40
       ],
-      "checked_at": "2026-11-15T20:23:21.712349Z",
+      "checked_at": "2026-11-15T21:57:11.021154Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-14T20:30:00Z|hell s paradise": {
@@ -54,7 +54,7 @@
         10
       ],
       "extra_episodes": [],
-      "checked_at": "2026-11-15T20:23:21.712349Z",
+      "checked_at": "2026-11-15T21:57:11.021154Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-15T20:30:00Z|charlotte": {
@@ -68,7 +68,7 @@
         12,
         13
       ],
-      "checked_at": "2026-11-15T20:23:21.712349Z",
+      "checked_at": "2026-11-15T21:57:11.021154Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     }
   }
