@@ -469,6 +469,26 @@
       line-height: 1.5;
     }
 
+    .patreon-info {
+      margin: 10px 0 0;
+      padding: 11px;
+      border: 1px solid rgba(239,189,50,.28);
+      border-radius: 10px;
+      background: rgba(239,189,50,.07);
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .patreon-info strong { color: var(--accent); }
+    .patreon-info a {
+      display: inline-block;
+      margin-top: 5px;
+      color: var(--accent);
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
     .series-progress {
       margin-top: 10px;
       color: var(--accent);
@@ -2716,6 +2736,26 @@ input,select,textarea{accent-color:var(--got-gold)}
   // ANIME CARDS
   // =========================================================
 
+  function makeOnePiecePatreonNote(anime) {
+    if (Number(anime?.id) !== 21) return null;
+
+    const note = document.createElement("p");
+    note.className = "patreon-info";
+    note.append(document.createTextNode("Most full One Piece reactions are posted on Patreon, so some reactions may not appear on YouTube. Memberships start at "));
+
+    const price = document.createElement("strong");
+    price.textContent = "$1.50/month (USD)";
+    note.append(price, document.createTextNode(". Higher tiers may cost more, and prices can change. "));
+
+    const link = document.createElement("a");
+    link.href = "https://www.patreon.com/gotgames";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "View G.O.T. Patreon";
+    note.append(link);
+    return note;
+  }
+
   function makeCard(anime, seasonLabel = "", seasonNumber = null, historyMapping = null) {
     const card = document.createElement("article");
     card.className = "card";
@@ -2827,6 +2867,8 @@ input,select,textarea{accent-color:var(--got-gold)}
       safeText(anime.description) || "No description available.";
 
     body.append(description);
+    const patreonNote = makeOnePiecePatreonNote(anime);
+    if (patreonNote) body.append(patreonNote);
     body.append(makeWatchBox(anime, seasonNumber, historyMapping));
 
     card.append(coverWrap, body);
@@ -3241,6 +3283,8 @@ input,select,textarea{accent-color:var(--got-gold)}
     description.className = "description";
     description.textContent = safeText(primaryAnime.description) || "No description available.";
     body.append(description);
+    const patreonNote = makeOnePiecePatreonNote(primaryAnime);
+    if (patreonNote) body.append(patreonNote);
 
     const seriesProgress = document.createElement("div");
     seriesProgress.className = "series-progress";
