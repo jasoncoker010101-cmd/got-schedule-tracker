@@ -177,7 +177,20 @@ input,select,textarea{accent-color:var(--got-gold)}
 .playlist-review-card .review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .playlist-review-card .review-actions .delete-review{background:rgba(190,75,75,.16);border:1px solid rgba(230,100,100,.35)}
 .playlist-review-card a{overflow-wrap:anywhere}
-@media(max-width:600px){.playlist-review-card .review-fields label{flex:1 1 28%}}
+.playlist-review-card .review-video-title{display:block;font-size:16px;font-weight:900;line-height:1.45;color:#f4c95d;text-decoration:none;margin:0 0 8px;overflow-wrap:anywhere}
+.playlist-review-card .review-video-title:hover{text-decoration:underline}
+.playlist-review-card .review-anime{font-size:13px;color:var(--muted,#aab);margin-bottom:5px}
+.playlist-review-card .review-card-top{display:flex;gap:12px;align-items:flex-start}
+.playlist-review-card .review-card-top>input{width:18px;height:18px;flex:0 0 auto;margin-top:3px}
+.playlist-review-card[data-review-state="duplicate"]{border-color:rgba(230,100,100,.55)}
+.review-state-note{font-size:12px;font-weight:800;margin:6px 0;color:#f0bd62}
+.review-filter-row input,.review-filter-row select{flex:1 1 150px;min-width:110px}
+.review-bulk-tools{align-items:center;gap:10px;margin:12px 0}
+.review-select-all{display:flex;align-items:center;gap:8px;font-weight:800}
+.review-select-all input{width:18px;height:18px}
+.review-bulk-tools button{white-space:nowrap}
+#playlistReviewSelectionHint{font-size:12px;flex:1 1 220px}
+@media(max-width:600px){.playlist-review-card .review-fields label{flex:1 1 28%}.review-bulk-tools{align-items:flex-start;flex-direction:column}}
 </style><style>
 .got-help-inline{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:14px auto 0;padding:12px 16px;border:1px solid rgba(239,189,50,.28);border-radius:11px;background:rgba(239,189,50,.055);color:#aab5bd;font:700 13px/1.5 system-ui,sans-serif;text-align:center}
 .got-help-inline a{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;background:rgba(239,189,50,.13);color:#efbd32!important;text-decoration:none!important;font-weight:900}
@@ -265,7 +278,9 @@ input,select,textarea{accent-color:var(--got-gold)}
  <section class="panel" id="playlistReviewPanel" aria-labelledby="playlistReviewTitle">
   <h2 id="playlistReviewTitle">Manual Playlist Review</h2>
   <p class="muted">Uncertain matches from every anime playlist are saved here. Set the correct season and episode, then choose Add Link. If a video is not an episode, choose Delete to remove it from the active review queue.</p>
-  <div class="row"><input id="playlistReviewSearch" type="search" placeholder="Filter by anime or video title" aria-label="Filter manual playlist reviews"><select id="playlistReviewAge" aria-label="Filter review queue by age"><option value="14">Recent · last 14 days</option><option value="30">Last 30 days</option><option value="all">All active items</option></select><button type="button" class="secondary" id="playlistReviewRefresh">Refresh queue</button></div>
+  <div class="row"><input id="playlistReviewSearch" type="search" placeholder="Search anime or YouTube video title" aria-label="Search manual playlist reviews"><select id="playlistReviewAge" aria-label="Filter review queue by age"><option value="14">Recent · last 14 days</option><option value="30">Last 30 days</option><option value="all">All active items</option></select><button type="button" class="secondary" id="playlistReviewRefresh">Refresh queue</button></div>
+  <div class="row review-filter-row"><input id="playlistReviewAnime" type="search" placeholder="Anime filter" aria-label="Filter by anime"><select id="playlistReviewChannel" aria-label="Filter by channel"><option value="all">All channels</option><option value="UCEpGO4cx6j0PBc5LzkmtYdw">G.O.T. Games</option><option value="UCMKEfHfJqztU1G09KMKnmKg">G.O.T Extra</option></select><input id="playlistReviewSeason" type="number" min="1" placeholder="Season" aria-label="Filter by season"><input id="playlistReviewEpisode" type="number" min="1" placeholder="Episode" aria-label="Filter by episode"></div>
+  <div class="row review-bulk-tools"><label class="review-select-all"><input id="playlistReviewSelectAll" type="checkbox"> Select all verified</label><button type="button" id="playlistReviewBulkApprove">Approve selected (0)</button><span class="muted" id="playlistReviewSelectionHint">Only complete, high-confidence, non-duplicate matches can be selected automatically.</span></div>
   <p class="muted" id="playlistReviewMessage" role="status" aria-live="polite">Loading saved review items…</p>
   <div id="playlistReviewQueue" class="playlist-review-queue"></div>
  </section>
@@ -1986,11 +2001,60 @@ $("playlistAuditApply").addEventListener("click",async()=>{
 });
 
 let currentPlaylistReviewRows=[];
+let currentApprovedEpisodeLinks=[];
+const selectedPlaylistReviewIds=new Set();
+function reviewVideoId(row){
+ if(row.youtube_video_id)return String(row.youtube_video_id);
+ try{const url=new URL(row.youtube_url||"");if(url.hostname==="youtu.be")return url.pathname.split("/").filter(Boolean)[0]||"";return url.searchParams.get("v")||"";}catch{return "";}
+}
+function reviewChannel(row){
+ const source=String(row.source_url||"");
+ if(source.includes("UCEpGO4cx6j0PBc5LzkmtYdw"))return "G.O.T. Games";
+ if(source.includes("UCMKEfHfJqztU1G09KMKnmKg"))return "G.O.T Extra";
+ return "Unknown channel";
+}
+function reviewDuplicateReason(row){
+ const videoId=reviewVideoId(row);
+ if(videoId&&currentApprovedEpisodeLinks.some(link=>reviewVideoId(link)===videoId))return "This YouTube video is already in the public reaction links.";
+ const id=Number(row.anilist_id),season=Number(row.season_number),start=Number(row.episode_start),end=Number(row.episode_end??row.episode_start);
+ if(id>0&&season>0&&start>0&&end>=start){
+  const overlap=currentApprovedEpisodeLinks.find(link=>Number(link.anilist_id)===id&&Number(link.season_number)===season&&Number(link.episode_start)<=end&&Number(link.episode_end??link.episode_start)>=start);
+  if(overlap)return "Episode overlap: a reaction link already exists for this anime, season, and episode range.";
+ }
+ const sameVideo=currentPlaylistReviewRows.find(other=>other.id!==row.id&&videoId&&reviewVideoId(other)===videoId&&["pending","needs_checking"].includes(other.status));
+ if(sameVideo)return "Duplicate review entry: the same YouTube video is already waiting as review #"+sameVideo.id+".";
+ return "";
+}
+function reviewVerified(row){
+ return !!row.anime_title&&Number.isInteger(Number(row.anilist_id))&&Number(row.anilist_id)>0&&
+  Number.isInteger(Number(row.season_number))&&Number(row.season_number)>0&&
+  Number.isInteger(Number(row.episode_start))&&Number(row.episode_start)>0&&
+  Number.isInteger(Number(row.episode_end??row.episode_start))&&Number(row.episode_end??row.episode_start)>=Number(row.episode_start)&&
+  Number(row.confidence)>=90&&!reviewDuplicateReason(row);
+}
+function updateReviewBulkControls(visibleRows=[]){
+ const eligible=visibleRows.filter(reviewVerified);
+ const selected=eligible.filter(row=>selectedPlaylistReviewIds.has(Number(row.id)));
+ const allSelected=eligible.length>0&&selected.length===eligible.length;
+ const selectAll=$("playlistReviewSelectAll"),approve=$("playlistReviewBulkApprove");
+ if(selectAll){selectAll.checked=allSelected;selectAll.indeterminate=selected.length>0&&!allSelected;selectAll.disabled=!eligible.length;}
+ if(approve){approve.textContent="Approve selected ("+selected.length+")";approve.disabled=!selected.length;}
+}
 function renderPlaylistReviewQueue(){
  const query=$("playlistReviewSearch").value.trim().toLowerCase();
+ const animeQuery=$("playlistReviewAnime")?.value.trim().toLowerCase()||"";
+ const channelFilter=$("playlistReviewChannel")?.value||"all";
+ const seasonFilter=$("playlistReviewSeason")?.value||"";
+ const episodeFilter=$("playlistReviewEpisode")?.value||"";
  const ageFilter=$("playlistReviewAge")?.value||"14";
  const cutoff=ageFilter==="all"?null:Date.now()-Number(ageFilter)*24*60*60*1000;
- const searched=currentPlaylistReviewRows.filter(row=>[row.anime_title,row.video_title,row.review_note,row.anilist_id].filter(Boolean).join(" ").toLowerCase().includes(query));
+ const searched=currentPlaylistReviewRows.filter(row=>{
+  const text=[row.anime_title,row.video_title,row.review_note,row.anilist_id].filter(Boolean).join(" ").toLowerCase();
+  return text.includes(query)&&String(row.anime_title||"").toLowerCase().includes(animeQuery)&&
+   (channelFilter==="all"||String(row.source_url||"").includes(channelFilter))&&
+   (!seasonFilter||Number(row.season_number)===Number(seasonFilter))&&
+   (!episodeFilter||Number(row.episode_start)<=Number(episodeFilter)&&Number(row.episode_end??row.episode_start)>=Number(episodeFilter));
+ });
  const rows=searched.filter(row=>{
   if(cutoff===null)return true;
   const timestamp=Date.parse(row.detected_at||row.created_at||row.uploaded_at||"");
@@ -1998,15 +2062,23 @@ function renderPlaylistReviewQueue(){
  });
  const root=$("playlistReviewQueue");root.replaceChildren();
  if(!rows.length){
-  root.textContent=searched.length?(ageFilter==="all"?"No active review items match that filter.":"No recent items match. Choose “All active items” to see older reviews."):(query?"No review items match that filter.":"No saved playlist items need review.");
-  return;
+  root.textContent=searched.length?(ageFilter==="all"?"No active review items match those filters.":"No recent items match. Choose “All active items” to see older reviews."):"No review items match those filters.";
+  updateReviewBulkControls([]);return;
  }
  for(const item of rows){
   const card=document.createElement("article");card.className="playlist-review-card";
-  const heading=document.createElement("h3");heading.textContent=(item.anime_title||"Unknown anime")+" · "+(item.video_title||"Untitled video");
-  const meta=document.createElement("div");meta.className="playlist-review-meta";meta.textContent="Review #"+item.id+" · AniList "+(item.anilist_id||"not set")+" · "+new Date(item.detected_at||item.created_at||Date.now()).toLocaleString();
-  const note=document.createElement("p");note.textContent=item.review_note||"The scanner could not confidently identify this video.";
-  const link=document.createElement("a");link.href=item.youtube_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="Open YouTube video";
+  const duplicate=reviewDuplicateReason(item),verified=reviewVerified(item);
+  if(duplicate)card.dataset.reviewState="duplicate";
+  const top=document.createElement("div");top.className="review-card-top";
+  const choose=document.createElement("input");choose.type="checkbox";choose.checked=selectedPlaylistReviewIds.has(Number(item.id));choose.disabled=!verified;choose.title=verified?"Select for bulk approval":duplicate||"Needs a confirmed anime, season, episode, and confidence score of at least 90.";
+  choose.addEventListener("change",()=>{if(choose.checked)selectedPlaylistReviewIds.add(Number(item.id));else selectedPlaylistReviewIds.delete(Number(item.id));updateReviewBulkControls(rows);});
+  const topContent=document.createElement("div");topContent.style.minWidth="0";topContent.style.flex="1";
+  const video=document.createElement("a");video.className="review-video-title";video.href=item.youtube_url||"#";video.target="_blank";video.rel="noopener noreferrer";video.textContent=item.video_title||"Untitled YouTube video";
+  const anime=document.createElement("div");anime.className="review-anime";anime.textContent=(item.anime_title||"Unknown anime")+" · "+reviewChannel(item);
+  topContent.append(video,anime);top.append(choose,topContent);
+  const meta=document.createElement("div");meta.className="playlist-review-meta";meta.textContent="Review #"+item.id+" · "+(item.anilist_id?"AniList "+item.anilist_id:"AniList ID missing")+" · Confidence "+(item.confidence??"—")+"% · "+new Date(item.detected_at||item.created_at||Date.now()).toLocaleString();
+  const note=document.createElement("p");note.textContent=item.review_note||"Episode details detected. Confirm the season and episode before publishing.";
+  const state=document.createElement("div");state.className="review-state-note";state.textContent=duplicate?"DUPLICATE WARNING · "+duplicate:verified?"VERIFIED MATCH · eligible for bulk approval":"MANUAL CHECK · confirm anime, season, episode, and confidence before approving";
   const fields=document.createElement("div");fields.className="review-fields";
   const seasonLabel=document.createElement("label");seasonLabel.textContent="Season";
   const season=document.createElement("input");season.type="number";season.min="1";season.step="1";season.placeholder="Season";season.value=item.season_number??"";seasonLabel.append(season);
@@ -2016,7 +2088,7 @@ function renderPlaylistReviewQueue(){
   const end=document.createElement("input");end.type="number";end.min="1";end.step="1";end.placeholder="Same as start";end.value=item.episode_end!=null&&item.episode_end!==item.episode_start?item.episode_end:"";endLabel.append(end);
   fields.append(seasonLabel,episodeLabel,endLabel);
   const actions=document.createElement("div");actions.className="review-actions";
-  const add=document.createElement("button");add.type="button";add.textContent="Add Link";if(!item.anime_title||!item.anilist_id){add.disabled=true;add.title="This item has no confirmed anime identity; remove it or rescan under the correct anime.";add.textContent="Anime details needed";}
+  const add=document.createElement("button");add.type="button";add.textContent="Add Link";if(!item.anime_title||!item.anilist_id){add.disabled=true;add.title="This item has no confirmed anime identity; resolve the anime first.";add.textContent="Anime details needed";}
   add.addEventListener("click",async()=>{
    const seasonNumber=Number(season.value),episodeNumber=Number(episode.value),endNumber=end.value.trim()?Number(end.value):episodeNumber;
    if(!Number.isInteger(seasonNumber)||seasonNumber<1||!Number.isInteger(episodeNumber)||episodeNumber<1||!Number.isInteger(endNumber)||endNumber<episodeNumber){$("playlistReviewMessage").textContent="Enter a valid season and episode before adding this link.";return;}
@@ -2024,7 +2096,7 @@ function renderPlaylistReviewQueue(){
    try{
     const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"review",review_action:"add",pending_id:item.id,season_number:seasonNumber,episode_start:episodeNumber,episode_end:endNumber,playlist_url:item.source_url||"https://www.youtube.com/playlist?list=PL0000000000000000000000"}});
     if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not add this link.");
-    $("playlistReviewMessage").textContent="Added "+(item.anime_title||"the anime")+" S"+seasonNumber+" E"+episodeNumber+" to reaction links.";
+    selectedPlaylistReviewIds.delete(Number(item.id));$("playlistReviewMessage").textContent="Added "+(item.anime_title||"the anime")+" S"+seasonNumber+" E"+episodeNumber+" to public reaction links.";
     await loadPlaylistReviewQueue();health().catch(error=>console.warn("Dashboard health refresh failed after playlist review action:",error));
    }catch(error){$("playlistReviewMessage").textContent="Could not add link: "+(error?.message||String(error));add.disabled=false;add.textContent="Add Link";}
   });
@@ -2035,12 +2107,33 @@ function renderPlaylistReviewQueue(){
    try{
     const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"review",review_action:"delete",pending_id:item.id,playlist_url:item.source_url||"https://www.youtube.com/playlist?list=PL0000000000000000000000"}});
     if(error)throw error;if(!data?.success)throw new Error(data?.error||"Could not remove this item.");
-    $("playlistReviewMessage").textContent="Removed the video from the active review queue.";
+    selectedPlaylistReviewIds.delete(Number(item.id));$("playlistReviewMessage").textContent="Removed the video from the active review queue.";
     await loadPlaylistReviewQueue();health().catch(error=>console.warn("Dashboard health refresh failed after playlist review action:",error));
    }catch(error){$("playlistReviewMessage").textContent="Could not delete review item: "+(error?.message||String(error));del.disabled=false;del.textContent="Delete";}
   });
-  actions.append(add,del);card.append(heading,meta,note,link,fields,actions);root.append(card);
+  actions.append(add,del);card.append(top,meta,note,state,fields,actions);root.append(card);
  }
+ updateReviewBulkControls(rows);
+}
+async function approveSelectedPlaylistReviews(){
+ const ids=[...selectedPlaylistReviewIds];
+ const items=ids.map(id=>currentPlaylistReviewRows.find(row=>Number(row.id)===id)).filter(Boolean);
+ const eligible=items.filter(reviewVerified);
+ if(!eligible.length){$("playlistReviewMessage").textContent="No verified items are selected. Nothing was published.";return;}
+ if(!confirm("Publish "+eligible.length+" verified reaction link(s) to the public Anime page? Each item will still be checked for duplicates by the server."))return;
+ const button=$("playlistReviewBulkApprove");button.disabled=true;
+ let added=0,failed=0;const failures=[];
+ for(const item of eligible){
+  try{
+   const season=Number(item.season_number),episode=Number(item.episode_start),end=Number(item.episode_end??item.episode_start);
+   const {data,error}=await db.functions.invoke("audit-youtube-playlist",{body:{action:"review",review_action:"add",pending_id:item.id,season_number:season,episode_start:episode,episode_end:end,playlist_url:item.source_url||"https://www.youtube.com/playlist?list=PL0000000000000000000000"}});
+   if(error)throw error;if(!data?.success)throw new Error(data?.error||"Server rejected this item.");
+   selectedPlaylistReviewIds.delete(Number(item.id));added++;
+  }catch(error){failed++;failures.push("#"+item.id+": "+(error?.message||String(error)));}
+  $("playlistReviewMessage").textContent="Bulk approval running · "+added+" added · "+failed+" skipped or failed · "+(added+failed)+"/"+eligible.length+" processed.";
+ }
+ await loadPlaylistReviewQueue();health().catch(error=>console.warn("Dashboard health refresh failed after bulk approval:",error));
+ $("playlistReviewMessage").textContent="Bulk approval finished · "+added+" published · "+failed+" not published. "+(failures.slice(0,4).join(" | ")||"All selected verified matches were added.");
 }
 async function resolvePendingAnimeDetails(row){
  if(row.anilist_id||!row.anime_title)return row;
@@ -2079,6 +2172,10 @@ async function loadPlaylistReviewQueue(){
  const {data,error}=await db.from("got_anime_pending_episode_links").select("*").in("status",["pending","needs_checking"]).order("detected_at",{ascending:false}).limit(500);
  if(error){$("playlistReviewMessage").textContent="Could not load review queue: "+error.message;return;}
  currentPlaylistReviewRows=data||[];
+ selectedPlaylistReviewIds.clear();
+ const {data:approvedLinks,error:approvedError}=await db.from("got_anime_episode_links").select("id,anilist_id,season_number,episode_start,episode_end,youtube_url,video_title").limit(5000);
+ if(approvedError){$("playlistReviewMessage").textContent="Could not check duplicate reaction links: "+approvedError.message;return;}
+ currentApprovedEpisodeLinks=approvedLinks||[];
  // Fill missing anime identities before rendering the queue. This is safe:
  // exact AniList matches only, plus the known Steel Ball Run stage mapping.
  for(let i=0;i<currentPlaylistReviewRows.length;i++){
@@ -2095,7 +2192,18 @@ async function loadPlaylistReviewQueue(){
  renderPlaylistReviewQueue();
 }
 $("playlistReviewSearch").addEventListener("input",renderPlaylistReviewQueue);
+$("playlistReviewAnime").addEventListener("input",renderPlaylistReviewQueue);
+$("playlistReviewChannel").addEventListener("change",renderPlaylistReviewQueue);
+$("playlistReviewSeason").addEventListener("input",renderPlaylistReviewQueue);
+$("playlistReviewEpisode").addEventListener("input",renderPlaylistReviewQueue);
 $("playlistReviewAge").addEventListener("change",renderPlaylistReviewQueue);
+$("playlistReviewSelectAll").addEventListener("change",event=>{
+ const visible=currentPlaylistReviewRows.filter(row=>reviewVerified(row));
+ if(event.target.checked)visible.forEach(row=>selectedPlaylistReviewIds.add(Number(row.id)));
+ else visible.forEach(row=>selectedPlaylistReviewIds.delete(Number(row.id)));
+ renderPlaylistReviewQueue();
+});
+$("playlistReviewBulkApprove").addEventListener("click",approveSelectedPlaylistReviews);
 $("playlistReviewRefresh").addEventListener("click",loadPlaylistReviewQueue);
 
 function renderReports(){
