@@ -133,6 +133,71 @@
       "matched_name": "Crayon Shinchan the Movie: Spooky! My Yokai Vacation",
       "source": "tmdb",
       "searched_as": "Spooky Movie"
+    },
+    "Anime Mix": {
+      "poster": "https://image.tmdb.org/t/p/w500/6Ep57wQNfaRbja11AA4N0aLH7ku.jpg",
+      "tmdb_id": 1755282,
+      "tmdb_type": "movie",
+      "matched_name": "Given Movie 2: Hiiragi Mix Specials",
+      "source": "tmdb",
+      "searched_as": "Anime Mix"
+    },
+    "Haikyuu S4 Finale (S4 P2 E9-12)": {
+      "poster": null,
+      "searched_as": "Haikyuu S4 Finale (S4 P2 E9-12)"
+    },
+    "Haikyuu!! S4 P1": {
+      "poster": null,
+      "searched_as": "Haikyuu!! S4 P1"
+    },
+    "Haikyuu!! S4 P2": {
+      "poster": null,
+      "searched_as": "Haikyuu!! S4 P2"
+    },
+    "Movie": {
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx192809-wRlqABGsx2Qs.jpg",
+      "anilist_id": 192809,
+      "matched_name": "JUJUTSU KAISEN: Hidden Inventory / Premature Death – The Movie",
+      "source": "anilist",
+      "searched_as": "Movie"
+    },
+    "Mushoku Tensei": {
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx108465-1ANspF1EWyFx.jpg",
+      "anilist_id": 108465,
+      "matched_name": "Mushoku Tensei: Jobless Reincarnation",
+      "source": "anilist",
+      "searched_as": "Mushoku Tensei"
+    },
+    "Prince of Egypt": {
+      "poster": "https://image.tmdb.org/t/p/w500/2xUjYwL6Ol7TLJPPKs7sYW5PWLX.jpg",
+      "tmdb_id": 9837,
+      "tmdb_type": "movie",
+      "matched_name": "The Prince of Egypt",
+      "source": "tmdb",
+      "searched_as": "Prince of Egypt"
+    },
+    "Princess and the Frog (Movie)": {
+      "poster": null,
+      "searched_as": "Princess and the Frog (Movie)"
+    },
+    "Surprise Movie": {
+      "poster": "https://image.tmdb.org/t/p/w500/vbc8H3SR3BM6TZkJw6UBN4ekdjK.jpg",
+      "tmdb_id": 882206,
+      "tmdb_type": "movie",
+      "matched_name": "LOL Surprise: The Movie",
+      "source": "tmdb",
+      "searched_as": "Surprise Movie"
+    },
+    "Tanya": {
+      "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21613-qT3NiwYP5dYc.png",
+      "anilist_id": 21613,
+      "matched_name": "Saga of Tanya the Evil",
+      "source": "anilist",
+      "searched_as": "Tanya"
+    },
+    "Wuthering Waves (Tentative)": {
+      "poster": null,
+      "searched_as": "Wuthering Waves (Tentative)"
     }
   }
 }
