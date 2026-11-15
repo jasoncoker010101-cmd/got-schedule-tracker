@@ -2454,6 +2454,7 @@ function render(){
   if(!data)return;
 
   const now=new Date();
+  const archivedView= viewingArchivedWeek;
   const today=dayKey(now);
   const weekStart=data.weekStart || mondayOf(today);
   const fmtTime=new Intl.DateTimeFormat("en-US",{
@@ -2511,19 +2512,19 @@ function render(){
       const predicted=ev.status==="predicted";
       const cancelled=["cancelled","canceled"].includes(String(ev.status||"").toLowerCase());
       const d=eventDate(ev);
-      const status=cancelled ? "cancelled" : predicted ? "none" : liveStatus(ev,now,liveKeys);
+      const status=cancelled ? "cancelled" : archivedView ? "none" : predicted ? "none" : liveStatus(ev,now,liveKeys);
       const live=status==="live";
-      const posted=!live && !predicted && !!d && d<=now &&
+      const posted=!archivedView && !live && !predicted && !!d && d<=now &&
         (isPatreon(ev) || ev.status==="posted");
 
       const row=el("div","ev"+
         (predicted ? " predicted" : "")+
         (cancelled ? " cancelled" : "")+
-        (d && d<now && !live && status!=="delayed" && !cancelled ? " past" : "")+
+        (!archivedView && d && d<now && !live && status!=="delayed" && !cancelled ? " past" : "")+
         (live ? " live" : ""));
 
       row.dataset.platform = ev.platform || "other";
-      row.dataset.status = cancelled ? "cancelled" : predicted ? "predicted" : live ? "live" : (d && d > now ? "upcoming" : "past");
+      row.dataset.status = cancelled ? "cancelled" : archivedView ? "archived" : predicted ? "predicted" : live ? "live" : (d && d > now ? "upcoming" : "past");
       row.dataset.start = d ? String(d.getTime()) : "";
       row.dataset.search = [ev.title || "", (ev.labels || []).join(" "), p.label].join(" ").toLowerCase();
       row.style.setProperty("--c",p.color);
@@ -2567,7 +2568,7 @@ function render(){
 
       t.append(name);
 
-      const statusText=cancelled ? "Cancelled" : predicted ? "Predicted" :
+      const statusText=cancelled ? "Cancelled" : archivedView ? "Archived" : predicted ? "Predicted" :
         posted ? "Posted" :
         live ? "Live now" :
         status==="ended" ? "Ended" : "Confirmed";
@@ -2582,7 +2583,7 @@ function render(){
         );
       }
 
-      if(ev.platform==="rumble"||(ev.labels||[]).some(label=>/rumble/i.test(label))){
+      if(!archivedView && (ev.platform==="rumble"||(ev.labels||[]).some(label=>/rumble/i.test(label)))){
         const check=ev.patreon_check||{};
         const checkStatus=["verified","partial","pending"].includes(check.status)?check.status:"pending";
         const checkLine=el("div","patreon-check "+checkStatus);
