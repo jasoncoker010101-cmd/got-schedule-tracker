@@ -636,6 +636,18 @@ h1 span{color:#f0bd45}
 .ev .n a{text-decoration:none}
 .ev .n a:hover{color:#f3cd70;text-decoration:underline}
 .ev .k{font-size:.7rem;color:#8e9aaa;line-height:1.4}
+.ev.cancelled{
+  border:2px solid #ff4d5b;border-left:6px solid #ff2638;
+  border-radius:10px;padding:10px;
+  background:linear-gradient(110deg,rgba(255,38,56,.20),rgba(255,38,56,.07));
+  box-shadow:0 0 18px rgba(255,38,56,.16);opacity:1;
+}
+.ev-cancelled-banner{
+  display:block;width:fit-content;margin:7px 0 5px;padding:5px 10px;
+  border-radius:6px;background:#ff2638;color:#fff;font-size:.78rem;
+  font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+}
+.ev-cancelled-note{margin:3px 0 2px;color:#ffd6d9;font-size:.78rem;font-weight:650;line-height:1.45}
 .notes{border:1px solid rgba(255,255,255,.09);border-radius:16px;background:#141a23;box-shadow:0 14px 30px rgba(0,0,0,.18)}
 footer.site-foot{color:#778494;margin-top:42px}
 .links a{box-shadow:0 8px 20px rgba(0,0,0,.2)}
@@ -2293,6 +2305,7 @@ function render(){
       row.dataset.start = d ? String(d.getTime()) : "";
       row.dataset.search = [ev.title || "", (ev.labels || []).join(" "), p.label].join(" ").toLowerCase();
       row.style.setProperty("--c",p.color);
+      if(cancelled)row.classList.add("cancelled");
 
       const game=gameFor(ev.title);
       const src=posterFor(ev.title);
@@ -2340,6 +2353,12 @@ function render(){
       body.append(t,el("div","k",
         (game ? "GAME · " : "")+
         (ev.labels && ev.labels.length ? ev.labels.join(" + ") : p.label)+" · "+statusText));
+      if(cancelled){
+        body.append(
+          el("div","ev-cancelled-banner","STREAM CANCELLED"),
+          el("div","ev-cancelled-note",ev.cancellation_note || "This stream has been cancelled. A makeup stream has not been confirmed.")
+        );
+      }
 
       if(ev.platform==="rumble"||(ev.labels||[]).some(label=>/rumble/i.test(label))){
         const check=ev.patreon_check||{};
