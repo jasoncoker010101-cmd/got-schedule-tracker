@@ -2752,10 +2752,23 @@ async function load(){
 
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),12000);
+  let usedFallback=false;
   try{
-    const r=await fetch("schedule.json?t="+Date.now(),{cache:"no-store",signal:controller.signal});
-    if(!r.ok)throw new Error("Schedule request returned HTTP "+r.status);
-    const nextData=await r.json();
+    let response;
+    let primaryError=null;
+    try{
+      response=await fetch("schedule.json?t="+Date.now(),{cache:"no-store",signal:controller.signal});
+      if(!response.ok)throw new Error("Schedule request returned HTTP "+response.status);
+    }catch(error){
+      primaryError=error;
+      // GitHub Pages/CDN can briefly fail to serve the relative asset.
+      // Fall back to the repository's raw schedule file so the page can
+      // still refresh instead of remaining stuck on an old cached copy.
+      response=await fetch("https://raw.githubusercontent.com/jasoncoker010101-cmd/got-schedule-tracker/main/schedule.json?t="+Date.now(),{cache:"no-store",signal:controller.signal});
+      if(!response.ok)throw new Error("Schedule unavailable from both the site and backup source ("+response.status+").");
+      usedFallback=true;
+    }
+    const nextData=await response.json();
     if(!nextData||!Array.isArray(nextData.events))throw new Error("Schedule data has an unexpected format.");
 
     latestScheduleData=nextData;
@@ -2772,8 +2785,8 @@ async function load(){
     const sourceUpdated=data.updated?new Date(data.updated):null;
     const sourceAge=sourceUpdated&&!Number.isNaN(sourceUpdated.getTime())?Date.now()-sourceUpdated.getTime():null;
     const sourceIsOld=sourceAge!==null&&sourceAge>8*24*60*60*1000;
-    setScheduleStatus(sourceIsOld?"warning":"ready",
-      sourceIsOld?"Schedule loaded, but the posted data is old":"Schedule loaded",
+    setScheduleStatus(sourceIsOld||usedFallback?"warning":"ready",
+      sourceIsOld?"Schedule loaded, but the posted data is old":usedFallback?"Schedule loaded from backup source":"Schedule loaded",
       data.events.length+" events");
   }catch(e){
     lastScheduleCheck=new Date();
