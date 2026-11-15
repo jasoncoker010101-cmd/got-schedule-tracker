@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-11T20:03:59.252756Z",
+  "updated": "2026-11-15T22:16:49.675Z",
   "weekStart": "2026-11-09",
   "image": "schedule/latest.png?v=1569936441486745650",
   "sourceUrl": "",
@@ -152,7 +152,7 @@
         "Rumble"
       ],
       "start": "2026-11-15T20:30:00Z",
-      "status": "confirmed",
+      "status": "cancelled",
       "url": "",
       "patreon_check": {
         "status": "pending",
@@ -167,7 +167,8 @@
         ],
         "checked_at": "2026-11-15T21:57:11.021154Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
-      }
+      },
+      "cancellation_note": "Stream cancelled for tonight. A makeup stream may happen, but it is not confirmed."
     }
   ],
   "notes": [
@@ -175,7 +176,8 @@
     "Subathon on hold due to twitch, restart with current amount when resolved.",
     "Saturday slot is flexible.",
     "March/dr stone to be covered on stream.",
-    "Tanya to be caught up with as soon as available"
+    "Tanya to be caught up with as soon as available",
+    "Charlotte E9-13: Stream cancelled for tonight. A makeup stream may happen, but it is not confirmed."
   ],
   "patreonChecked": "2026-11-15T21:57:11.021154Z",
   "patreonCheckSummary": {
