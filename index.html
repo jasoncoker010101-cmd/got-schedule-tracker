@@ -2115,6 +2115,8 @@ let nextManageableStream = null;
 let latestScheduleData = null;
 let viewingArchivedWeek = false;
 let archiveWeekStart = null;
+let archiveNavigationRequest = 0;
+let requestedArchiveWeekStart = null;
 
 
 const scheduleIndicator = document.getElementById("scheduleIndicator");
@@ -2788,7 +2790,8 @@ function updateArchiveNavigation(){
   if(!data||!picker)return;
   const start=data.weekStart||mondayOf(dayKey(new Date()));
   const end=addDays(start,6);
-  picker.value=picker.value||dayKey(new Date());
+  picker.value=start;
+  if(!viewingArchivedWeek)requestedArchiveWeekStart=null;
   label.textContent=viewingArchivedWeek
     ? "Archive · "+start+" to "+end
     : "Current posted schedule";
@@ -2797,25 +2800,32 @@ function updateArchiveNavigation(){
 }
 
 async function showScheduleWeek(weekStart,forceArchive=false){
+  const requestId=++archiveNavigationRequest;
   const currentStart=latestScheduleData?.weekStart||mondayOf(dayKey(new Date()));
+  requestedArchiveWeekStart=weekStart;
+  const picker=document.getElementById("scheduleDatePicker");
+  const label=document.getElementById("archiveViewLabel");
+  picker.value=weekStart;
   if(weekStart===currentStart&&!forceArchive){
     viewingArchivedWeek=false;
+    requestedArchiveWeekStart=null;
     data=latestScheduleData;
     archiveWeekStart=currentStart;
     render();
     updateArchiveNavigation();
     return;
   }
-  const label=document.getElementById("archiveViewLabel");
   label.textContent="Loading archived week…";
   try{
     const response=await fetch("schedule/archive/"+weekStart+".json?t="+Date.now(),{cache:"no-store"});
     if(!response.ok)throw new Error("No saved schedule was found for the week of "+weekStart+".");
     const archived=await response.json();
     if(!archived||!Array.isArray(archived.events))throw new Error("That archived schedule is invalid.");
+    if(requestId!==archiveNavigationRequest)return;
     data=archived;
     viewingArchivedWeek=true;
     archiveWeekStart=weekStart;
+    requestedArchiveWeekStart=null;
     document.getElementById("scheduleSearch").value="";
     activeScheduleMode="all";
     document.querySelectorAll("[data-schedule-mode]").forEach(button=>{
@@ -2827,6 +2837,9 @@ async function showScheduleWeek(weekStart,forceArchive=false){
     updateArchiveNavigation();
     document.getElementById("scheduleResultCount").textContent="Archived schedule · "+data.events.length+" events";
   }catch(error){
+    if(requestId!==archiveNavigationRequest)return;
+    requestedArchiveWeekStart=null;
+    picker.value=data?.weekStart||currentStart;
     label.textContent=error.message||"Archive unavailable";
   }
 }
@@ -2838,16 +2851,17 @@ document.getElementById("scheduleDatePicker").addEventListener("change",event=>{
 document.getElementById("previousScheduleWeek").addEventListener("click",()=>{
   if(!data)return;
   const picker=document.getElementById("scheduleDatePicker");
-  const selected=picker.value||data.weekStart;
-  picker.value=addDays(selected,-7);
-  showScheduleWeek(addDays(data.weekStart||mondayOf(dayKey(new Date())),-7),true);
+  const base=requestedArchiveWeekStart||archiveWeekStart||data.weekStart||mondayOf(dayKey(new Date()));
+  const target=addDays(base,-7);
+  picker.value=target;
+  showScheduleWeek(target,true);
 });
 document.getElementById("nextScheduleWeek").addEventListener("click",()=>{
   if(!viewingArchivedWeek||!data)return;
   const picker=document.getElementById("scheduleDatePicker");
-  const selected=picker.value||data.weekStart;
-  picker.value=addDays(selected,7);
-  const target=addDays(data.weekStart,7);
+  const base=requestedArchiveWeekStart||archiveWeekStart||data.weekStart;
+  const target=addDays(base,7);
+  picker.value=target;
   showScheduleWeek(target,target!==(latestScheduleData?.weekStart||""));
 });
 document.getElementById("currentScheduleWeek").addEventListener("click",()=>{
