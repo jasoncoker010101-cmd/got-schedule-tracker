@@ -2454,7 +2454,6 @@ function render(){
   const platformCount = new Set(events.map(ev => ev.platform).filter(Boolean)).size;
   document.getElementById("statSessions").textContent = String(confirmedCount);
   document.getElementById("statPlatforms").textContent = String(platformCount);
-  document.getElementById("statPredicted").textContent = String(predictedCount);
 
   document.getElementById("range").textContent=
     "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+
