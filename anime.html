@@ -2463,7 +2463,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 
     const episodeCount = Number(anime.episodes);
     const hasEpisodeCount = Number.isInteger(episodeCount) &&
-      episodeCount > 0 && episodeCount <= 1000;
+      episodeCount > 0 && episodeCount <= 5000;
     const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
     const seasonKey = historySeason == null ? "overall" : String(historySeason);
     const episodeOffset = Math.max(0, Number(historyMapping?.episodeOffset) || 0);
@@ -2627,7 +2627,7 @@ input,select,textarea{accent-color:var(--got-gold)}
 
     const episodeCount = Number(anime.episodes);
     const hasEpisodes = Number.isInteger(episodeCount) &&
-      episodeCount > 0 && episodeCount <= 1000;
+      episodeCount > 0 && episodeCount <= 5000;
 
     box.append(top, detail);
 
