@@ -1,0 +1,125 @@
+{
+  "updated": "2026-11-15T22:32:00Z",
+  "weekStart": "2026-10-19",
+  "image": "",
+  "sourceUrl": "",
+  "source": "User-provided historical schedule image",
+  "displayedTimeZone": "BST",
+  "events": [
+    {
+      "title": "My Hero Academia Season 4 E24",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-19T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Cyberpunk: Edgerunners 2 E1",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-20T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Gaming Charity Stream (Halloween)",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-20T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E25",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-21T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "ONE PIECE E25-28",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-10-22T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Jojo's P7 (SBR) E6",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-23T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Movie (TBD)",
+      "platform": "patreon",
+      "labels": [
+        "Patreon"
+      ],
+      "start": "2026-10-23T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 5 E1",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-10-24T17:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Sentenced to Be a Hero E8-12",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-10-24T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Charlotte E1-4",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-10-25T19:30:00.000Z",
+      "status": "confirmed",
+      "url": ""
+    }
+  ],
+  "notes": [
+    "Streams at 8:30 PM BST/3:30 PM EDT",
+    "BST ending on 25th, UK to rollback 1 hour",
+    "Subathon on hold due to twitch, restart with current amount when resolved.",
+    "Saturday slot is flexible.",
+    "March/dr stone to be covered on stream.",
+    "Tanya to be caught up with as soon as available"
+  ],
+  "noStreamDays": []
+}
