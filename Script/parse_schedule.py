@@ -147,6 +147,15 @@ def main():
     notes = ocr(im.crop((0, int(boxes[-1][1] + 15 * s), im.width, im.height)), 6, None, 2)
     site = pathlib.Path("schedule.json")
     data = json.loads(site.read_text())
+
+    # Preserve the previous posted week before replacing it with a new image.
+    archive_dir = pathlib.Path("schedule/archive")
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    previous_week = data.get("weekStart")
+    if previous_week and isinstance(data.get("events"), list) and data["events"]:
+        previous_archive = archive_dir / f"{previous_week}.json"
+        previous_archive.write_text(json.dumps(data, indent=2) + "\n")
+
     data.update({
         "weekStart": monday.isoformat(),
         "events": sorted(events, key=lambda e: e["start"]),
@@ -154,7 +163,11 @@ def main():
         "updated": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
     })
     site.write_text(json.dumps(data, indent=2) + "\n")
-    print(f"Wrote {len(events)} events for the week of {monday}.")
+
+    # Save the newly parsed week as a browsable historical snapshot too.
+    current_archive = archive_dir / f"{monday.isoformat()}.json"
+    current_archive.write_text(json.dumps(data, indent=2) + "\n")
+    print(f"Wrote {len(events)} events for the week of {monday} and archived it.")
 
 
 if __name__ == "__main__":
