@@ -2492,7 +2492,17 @@ input,select,textarea{accent-color:var(--got-gold)}
 
     const episodeCount = getKnownEpisodeCount(anime);
     const hasEpisodeCount = episodeCount !== null;
-    const historySeason = historyMapping?.seasonNumber ?? seasonNumber;
+    // When a single-season anime card has no explicit season argument,
+    // infer the stored season from its history group. Otherwise the episode
+    // list incorrectly searches "overall" and misses Season 1 watch records.
+    const inferredHistorySeasons = [...new Set(
+      historyGroups.map(group => String(group.season))
+    )];
+    const historySeason = historyMapping?.seasonNumber ??
+      seasonNumber ??
+      (inferredHistorySeasons.length === 1 && inferredHistorySeasons[0] !== "overall"
+        ? Number(inferredHistorySeasons[0])
+        : null);
     const seasonKey = historySeason == null ? "overall" : String(historySeason);
     const episodeOffset = Math.max(0, Number(historyMapping?.episodeOffset) || 0);
     const demonSlayerSeason = getDemonSlayerReactionSeason(anime);
