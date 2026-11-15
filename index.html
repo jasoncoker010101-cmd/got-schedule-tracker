@@ -2796,7 +2796,7 @@ function updateArchiveNavigation(){
     ? "Archive · "+start+" to "+end
     : "Current posted schedule";
   previous.disabled=false;
-  next.disabled=!viewingArchivedWeek;
+  next.disabled=!viewingArchivedWeek&&!requestedArchiveWeekStart;
 }
 
 async function showScheduleWeek(weekStart,forceArchive=false){
@@ -2849,17 +2849,18 @@ document.getElementById("scheduleDatePicker").addEventListener("change",event=>{
   showScheduleWeek(mondayForDate(event.target.value));
 });
 document.getElementById("previousScheduleWeek").addEventListener("click",()=>{
-  if(!data)return;
+  if(!data&&!latestScheduleData)return;
   const picker=document.getElementById("scheduleDatePicker");
-  const base=requestedArchiveWeekStart||archiveWeekStart||data.weekStart||mondayOf(dayKey(new Date()));
+  const base=requestedArchiveWeekStart||archiveWeekStart||data?.weekStart||latestScheduleData?.weekStart||mondayOf(dayKey(new Date()));
   const target=addDays(base,-7);
   picker.value=target;
   showScheduleWeek(target,true);
 });
 document.getElementById("nextScheduleWeek").addEventListener("click",()=>{
-  if(!viewingArchivedWeek||!data)return;
+  if(!data&&!latestScheduleData)return;
+  if(!viewingArchivedWeek&&!requestedArchiveWeekStart)return;
   const picker=document.getElementById("scheduleDatePicker");
-  const base=requestedArchiveWeekStart||archiveWeekStart||data.weekStart;
+  const base=requestedArchiveWeekStart||archiveWeekStart||data?.weekStart||latestScheduleData?.weekStart;
   const target=addDays(base,7);
   picker.value=target;
   showScheduleWeek(target,target!==(latestScheduleData?.weekStart||""));
