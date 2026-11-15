@@ -1288,6 +1288,44 @@ input,select,textarea{accent-color:var(--got-gold)}
         margin-right: auto !important;
       }
     }
+
+    /* Reset the page canvas itself, not just the main content column. */
+    html {
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow-x: hidden;
+    }
+    body {
+      display: block;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow-x: hidden !important;
+    }
+    .topbar, footer {
+      width: 100% !important;
+      max-width: none !important;
+      box-sizing: border-box !important;
+    }
+    main {
+      float: none !important;
+      transform: none !important;
+      width: min(1450px, calc(100% - 42px)) !important;
+      max-width: 1450px !important;
+      margin-right: auto !important;
+      margin-left: auto !important;
+    }
+    @media (max-width: 700px) {
+      main {
+        width: calc(100% - 24px) !important;
+        margin-right: auto !important;
+        margin-left: auto !important;
+      }
+    }
 </style>
 </head>
 
