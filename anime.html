@@ -2897,20 +2897,32 @@ input,select,textarea{accent-color:var(--got-gold)}
   function makeOnePiecePatreonNote(anime) {
     if (Number(anime?.id) !== 21) return null;
 
-    const note = document.createElement("p");
+    const note = document.createElement("div");
     note.className = "patreon-info";
-    note.append(document.createTextNode("Most full One Piece reactions are posted on Patreon, so some reactions may not appear on YouTube. Memberships start at "));
+
+    const heading = document.createElement("strong");
+    heading.textContent = "Want to Watch One Piece Reactions Sooner?";
+
+    const message = document.createElement("span");
+    message.style.display = "block";
+    message.textContent = "Don't want to wait for the YouTube releases? G.O.T. Patreon members get access to all 5 reactions before they make their way to YouTube. YouTube releases may take longer, but you can watch the full collection early on Patreon!";
+
+    const membership = document.createElement("span");
+    membership.style.display = "block";
+    membership.style.marginTop = "5px";
+    membership.append(document.createTextNode("Memberships start at "));
 
     const price = document.createElement("strong");
     price.textContent = "$1.50/month (USD)";
-    note.append(price, document.createTextNode(". Higher tiers may cost more, and prices can change. "));
+    membership.append(price, document.createTextNode(". Higher tiers may cost more, and prices can change."));
 
     const link = document.createElement("a");
     link.href = "https://www.patreon.com/gotgames";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = "View G.O.T. Patreon";
-    note.append(link);
+
+    note.append(heading, message, membership, link);
     return note;
   }
 
