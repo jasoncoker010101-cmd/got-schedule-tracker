@@ -1469,6 +1469,34 @@ nav.main-nav .account-menu button{min-height:42px}
 .got-help-inline{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:14px auto 0;padding:12px 16px;border:1px solid rgba(239,189,50,.28);border-radius:11px;background:rgba(239,189,50,.055);color:#aab5bd;font:700 13px/1.5 system-ui,sans-serif;text-align:center}
 .got-help-inline a{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;background:rgba(239,189,50,.13);color:#efbd32!important;text-decoration:none!important;font-weight:900}
 .got-help-inline a:hover{background:rgba(239,189,50,.23)}
+
+/* Owner/admin next-stream controls */
+.next-admin-row{display:flex;justify-content:flex-end;margin:-10px 0 22px}
+.next-admin-button{display:none;align-items:center;gap:8px;padding:10px 15px;border:1px solid rgba(242,189,85,.38);border-radius:5px 12px 5px 12px;background:linear-gradient(120deg,rgba(242,189,85,.16),rgba(142,220,224,.07));color:#f5d99c;font:800 .82rem var(--font);letter-spacing:.04em;cursor:pointer}
+.next-admin-button:hover{border-color:#f2bd55;background:rgba(242,189,85,.22);transform:translateY(-1px)}
+.next-admin-button.visible{display:inline-flex}
+.schedule-admin-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.76);backdrop-filter:blur(8px)}
+.schedule-admin-modal{width:min(100%,520px);max-height:min(88vh,760px);overflow:auto;padding:23px;border:1px solid rgba(242,189,85,.3);border-radius:8px 22px 8px 22px;background:linear-gradient(145deg,#17232d,#0c141d);color:#f5f1e7;box-shadow:0 28px 90px rgba(0,0,0,.55)}
+.schedule-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.schedule-admin-kicker{color:#8edce0;font-size:.68rem;font-weight:900;letter-spacing:.18em}
+.schedule-admin-modal h2{margin:7px 0 4px;font-size:1.55rem;line-height:1.15}
+.schedule-admin-sub{margin:0;color:#9ba9b6;font-size:.86rem}
+.schedule-admin-close{width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(255,255,255,.13);border-radius:8px;background:rgba(255,255,255,.05);color:#fff;font-size:1.25rem;cursor:pointer}
+.schedule-admin-event{margin:19px 0;padding:14px;border:1px solid rgba(142,220,224,.18);border-left:3px solid #8edce0;border-radius:4px 10px 4px 10px;background:rgba(142,220,224,.055)}
+.schedule-admin-event strong{display:block;font-size:1.12rem}
+.schedule-admin-event span{display:block;margin-top:5px;color:#aab7c2;font-size:.82rem}
+.schedule-admin-status{margin-top:8px;color:#ff9b91!important;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.schedule-admin-modal label{display:block;margin:16px 0 7px;font-size:.85rem;font-weight:800;color:#e9d6a8}
+.schedule-admin-modal textarea{width:100%;min-height:112px;resize:vertical;padding:12px;border:1px solid rgba(255,255,255,.16);border-radius:8px;background:#0a1119;color:#f5f1e7;font:inherit;line-height:1.5}
+.schedule-admin-modal textarea:focus{outline:2px solid rgba(142,220,224,.45);border-color:#8edce0}
+.schedule-admin-help{margin:7px 0 0;color:#8293a2;font-size:.76rem}
+.schedule-admin-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
+.schedule-admin-actions button{flex:1 1 150px;min-height:43px;padding:10px 13px;border:1px solid rgba(242,189,85,.4);border-radius:7px;background:linear-gradient(120deg,#f2bd55,#d99c35);color:#21180b;font:900 .86rem var(--font);cursor:pointer}
+.schedule-admin-actions button.secondary{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#dce4eb}
+.schedule-admin-actions button:disabled{opacity:.55;cursor:wait}
+.schedule-admin-message{min-height:1.3em;margin:12px 0 0;color:#8edce0;font-size:.82rem}
+@media(max-width:560px){.next-admin-row{margin:-10px 0 18px}.next-admin-button{width:100%;justify-content:center}.schedule-admin-modal{padding:18px}}
+
 </style>
 </head>
 <body>
@@ -1568,6 +1596,31 @@ nav.main-nav .account-menu button{min-height:42px}
     <article class="overview-card"><span>Predicted</span><strong id="statPredicted">—</strong><small>Not confirmed yet</small></article>
   </section>
   <div class="next" id="next" hidden></div>
+
+  <div class="next-admin-row">
+    <button class="next-admin-button" id="manageNextStream" type="button">⚙ Manage next stream</button>
+  </div>
+  <div class="schedule-admin-backdrop" id="scheduleAdminBackdrop" hidden>
+    <section class="schedule-admin-modal" role="dialog" aria-modal="true" aria-labelledby="scheduleAdminTitle">
+      <div class="schedule-admin-head">
+        <div>
+          <div class="schedule-admin-kicker">OWNER / ADMIN CONTROL</div>
+          <h2 id="scheduleAdminTitle">Manage next stream</h2>
+          <p class="schedule-admin-sub">Update the public stream status without changing the schedule photo notes.</p>
+        </div>
+        <button class="schedule-admin-close" id="closeScheduleAdmin" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="schedule-admin-event" id="scheduleAdminEvent"></div>
+      <label for="scheduleCancellationReason">Cancellation information</label>
+      <textarea id="scheduleCancellationReason" maxlength="500" placeholder="Explain why the stream was cancelled. Add whether a makeup stream is being considered or confirmed."></textarea>
+      <p class="schedule-admin-help">This message appears directly on the stream card. It will never be added to the Notes section.</p>
+      <div class="schedule-admin-actions">
+        <button id="cancelNextStream" type="button">Mark as cancelled</button>
+        <button class="secondary" id="restoreNextStream" type="button" hidden>Restore scheduled status</button>
+      </div>
+      <p class="schedule-admin-message" id="scheduleAdminMessage" role="status" aria-live="polite"></p>
+    </section>
+  </div>
 
   <section class="activity-feed" id="activityFeed" aria-labelledby="activityFeedTitle">
     <div class="activity-feed-head">
@@ -1770,6 +1823,8 @@ async function loadMyProfile(){
     currentProfile = null;
     canReplayMascot = false;
     if(mascotReplayButton) mascotReplayButton.hidden = true;
+    canManageSchedule=false;
+    updateScheduleAdminButton();
     updateAccountButton();
     return;
   }
@@ -1789,6 +1844,7 @@ async function loadMyProfile(){
 
   updateAccountButton();
   await refreshMascotOwnerAccess();
+  await refreshScheduleAdminAccess();
 }
 
 async function refreshAuthState(){
@@ -1849,7 +1905,9 @@ document.getElementById("logoutButton").addEventListener("click", async ()=>{
   currentUser = null;
   currentProfile = null;
   canReplayMascot = false;
+  canManageSchedule = false;
   if(mascotReplayButton) mascotReplayButton.hidden = true;
+  updateScheduleAdminButton();
   updateAccountButton();
 });
 
@@ -2042,6 +2100,10 @@ let games = {};
 let tz = pickStartZone();
 let scheduleLoading = false;
 let lastScheduleCheck = null;
+let scheduleOverrides = {};
+let canManageSchedule = false;
+let nextManageableStream = null;
+
 
 const scheduleIndicator = document.getElementById("scheduleIndicator");
 const scheduleStatusText = document.getElementById("scheduleStatusText");
@@ -2137,6 +2199,117 @@ function isPatreon(ev){
 function eventKey(ev){
   return (ev.start || ev.date || "")+"|"+ev.platform+"|"+(ev.title || "");
 }
+
+async function refreshScheduleAdminAccess(){
+  canManageSchedule = false;
+  if(currentUser){
+    try{
+      const {data,error}=await supabaseClient.from("user_roles")
+        .select("role").eq("user_id",currentUser.id).in("role",["owner","administrator"]).limit(1);
+      canManageSchedule=!error&&Array.isArray(data)&&data.length>0;
+    }catch(_error){canManageSchedule=false;}
+  }
+  updateScheduleAdminButton();
+}
+
+function updateScheduleAdminButton(){
+  const button=document.getElementById("manageNextStream");
+  if(!button)return;
+  const visible=canManageSchedule&&!!nextManageableStream;
+  button.classList.toggle("visible",visible);
+  button.setAttribute("aria-hidden",String(!visible));
+}
+
+async function loadScheduleOverrides(){
+  try{
+    const response=await fetch(SUPABASE_URL+"/functions/v1/schedule-admin",{
+      method:"GET",headers:{apikey:SUPABASE_KEY},cache:"no-store"
+    });
+    if(!response.ok)throw new Error("Could not load stream status updates.");
+    const payload=await response.json();
+    scheduleOverrides={};
+    for(const item of (Array.isArray(payload.overrides)?payload.overrides:[])){
+      if(item&&item.event_key&&item.status==="cancelled"){
+        scheduleOverrides[item.event_key]=item;
+      }
+    }
+  }catch(error){
+    console.warn("Schedule cancellation overlays unavailable:",error);
+  }
+}
+
+function streamEvents(events){
+  const streamPlatforms=["twitch","rumble","youtube-live","youtube"];
+  return events.filter(ev=>ev&&eventDate(ev)&&!isPatreon(ev)&&streamPlatforms.includes(String(ev.platform||"").toLowerCase()));
+}
+
+function openScheduleAdmin(){
+  if(!canManageSchedule||!nextManageableStream)return;
+  const ev=nextManageableStream;
+  const override=scheduleOverrides[eventKey(ev)];
+  const d=eventDate(ev);
+  const dateText=d?new Intl.DateTimeFormat("en-US",{timeZone:tz,dateStyle:"full",timeStyle:"short"}).format(d):"Time not specified";
+  const platform=(PLATFORMS[ev.platform]||PLATFORMS.other).label;
+  const eventBox=document.getElementById("scheduleAdminEvent");
+  eventBox.replaceChildren(
+    el("strong",null,ev.title||"Untitled stream"),
+    el("span",null,platform+" · "+dateText)
+  );
+  if(override||["cancelled","canceled"].includes(String(ev.status||"").toLowerCase())){
+    eventBox.append(el("span","schedule-admin-status","Currently marked cancelled"));
+  }
+  document.getElementById("scheduleCancellationReason").value=
+    override?.cancellation_note||ev.cancellation_note||"";
+  document.getElementById("cancelNextStream").hidden=!!override;
+  document.getElementById("restoreNextStream").hidden=!override;
+  document.getElementById("scheduleAdminMessage").textContent="";
+  document.getElementById("scheduleAdminBackdrop").hidden=false;
+}
+
+function closeScheduleAdmin(){
+  document.getElementById("scheduleAdminBackdrop").hidden=true;
+}
+
+async function saveScheduleAdminAction(action){
+  if(!canManageSchedule||!nextManageableStream)return;
+  const button=document.getElementById(action==="cancel"?"cancelNextStream":"restoreNextStream");
+  const message=document.getElementById("scheduleAdminMessage");
+  button.disabled=true;message.textContent=action==="cancel"?"Saving cancellation…":"Restoring stream…";
+  try{
+    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session?.access_token)throw new Error("Your sign-in has expired. Log in again.");
+    const body={action,event_key:eventKey(nextManageableStream)};
+    if(action==="cancel")body.cancellation_note=document.getElementById("scheduleCancellationReason").value.trim();
+    const response=await fetch(SUPABASE_URL+"/functions/v1/schedule-admin",{
+      method:"POST",
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:"Bearer "+session.access_token,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(body)
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||"The update could not be saved.");
+    await loadScheduleOverrides();
+    render();
+    closeScheduleAdmin();
+  }catch(error){
+    message.textContent=error?.message||"The update failed. Please try again.";
+  }finally{
+    button.disabled=false;
+  }
+}
+
+document.getElementById("manageNextStream").addEventListener("click",openScheduleAdmin);
+document.getElementById("closeScheduleAdmin").addEventListener("click",closeScheduleAdmin);
+document.getElementById("scheduleAdminBackdrop").addEventListener("click",event=>{
+  if(event.target.id==="scheduleAdminBackdrop")closeScheduleAdmin();
+});
+document.getElementById("cancelNextStream").addEventListener("click",()=>saveScheduleAdminAction("cancel"));
+document.getElementById("restoreNextStream").addEventListener("click",()=>saveScheduleAdminAction("restore"));
+
 
 function gameFor(title){
   return games[cleanTitle(title)] || games[title] || null;
@@ -2241,10 +2414,15 @@ function render(){
     timeZone:tz,hour:"numeric",minute:"2-digit",timeZoneName:"short"
   });
 
-  const events=(data.events || []).slice().sort((a,b)=>
+  const events=(data.events || []).map(ev=>{
+    const override=scheduleOverrides[eventKey(ev)];
+    return override?{...ev,status:"cancelled",cancellation_note:override.cancellation_note}:ev;
+  }).sort((a,b)=>
     (eventDate(a) || utc(eventDay(a)))-(eventDate(b) || utc(eventDay(b))));
 
   const liveKeys=currentLiveKeys(events,now);
+  nextManageableStream=streamEvents(events).filter(ev=>eventDate(ev)>now)[0]||null;
+  updateScheduleAdminButton();
 
   const confirmedCount = events.filter(ev => ev.status === "confirmed" || ev.status === "posted").length;
   const predictedCount = events.filter(ev => ev.status === "predicted").length;
@@ -2543,6 +2721,7 @@ async function load(){
     if(!nextData||!Array.isArray(nextData.events))throw new Error("Schedule data has an unexpected format.");
 
     data=nextData;
+    await loadScheduleOverrides();
     lastScheduleCheck=new Date();
     render();
     resolveGameArtwork();
