@@ -44,7 +44,20 @@
       ],
       "start": "2026-11-18T20:30:00Z",
       "status": "confirmed",
-      "url": ""
+      "url": "",
+      "patreon_check": {
+        "status": "pending",
+        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
+        "covered_episodes": [],
+        "missing_episodes": [
+          41,
+          42,
+          43,
+          44
+        ],
+        "checked_at": "2026-11-16T20:32:19.019101Z",
+        "source": "https://www.patreon.com/cw/gotgames/sitemap"
+      }
     },
     {
       "title": "TBD",
@@ -75,7 +88,21 @@
       ],
       "start": "2026-11-20T20:30:00Z",
       "status": "confirmed",
-      "url": ""
+      "url": "",
+      "patreon_check": {
+        "status": "pending",
+        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
+        "covered_episodes": [],
+        "missing_episodes": [
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "checked_at": "2026-11-16T20:32:19.019101Z",
+        "source": "https://www.patreon.com/cw/gotgames/sitemap"
+      }
     },
     {
       "title": "My Hero Academia Season 5 E13",
@@ -96,7 +123,19 @@
       ],
       "start": "2026-11-21T20:30:00Z",
       "status": "confirmed",
-      "url": ""
+      "url": "",
+      "patreon_check": {
+        "status": "pending",
+        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
+        "covered_episodes": [],
+        "missing_episodes": [
+          10,
+          11,
+          12
+        ],
+        "checked_at": "2026-11-16T20:32:19.019101Z",
+        "source": "https://www.patreon.com/cw/gotgames/sitemap"
+      }
     },
     {
       "title": "Anime Tournament",
@@ -117,13 +156,13 @@
     "Tanya to be caught up with as soon as available",
     "MHA movie 2 scheduled for next monday"
   ],
-  "patreonChecked": "2026-11-15T21:57:11.021154Z",
+  "patreonChecked": "2026-11-16T20:32:19.019101Z",
   "patreonCheckSummary": {
     "source": "https://www.patreon.com/cw/gotgames/sitemap",
     "posts_scanned": 500,
     "events_checked": 3,
-    "verified": 1,
-    "partial": 1,
-    "pending": 1
+    "verified": 0,
+    "partial": 0,
+    "pending": 3
   }
 }
