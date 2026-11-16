@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-16T21:29:23.133874Z",
+  "updated": "2026-11-16T22:24:42.551786Z",
   "checks": {
     "2026-11-12T20:30:00Z|one piece": {
       "status": "verified",
@@ -81,7 +81,7 @@
         43,
         44
       ],
-      "checked_at": "2026-11-16T21:29:23.133874Z",
+      "checked_at": "2026-11-16T22:24:42.551786Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-20T20:30:00Z|charlotte": {
@@ -95,7 +95,7 @@
         12,
         13
       ],
-      "checked_at": "2026-11-16T21:29:23.133874Z",
+      "checked_at": "2026-11-16T22:24:42.551786Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-21T20:30:00Z|hell s paradise": {
@@ -107,7 +107,7 @@
         11,
         12
       ],
-      "checked_at": "2026-11-16T21:29:23.133874Z",
+      "checked_at": "2026-11-16T22:24:42.551786Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     }
   }
