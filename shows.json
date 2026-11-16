@@ -211,6 +211,18 @@
     "Wuthering Waves (Tentative)": {
       "poster": null,
       "searched_as": "Wuthering Waves (Tentative)"
+    },
+    "TBD": {
+      "poster": "https://image.tmdb.org/t/p/w500/9TAu9HnuDwGjZS8avPbdjwslbUN.jpg",
+      "tmdb_id": 1020123,
+      "tmdb_type": "movie",
+      "matched_name": "TBD",
+      "source": "tmdb",
+      "searched_as": "TBD"
+    },
+    "Wuthering Waves 2.5": {
+      "poster": null,
+      "searched_as": "Wuthering Waves 2.5"
     }
   }
 }
