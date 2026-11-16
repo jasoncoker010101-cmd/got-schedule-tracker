@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-16T02:22:47.230366Z",
+  "updated": "2026-11-16T03:35:01.177557Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -38,6 +38,6 @@
     "rumble_page": 3,
     "next_rumble_check_at": null,
     "message": "This scheduled stream was cancelled. No further Rumble checks will be made for this event. A makeup stream is unconfirmed.",
-    "cancelled_at": "2026-11-16T02:22:47.230366Z"
+    "cancelled_at": "2026-11-16T03:35:01.177557Z"
   }
 }
