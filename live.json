@@ -1,21 +1,20 @@
 {
-  "updated": "2026-11-17T19:44:44.399253Z",
+  "updated": "2026-11-17T20:36:50.853179Z",
   "platforms": {
-    "twitch": false,
+    "twitch": true,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": false,
-      "skipped": "No scheduled stream in the live-check window",
+      "live": true,
+      "title": "\u2728\ud83c\udf00 WUTHERING WAVES 2.5 MASSIVE *not* FINALE... LETS FINISH THIS GAME!!!!!... \u2728\ud83c\udf00",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
-      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
