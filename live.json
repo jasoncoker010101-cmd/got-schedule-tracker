@@ -1,15 +1,14 @@
 {
-  "updated": "2026-11-18T00:23:40.055689Z",
+  "updated": "2026-11-18T01:51:22.554908Z",
   "platforms": {
-    "twitch": true,
+    "twitch": false,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": true,
-      "title": "\u2728\ud83c\udf00 WUTHERING WAVES 2.5 MASSIVE *not* FINALE... LETS FINISH THIS GAME!!!!!... \u2728\ud83c\udf00",
+      "live": false,
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
