@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-18T03:40:46.660544Z",
+  "updated": "2026-11-18T04:44:07.739515Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -9,11 +9,13 @@
     "twitch": {
       "ok": true,
       "live": false,
+      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
+      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
