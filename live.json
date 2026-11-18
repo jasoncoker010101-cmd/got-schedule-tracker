@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-18T21:46:13.977300Z",
+  "updated": "2026-11-18T22:38:54.192005Z",
   "platforms": {
     "twitch": true,
     "youtube": false,
@@ -20,34 +20,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 2,
-      "next_page": 3,
+      "page_checked": 3,
+      "next_page": 4,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "Metals Mayhem with MarkZ and Andy Schectman. 11/18/2026",
-          "channel_name": "theoriginalmarkz",
-          "channel_url": "https://rumble.com/c/theoriginalmarkz"
+          "title": "GAMING, MUSIC, & CHAT \u2764 WOW & E33? \u2764 NO CAM TODAY \u2764",
+          "channel_name": "Juliakins",
+          "channel_url": "https://rumble.com/c/Juliakins"
         },
         {
-          "title": "The Alex Jones Show WEDNESDAY LIVE SHOW STREAM 11/18/26",
-          "channel_name": "The Alex Jones Show",
-          "channel_url": "https://rumble.com/c/TheAlexJonesShowRumble"
+          "title": "Synthwave Radio \ud83c\udf0c - beats to chill/game to",
+          "channel_name": "Lofi Girl",
+          "channel_url": "https://rumble.com/c/LofiGirl"
         },
         {
-          "title": "WATCH HERE - ALL Alex Jones Network Shows & Commercial Free Replays",
-          "channel_name": "Ron Gibson Channel - Alex Jones Network Partner",
-          "channel_url": "https://rumble.com/c/RonGibsonChannel"
+          "title": "The Consciousness Paradox, What if Everything you about Reality is Backwards with Ethan Lucas",
+          "channel_name": "TruthStream with Joe and Scott",
+          "channel_url": "https://rumble.com/c/TruthStream"
         },
         {
-          "title": "HISTORY in the MAKING! Today is the Day their \"New World Order\" DIED",
-          "channel_name": "American Fire",
-          "channel_url": "https://rumble.com/c/americanfire"
+          "title": "November 18, 2026",
+          "channel_name": "The Shaun Thompson Show",
+          "channel_url": "https://rumble.com/c/shaunthompsonshow"
         },
         {
-          "title": "XRP LIVE CHART",
-          "channel_name": "XRPARMY2026",
-          "channel_url": "https://rumble.com/user/XRPARMY2026"
+          "title": "\ud83d\udd34\ud83d\udd34 LIVE: Breaking News, Severe Weather, Markets | TNS",
+          "channel_name": "TexasNewsStudio",
+          "channel_url": "https://rumble.com/user/TexasNewsStudio"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -63,8 +63,8 @@
     "state": "waiting",
     "twitch_seen_live": true,
     "rumble_seen_live": false,
-    "rumble_page": 3,
-    "next_rumble_check_at": "2026-11-18T21:51:13.977300Z",
+    "rumble_page": 4,
+    "next_rumble_check_at": "2026-11-18T22:43:54.192005Z",
     "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
   }
 }
