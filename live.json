@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-18T20:53:00.701893Z",
+  "updated": "2026-11-18T21:46:13.977300Z",
   "platforms": {
     "twitch": true,
     "youtube": false,
@@ -20,34 +20,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 1,
-      "next_page": 2,
+      "page_checked": 2,
+      "next_page": 3,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "Alex Jones Live",
-          "channel_name": "The Alex Jones Show Live",
-          "channel_url": "https://rumble.com/c/TheAlexJonesShowLive"
+          "title": "Metals Mayhem with MarkZ and Andy Schectman. 11/18/2026",
+          "channel_name": "theoriginalmarkz",
+          "channel_url": "https://rumble.com/c/theoriginalmarkz"
         },
         {
-          "title": "Mickey, Awakened Outlaw, SeanAnon, Adel 412 / RamboAF #190 230PM EDT",
-          "channel_name": "RamboAndFrens",
-          "channel_url": "https://rumble.com/user/RamboAndFrens"
+          "title": "The Alex Jones Show WEDNESDAY LIVE SHOW STREAM 11/18/26",
+          "channel_name": "The Alex Jones Show",
+          "channel_url": "https://rumble.com/c/TheAlexJonesShowRumble"
         },
         {
-          "title": "\ud83d\udd34We just got the CONFIRMATION.\ud83d\udd34",
-          "channel_name": "MattMorseTV",
-          "channel_url": "https://rumble.com/c/MattMorseTV"
+          "title": "WATCH HERE - ALL Alex Jones Network Shows & Commercial Free Replays",
+          "channel_name": "Ron Gibson Channel - Alex Jones Network Partner",
+          "channel_url": "https://rumble.com/c/RonGibsonChannel"
         },
         {
-          "title": "MAIDs in Canada JUST GOT WORSE! w/ Kelsi Sheren; Russell Brand Reveals the Petty Tyrants! AND MORE!",
-          "channel_name": "vivafrei",
-          "channel_url": "https://rumble.com/user/vivafrei"
+          "title": "HISTORY in the MAKING! Today is the Day their \"New World Order\" DIED",
+          "channel_name": "American Fire",
+          "channel_url": "https://rumble.com/c/americanfire"
         },
         {
-          "title": "RT DE Live-TV",
-          "channel_name": "RT DE",
-          "channel_url": "https://rumble.com/c/RTDE"
+          "title": "XRP LIVE CHART",
+          "channel_name": "XRPARMY2026",
+          "channel_url": "https://rumble.com/user/XRPARMY2026"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -63,8 +63,8 @@
     "state": "waiting",
     "twitch_seen_live": true,
     "rumble_seen_live": false,
-    "rumble_page": 2,
-    "next_rumble_check_at": "2026-11-18T20:58:00.701893Z",
+    "rumble_page": 3,
+    "next_rumble_check_at": "2026-11-18T21:51:13.977300Z",
     "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
   }
 }
