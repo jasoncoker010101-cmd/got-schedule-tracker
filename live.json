@@ -1,43 +1,70 @@
 {
-  "updated": "2026-11-18T19:56:09.263485Z",
+  "updated": "2026-11-18T20:53:00.701893Z",
   "platforms": {
-    "twitch": false,
+    "twitch": true,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": false,
-      "skipped": "No scheduled stream in the live-check window",
+      "live": true,
+      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
-      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
       "ok": true,
       "live": false,
-      "skipped": "No active scheduled Rumble event",
+      "page_checked": 1,
+      "next_page": 2,
+      "streams_scanned": 25,
+      "live_candidates": [
+        {
+          "title": "Alex Jones Live",
+          "channel_name": "The Alex Jones Show Live",
+          "channel_url": "https://rumble.com/c/TheAlexJonesShowLive"
+        },
+        {
+          "title": "Mickey, Awakened Outlaw, SeanAnon, Adel 412 / RamboAF #190 230PM EDT",
+          "channel_name": "RamboAndFrens",
+          "channel_url": "https://rumble.com/user/RamboAndFrens"
+        },
+        {
+          "title": "\ud83d\udd34We just got the CONFIRMATION.\ud83d\udd34",
+          "channel_name": "MattMorseTV",
+          "channel_url": "https://rumble.com/c/MattMorseTV"
+        },
+        {
+          "title": "MAIDs in Canada JUST GOT WORSE! w/ Kelsi Sheren; Russell Brand Reveals the Petty Tyrants! AND MORE!",
+          "channel_name": "vivafrei",
+          "channel_url": "https://rumble.com/user/vivafrei"
+        },
+        {
+          "title": "RT DE Live-TV",
+          "channel_name": "RT DE",
+          "channel_url": "https://rumble.com/c/RTDE"
+        }
+      ],
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "session_state": "cancelled",
-      "message": "This scheduled stream was cancelled. No further Rumble checks will be made for this event. A makeup stream is unconfirmed."
+      "session_state": "waiting",
+      "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
     }
   },
   "rumble_session": {
-    "event_key": "2026-11-15T20:30:00Z|rumble|Charlotte E9-13",
-    "title": "Charlotte E9-13",
-    "scheduled_start": "2026-11-15T20:30:00Z",
-    "state": "cancelled",
-    "twitch_seen_live": false,
+    "event_key": "2026-11-18T20:30:00Z|rumble|ONE PIECE E41-44",
+    "title": "ONE PIECE E41-44",
+    "scheduled_start": "2026-11-18T20:30:00Z",
+    "state": "waiting",
+    "twitch_seen_live": true,
     "rumble_seen_live": false,
-    "rumble_page": 3,
-    "next_rumble_check_at": null,
-    "message": "This scheduled stream was cancelled. No further Rumble checks will be made for this event. A makeup stream is unconfirmed.",
-    "cancelled_at": "2026-11-16T19:42:41.524392Z"
+    "rumble_page": 2,
+    "next_rumble_check_at": "2026-11-18T20:58:00.701893Z",
+    "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
   }
 }
