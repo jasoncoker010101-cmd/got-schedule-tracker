@@ -200,7 +200,10 @@ body.nexus-closed .shell,body.nexus-closed .modal-backdrop{display:none!importan
 <script>
 const GOT_SUPABASE_URL="https://tzgxkiucsjampbresqkw.supabase.co";
 const GOT_SUPABASE_KEY="sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
-window.GOT_SUPABASE=window.supabase.createClient(GOT_SUPABASE_URL,GOT_SUPABASE_KEY);
+// Do not initialize community services while the maintenance page is active.
+if(!document.body.classList.contains("nexus-closed")){
+  window.GOT_SUPABASE=window.supabase?.createClient(GOT_SUPABASE_URL,GOT_SUPABASE_KEY);
+}
 </script>
 
 <script src="notifications.js"></script>
