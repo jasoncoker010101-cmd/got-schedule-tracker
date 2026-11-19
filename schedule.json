@@ -1,8 +1,5 @@
 {
-  "updated": "2026-11-16T20:29:50.445783Z",
   "weekStart": "2026-11-16",
-  "image": "schedule/latest.png?v=1571983404533022791",
-  "sourceUrl": "",
   "events": [
     {
       "title": "My Hero Academia Season 5 E11",
@@ -156,6 +153,13 @@
     "Tanya to be caught up with as soon as available",
     "MHA movie 2 scheduled for next monday"
   ],
+  "noStreamDays": [
+    "2026-11-19"
+  ],
+  "sourceTimezone": "GMT",
+  "image": "schedule/images/3ff91a6ea083304740d91afb.png",
+  "sourceUrl": "",
+  "updated": "2026-11-19T17:01:38.823907Z",
   "patreonChecked": "2026-11-19T11:38:24.610034Z",
   "patreonCheckSummary": {
     "source": "https://www.patreon.com/cw/gotgames/sitemap",

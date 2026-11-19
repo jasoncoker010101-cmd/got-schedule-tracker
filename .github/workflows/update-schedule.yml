@@ -2,107 +2,73 @@ name: Update schedule
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
-
-  push:
-    branches: [main]
-    paths:
-      - "Script/check_patreon.py"
-      - "Script/parse_schedule.py"
-      - "Script/fetch_posters.py"
-      - "Script/show_overrides.json"
-      - "schedule/archive/**"
-      - ".github/workflows/update-schedule.yml"
-
+    - cron: "7,17,27,37,47,57 * * * *"
   workflow_dispatch:
     inputs:
-      any_image:
-        description: "Test mode: accept any image in the channel"
-        type: boolean
-        default: false
+      message_id:
+        description: "Optional Discord message ID in the configured channel"
+        type: string
       reparse:
-        description: "Re-read the saved image into the schedule"
+        description: "Read the checked-in flyer instead of Discord"
         type: boolean
         default: false
+      dry_run:
+        description: "Check Discord and OCR without publishing any data"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-schedule
+  group: schedule-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   update:
-    runs-on: ubuntu-latest 
-
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Check Discord for a new schedule
-        id: fetch
+      - uses: actions/checkout@v4
+      - name: Set up OCR
+        run: |
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y tesseract-ocr python3-pil
+          /usr/bin/python3 -c 'from PIL import Image'
+      - name: Find and validate the schedule
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-          ANY_IMAGE: ${{ github.event.inputs.any_image || 'false' }}
-        run: python3 Script/fetch_schedule.py
-
-      - name: Read the events from the image
-        if: ${{ steps.fetch.outputs.new == 'true' || inputs.reparse }}
+          DISCORD_TRUSTED_AUTHOR_IDS: ${{ vars.DISCORD_TRUSTED_AUTHOR_IDS }}
+          MESSAGE_ID: ${{ inputs.message_id }}
+          REPARSE: ${{ inputs.reparse || false }}
+          DRY_RUN: ${{ inputs.dry_run || false }}
         run: |
-          installed=false
-
-          for attempt in 1 2 3; do
-            echo "APT attempt $attempt of 3: updating package lists..."
-
-            if ! sudo timeout 180s apt-get \
-              -o Acquire::Retries=3 \
-              -o Acquire::http::Timeout=30 \
-              -o Acquire::https::Timeout=30 \
-              update; then
-              echo "apt-get update failed or timed out."
-            elif ! sudo timeout 180s apt-get \
-              -o Acquire::Retries=3 \
-              -o Acquire::http::Timeout=30 \
-              -o Acquire::https::Timeout=30 \
-              install -y tesseract-ocr python3-pil; then
-              echo "Installing Tesseract or Pillow failed or timed out."
-            else
-              installed=true
-              break
-            fi
-
-            if [ "$attempt" -lt 3 ]; then
-              echo "Retrying in 10 seconds..."
-              sleep 10
-            fi
-          done
-
-          if [ "$installed" != "true" ]; then
-            echo "Could not install OCR packages after 3 attempts."
-            exit 1
-          fi
-
-          python3 -c "import PIL" || \
-            python3 -m pip install --break-system-packages pillow
-
-          python3 Script/parse_schedule.py
-
+          args=()
+          [[ -z "$MESSAGE_ID" ]] || args+=(--message-id "$MESSAGE_ID")
+          [[ "$REPARSE" != true ]] || args+=(--reparse)
+          [[ "$DRY_RUN" != true ]] || args+=(--dry-run)
+          /usr/bin/python3 Script/fetch_schedule.py "${args[@]}"
       - name: Fetch show posters
+        if: ${{ !inputs.dry_run && github.ref == 'refs/heads/main' }}
         continue-on-error: true
         env:
-          # The secret is saved as TMBD_READ_TOKEN (typo), so check both spellings
           TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN || secrets.TMBD_READ_TOKEN }}
         run: python3 Script/fetch_posters.py
-
       - name: Verify Rumble entries on Patreon
+        if: ${{ !inputs.dry_run && github.ref == 'refs/heads/main' }}
         run: python3 Script/check_patreon.py
-
-      - name: Save changes
+      - name: Commit validated site data
+        if: ${{ !inputs.dry_run && github.ref == 'refs/heads/main' }}
         run: |
           git config user.name "schedule-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --staged --quiet || \
-            (git commit -m "Update schedule" && git pull --rebase && git push)
+          git add -- schedule.json schedule/ shows.json patreon-state.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update validated schedule data"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main || exit 1
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo "::error::Could not publish schedule after three attempts"
+          exit 1

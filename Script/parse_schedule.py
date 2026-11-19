@@ -1,4 +1,4 @@
-"""Read the schedule image and write its events into schedule.json."""
+"""Read and verify a G.O.T Games schedule flyer without modifying the site."""
 import datetime as dt
 import glob
 import json
@@ -24,7 +24,7 @@ def ocr(img, psm, whitelist=None, scale=3):
         cmd = ["tesseract", f.name, "stdout", "--psm", str(psm)]
         if whitelist:
             cmd += ["-c", "tessedit_char_whitelist=" + whitelist]
-        return subprocess.run(cmd, capture_output=True, text=True).stdout.strip()
+        return subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=20).stdout.strip()
 
 
 def day_boxes(im, s):
@@ -83,58 +83,79 @@ def icons(im, yc, s):
 
 
 def monday_from_header(text, posted):
-    m = re.search(r"([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})", text)
-    if m and m.group(1).lower() in MONTHS:
-        month, day = MONTHS.index(m.group(1).lower()) + 1, int(m.group(2))
-        years = [posted.year - 1, posted.year, posted.year + 1]
-        dates = [dt.date(y, month, day) for y in years]
-        return min(dates, key=lambda d: abs((d - posted.date()).days))
-    d = posted.date()
-    return d - dt.timedelta(days=d.weekday())
+    dates = re.findall(r"\b([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b", text, re.I)
+    if len(dates) != 2 or any(month.lower() not in MONTHS for month, _ in dates):
+        raise ValueError("Could not verify both dates in the schedule header")
+    month, day = MONTHS.index(dates[0][0].lower()) + 1, int(dates[0][1])
+    target = MONTHS.index(dates[1][0].lower()) + 1, int(dates[1][1])
+    choices = []
+    for year in range(posted.year - 1, posted.year + 2):
+        try:
+            date = dt.date(year, month, day)
+        except ValueError:
+            continue
+        end = date + dt.timedelta(days=6)
+        if date.weekday() == 0 and (end.month, end.day) == target:
+            choices.append(date)
+    if not choices:
+        raise ValueError("Schedule header is not a Monday–Sunday week")
+    monday = min(choices, key=lambda date: abs((date - posted.date()).days))
+    if abs((monday - posted.date()).days) > 21:
+        raise ValueError("Schedule week is too far from the posting date")
+    return monday
 
 
-def main():
-    path = sorted(glob.glob("schedule/latest.*"))[0]
+def parse_image(path, posted):
+    if posted.tzinfo is None:
+        raise ValueError("The posting timestamp needs a timezone")
     im = Image.open(path).convert("RGB")
     s = im.width / 1152
-    try:
-        info = json.loads(pathlib.Path("schedule/message.json").read_text())
-        posted = dt.datetime.fromisoformat(info["posted"].replace("Z", "+00:00"))
-    except Exception:
-        posted = dt.datetime.now(dt.timezone.utc)
-
     boxes = day_boxes(im, s)
-    if not boxes:
-        print("WARNING: no day boxes found; schedule.json left unchanged.")
-        return
+    if len(boxes) != 7:
+        raise ValueError(f"Expected 7 weekday boxes; detected {len(boxes)}")
     top = boxes[0][0]
-    header = im.crop((int(300 * s), int(top - 96 * s), int(850 * s), int(top - 56 * s)))
-    monday = monday_from_header(ocr(header, 7), posted)
+    header = im.crop((int(280 * s), int(top - 104 * s), int(875 * s), int(top - 24 * s)))
+    header_text = ocr(header, 6)
+    monday = monday_from_header(header_text, posted)
+    zone_text = ocr(im.crop((int(390 * s), int(top - 58 * s), int(760 * s), int(top - 29 * s))), 7, scale=4)
+    zone_match = re.search(r"\b(GMT|UTC|BST|EST|EDT)\b", zone_text.upper())
+    if not zone_match:
+        raise ValueError("Cannot verify the timezone printed on the schedule")
+    zone = zone_match.group(1)
+    tz = dt.timezone(dt.timedelta(hours={"GMT": 0, "UTC": 0, "BST": 1, "EST": -5, "EDT": -4}[zone]))
 
-    events, prev = [], -1
+    events, no_stream, seen = [], [], set()
     for i, (y0, y1) in enumerate(boxes):
-        label = ocr(im.crop((int(20 * s), y0, int(110 * s), y1 + 1)), 7,
-                    "MONTUEWDHFRISA").upper()[:3]
-        idx = DAYS.index(label) if label in DAYS else prev + 1
-        prev = idx
-        day = monday + dt.timedelta(days=idx)
+        cy = (y0 + y1) / 2
+        label_img = im.crop((int(24 * s), int(cy - 24 * s), int(106 * s), int(cy + 24 * s)))
+        label_img = label_img.convert("L").point(lambda value: 255 if value > 120 else 0)
+        label = ocr(label_img, 7, "MONTUEWDHFRISA", 4).upper()
+        if label != DAYS[i]:
+            raise ValueError(f"Could not verify weekday box {i + 1} ({DAYS[i]})")
+        day = monday + dt.timedelta(days=i)
         rows = max(1, round((y1 - y0 + 4) / (ROW_H * s)))
         for r in range(rows):
             yc = y0 + (r + 0.5) * (y1 - y0 + 1) / rows
             t = ocr(im.crop((int(224 * s), int(yc - 14 * s), int(288 * s), int(yc + 14 * s))),
                     7, "0123456789:", 4)
-            m = re.search(r"(\d{1,2}):?(\d{2})", t)
+            m = re.fullmatch(r"(\d{1,2}):?(\d{2})", t)
             title = ocr(im.crop((int(290 * s), int(yc - 18 * s), int(1035 * s), int(yc + 18 * s))), 7)
             title = re.sub(r"\s+", " ", title.replace("£", "E")).strip()
             title = re.sub(r"[^\w)\]!?.]+$", "", title)
-            if not m or not title:
-                print(f"WARNING: could not read a row on {DAYS[idx]} (time={t!r}, title={title!r})")
+            if not m and re.match(r"^(no\s+streams?|no\s+events?|day\s+off)\b", title, re.I):
+                no_stream.append(day.isoformat())
                 continue
+            if not m or not title or not 0 <= int(m.group(1)) <= 23 or not 0 <= int(m.group(2)) <= 59:
+                raise ValueError(f"Unreadable time or title in {DAYS[i]} row {r + 1}")
             start = dt.datetime(day.year, day.month, day.day, int(m.group(1)), int(m.group(2)),
-                                tzinfo=dt.timezone.utc)
+                                tzinfo=tz).astimezone(dt.timezone.utc)
             found = icons(im, yc, s)
             primary = next((k for k in ("twitch", "rumble", "patreon") if k in found),
                            "got" if found else "other")
+            key = (" ".join(title.casefold().split()), start, primary)
+            if key in seen:
+                continue
+            seen.add(key)
             events.append({
                 "title": title,
                 "platform": primary,
@@ -144,31 +165,16 @@ def main():
                 "url": "",
             })
 
-    notes = ocr(im.crop((0, int(boxes[-1][1] + 15 * s), im.width, im.height)), 6, None, 2)
-    site = pathlib.Path("schedule.json")
-    data = json.loads(site.read_text())
-
-    # Preserve the previous posted week before replacing it with a new image.
-    archive_dir = pathlib.Path("schedule/archive")
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    previous_week = data.get("weekStart")
-    if previous_week and isinstance(data.get("events"), list) and data["events"]:
-        previous_archive = archive_dir / f"{previous_week}.json"
-        previous_archive.write_text(json.dumps(data, indent=2) + "\n")
-
-    data.update({
-        "weekStart": monday.isoformat(),
-        "events": sorted(events, key=lambda e: e["start"]),
-        "notes": [n.strip() for n in notes.splitlines() if n.strip()],
-        "updated": dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
-    })
-    site.write_text(json.dumps(data, indent=2) + "\n")
-
-    # Save the newly parsed week as a browsable historical snapshot too.
-    current_archive = archive_dir / f"{monday.isoformat()}.json"
-    current_archive.write_text(json.dumps(data, indent=2) + "\n")
-    print(f"Wrote {len(events)} events for the week of {monday} and archived it.")
+    notes_y = int(boxes[-1][1] + 15 * s)
+    notes = ocr(im.crop((0, notes_y, im.width, im.height)), 6, None, 2) if notes_y < im.height else ""
+    if not events and len(set(no_stream)) != 7:
+        raise ValueError("No events or complete explicit no-event week found")
+    return {"weekStart": monday.isoformat(), "events": sorted(events, key=lambda e: e["start"]),
+            "notes": [n.strip() for n in notes.splitlines() if n.strip()], "noStreamDays": sorted(set(no_stream)),
+            "sourceTimezone": zone}
 
 
 if __name__ == "__main__":
-    main()
+    info = json.loads(pathlib.Path("schedule/message.json").read_text())
+    path = sorted(glob.glob("schedule/latest.*"))[0]
+    print(json.dumps(parse_image(path, dt.datetime.fromisoformat(info["posted"])), indent=2))
