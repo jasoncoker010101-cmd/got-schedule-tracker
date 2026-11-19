@@ -1507,6 +1507,7 @@ nav.main-nav .account-menu button{min-height:42px}
 #archiveViewLabel{margin-left:auto;color:var(--mute);font-size:.78rem;font-weight:700}
 @media(max-width:560px){.schedule-archive-nav{gap:7px}.schedule-archive-nav button{flex:1 1 42%}.schedule-archive-nav input{flex:1 1 145px;max-width:none}#archiveViewLabel{flex:1 1 100%;margin-left:0}}
 </style>
+<link rel="stylesheet" href="schedule-board.css">
 </head>
 <body>
 <div class="got-intro-screen" id="gotWelcomeIntro" role="status" aria-label="Welcome to G.O.T Games Schedule">
@@ -1517,14 +1518,13 @@ nav.main-nav .account-menu button{min-height:42px}
   <header class="hero">
     <div class="hero-top">
       <div class="hero-heading">
-        <div class="hero-kicker"><span class="kicker-dot"></span> THE G.O.T GAMES HUB</div>
-        <h1>Never miss a <span>drop.</span></h1>
-        <p class="sub">Every stream, upload and reaction in one place. Your weekly G.O.T Games schedule, always up to date.</p>
-        <div class="hero-tags"><span>WEEKLY SCHEDULE</span><span>LIVE UPDATES</span><span>YOUR TIMEZONE</span></div>
+        <div class="hero-kicker"><span class="kicker-dot"></span> THE G.O.T GAMES HUB / 01</div>
+        <h1>The weekly <span>rundown.</span></h1>
+        <p class="sub">Streams, uploads and reactions from the official weekly flyer, shown in your timezone.</p>
       </div>
 
       <div class="hero-stamp">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBZrOquWY5f4GYsoDC1SS-wPVVS3lFMO8wuOgYuCIK2Q&amp;s=10" alt="G.O.T Games logo" loading="eager" decoding="async">
+        <img src="favicon.png" alt="G.O.T Games logo" loading="eager" decoding="async">
       </div>
     </div>
 
@@ -1600,6 +1600,12 @@ nav.main-nav .account-menu button{min-height:42px}
   </div>
 
   <section class="week-overview" aria-label="This week's schedule summary">
+    <article class="broadcast-next">
+      <span class="section-kicker" id="nextEventLabel">ON THE SCHEDULE</span>
+      <h2 id="nextEventTitle">Loading the lineup…</h2>
+      <p id="nextEventDetails"></p>
+      <span id="nextEventCountdown" class="broadcast-clock" hidden></span>
+    </article>
     <article class="overview-card"><span>Scheduled</span><strong id="statSessions">—</strong><small>Confirmed events</small></article>
     <article class="overview-card"><span>Platforms</span><strong id="statPlatforms">—</strong><small>Places to watch</small></article>
   </section>
@@ -1654,7 +1660,7 @@ nav.main-nav .account-menu button{min-height:42px}
     <div class="section-heading">
       <div>
         <div class="section-kicker">THE LINEUP</div>
-        <h2 id="weekTitle">This week <span>at a glance</span></h2>
+        <h2 id="weekTitle"><span id="weekTitleMode">This week</span> at a glance</h2>
         <p id="rangeLabel">Your weekly drop calendar</p>
       </div>
       <div class="legend">
@@ -1668,7 +1674,7 @@ nav.main-nav .account-menu button{min-height:42px}
       <div class="schedule-tool-row">
         <label class="schedule-find" for="scheduleSearch">
           <span aria-hidden="true">⌕</span>
-          <input id="scheduleSearch" type="search" placeholder="Find a stream, upload or reaction…" autocomplete="off">
+          <input id="scheduleSearch" type="search" aria-label="Search the schedule" placeholder="Find a stream, upload or reaction…" autocomplete="off">
         </label>
         <label class="schedule-platform" for="schedulePlatformFilter">
           <span>PLATFORM</span>
@@ -1692,6 +1698,7 @@ nav.main-nav .account-menu button{min-height:42px}
         <input id="scheduleDatePicker" type="date">
         <button type="button" class="schedule-utility" id="nextScheduleWeek" aria-label="Next week">Next week →</button>
         <button type="button" class="schedule-utility" id="currentScheduleWeek">Current week</button>
+        <button type="button" class="schedule-utility" id="openScheduleFlyer" hidden>View original flyer</button>
         <span id="archiveViewLabel" role="status">Current schedule</span>
       </div>
       <div class="schedule-tool-bottom">
@@ -1710,6 +1717,11 @@ nav.main-nav .account-menu button{min-height:42px}
     </div>
     <main class="week" id="week" aria-live="polite"></main>
   </section>
+  <dialog class="flyer-dialog" id="scheduleFlyer" aria-labelledby="scheduleFlyerTitle">
+    <form method="dialog"><h2 id="scheduleFlyerTitle">Original schedule flyer</h2><button class="schedule-utility" value="close" autofocus>Close</button></form>
+    <p id="scheduleFlyerError" hidden>The flyer is unavailable. The schedule above is still available.</p>
+    <img id="scheduleFlyerImage" alt="Original weekly schedule flyer. The events are also listed in the calendar.">
+  </dialog>
 
   <section class="notes" id="notes" aria-label="Notes" hidden>
     <h2>Notes</h2>
@@ -1733,7 +1745,7 @@ nav.main-nav .account-menu button{min-height:42px}
 const SUPABASE_URL = "https://tzgxkiucsjampbresqkw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_hOSPQ3wZ9TB3cqsj0ruHXQ_TLjEVN9E";
 
-const supabaseClient = window.supabase.createClient(
+const supabaseClient = window.supabase?.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
@@ -1860,6 +1872,11 @@ async function loadMyProfile(){
 }
 
 async function refreshAuthState(){
+  if(!supabaseClient){
+    accountButton.disabled=true;
+    accountButtonText.textContent="Account unavailable";
+    return;
+  }
   const {data, error} = await supabaseClient.auth.getSession();
 
   if(error){
@@ -2009,7 +2026,7 @@ authForm.addEventListener("submit", async event=>{
 });
 
 /* Authentication listener */
-supabaseClient.auth.onAuthStateChange((_event, session)=>{
+supabaseClient?.auth.onAuthStateChange((_event, session)=>{
   currentUser = session?.user || null;
 
   setTimeout(()=>{
@@ -2240,7 +2257,8 @@ function updateScheduleAdminButton(){
 async function loadScheduleOverrides(){
   try{
     const response=await fetch(SUPABASE_URL+"/functions/v1/schedule-admin",{
-      method:"GET",headers:{apikey:SUPABASE_KEY},cache:"no-store"
+      method:"GET",headers:{apikey:SUPABASE_KEY},cache:"no-store",
+      signal:AbortSignal.timeout(4500)
     });
     if(!response.ok)throw new Error("Could not load stream status updates.");
     const payload=await response.json();
@@ -2488,22 +2506,26 @@ function render(){
   const platformCount = new Set(events.map(ev => ev.platform).filter(Boolean)).size;
   document.getElementById("statSessions").textContent = String(confirmedCount);
   document.getElementById("statPlatforms").textContent = String(platformCount);
+  renderBroadcast(events, liveKeys, now, today);
 
   document.getElementById("range").textContent=
     "Week of "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(weekStart))+
     " – "+new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"short",day:"numeric"}).format(utc(addDays(weekStart,6)))+
     " ("+zoneName(now)+")";
+  document.getElementById("weekTitleMode").textContent=archivedView?"Archived week":"This week";
+  document.getElementById("rangeLabel").textContent=document.getElementById("range").textContent;
 
   document.getElementById("updated").textContent=
-    data.updated ? "Last updated "+new Intl.DateTimeFormat("en-US",{
+    Number.isFinite(Date.parse(data.updated)) ? "Last updated "+new Intl.DateTimeFormat("en-US",{
       timeZone:tz,dateStyle:"medium",timeStyle:"short"
     }).format(new Date(data.updated)) : "";
 
   const week=document.getElementById("week");
   week.replaceChildren();
 
-  for(let i=0;i<7;i++){
-    const ds=addDays(weekStart,i);
+  const nominalDays=Array.from({length:7},(_,i)=>addDays(weekStart,i));
+  const days=[...new Set([...nominalDays,...events.map(eventDay)])].sort();
+  for(const [i,ds] of days.entries()){
     const box=el("section","day"+(ds===today ? " today" : ""));
     box.style.setProperty("--i",i);
 
@@ -2514,11 +2536,14 @@ function render(){
     h.append(el("small",null,new Intl.DateTimeFormat("en-US",{
       timeZone:"UTC",month:"short",day:"numeric"
     }).format(utc(ds))));
+    if(ds===today)h.append(el("span","day-flag","Today"));
+    if(!nominalDays.includes(ds))h.append(el("span","day-flag","Local time spillover"));
 
     box.append(h);
 
     const list=events.filter(ev=>eventDay(ev)===ds);
-    if(!list.length)box.append(el("p","none","Nothing posted yet"));
+    const noStream=Array.isArray(data.noStreamDays)&&data.noStreamDays.includes(ds);
+    if(!list.length&&!noStream)box.append(el("p","none","No events listed"));
 
     for(const ev of list){
       const game=gameFor(ev.title);
@@ -2624,8 +2649,7 @@ function render(){
       box.append(row);
     }
 
-    const noStreamDays=Array.isArray(data.noStreamDays)?data.noStreamDays:[];
-    if(noStreamDays.includes(ds)){
+    if(noStream){
       const row=el("div","ev no-stream");
       row.dataset.platform="all";
       row.dataset.status="past";
@@ -2633,7 +2657,7 @@ function render(){
       row.dataset.search="no stream";
       row.append(el("div","thumb empty"));
       const body=el("div");
-      body.append(el("div","t","No Stream"),el("div","k","No stream scheduled"));
+      body.append(el("div","t","No Stream"),el("div","k","No stream on this day of the original flyer"));
       row.append(body);
       box.append(row);
     }
@@ -2647,6 +2671,39 @@ function render(){
   document.getElementById("notesBody").replaceChildren(...notes.map(t=>el("p",null,t)));
   document.getElementById("notes").hidden=notes.length===0;
   updateArchiveNavigation();
+}
+
+function renderBroadcast(events, liveKeys, now, today){
+  const current=document.getElementById("nextEventTitle");
+  const label=document.getElementById("nextEventLabel");
+  const details=document.getElementById("nextEventDetails");
+  const clock=document.getElementById("nextEventCountdown");
+  const live=!viewingArchivedWeek&&events.find(ev=>liveKeys.has(eventKey(ev)));
+  const upcoming=!viewingArchivedWeek?events.filter(ev=>
+    ["confirmed","posted"].includes(ev.status)&&eventDate(ev)>now):[];
+  const next=upcoming.find(ev=>+eventDate(ev)===+eventDate(upcoming[0])&&!/^tbd$/i.test(ev.title))||upcoming[0];
+  const featured=live||next;
+  label.textContent=viewingArchivedWeek?"FROM THE ARCHIVE":live?"LIVE NOW":"NEXT SCHEDULED";
+  current.textContent=featured?(/^tbd$/i.test(featured.title)?"Title not yet announced":featured.title):viewingArchivedWeek?"Past lineup":"Nothing else scheduled";
+  if(featured){
+    const when=new Intl.DateTimeFormat("en-US",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",timeZoneName:"short"}).format(eventDate(featured));
+    details.textContent=when+" · "+(PLATFORMS[featured.platform]?.label||"Other");
+  }else{
+    const count=events.filter(ev=>eventDay(ev)===today).length;
+    details.textContent=viewingArchivedWeek?"Times are shown in your selected timezone.":count+" listed today in this timezone.";
+  }
+  clock.hidden=!next||!!live;
+  if(!clock.hidden){
+    const minutes=Math.max(1,Math.ceil((eventDate(next)-now)/60000));
+    const days=Math.floor(minutes/1440),hours=Math.floor(minutes%1440/60);
+    clock.textContent="IN "+(days?days+"D ":"")+(hours?hours+"H ":"")+(minutes%60||(!days&&!hours)?minutes%60+"M":"");
+  }
+  const relative=data.image;
+  const immutable=typeof relative==="string"&&/^schedule\/images\/[a-f0-9]{24}\.png$/.test(relative);
+  const currentImage=!viewingArchivedWeek&&typeof relative==="string"&&/^schedule\/latest\.png(?:\?v=\d+)?$/.test(relative);
+  const flyer=document.getElementById("openScheduleFlyer");
+  flyer.hidden=!immutable&&!currentImage;
+  flyer.dataset.src=flyer.hidden?"":(scheduleDataFromRepo.get(data)?SCHEDULE_REPO:"")+relative;
 }
 
 let activeScheduleMode = "all";
@@ -2665,7 +2722,8 @@ function applyScheduleFilters(){
     if(emptyNote) emptyNote.remove();
 
     for(const row of rows){
-      total++;
+      const isEvent=!row.classList.contains("no-stream");
+      if(isEvent)total++;
       const matchesText = !query || (row.dataset.search || "").includes(query);
       const matchesPlatform = platform === "all" || row.dataset.platform === platform;
       const matchesMode =
@@ -2673,7 +2731,7 @@ function applyScheduleFilters(){
         (activeScheduleMode === "live" && row.dataset.status === "live");
       const show = matchesText && matchesPlatform && matchesMode;
       row.hidden = !show;
-      if(show){visible++;dayVisible++;}
+      if(show){if(isEvent)visible++;dayVisible++;}
     }
 
     if(rows.length && !dayVisible){
@@ -2744,6 +2802,41 @@ function exportScheduleCalendar(){
   document.getElementById("scheduleResultCount").textContent="Calendar exported · "+events.length+" events";
 }
 
+const SCHEDULE_REPO="https://raw.githubusercontent.com/jasoncoker010101-cmd/got-schedule-tracker/main/";
+const scheduleDataFromRepo=new WeakMap();
+const isPublicSite=["www.got-games-schedule.aclclouds.online","got-games-schedule.aclclouds.online","jasoncoker010101-cmd.github.io"].includes(location.hostname);
+function validDay(value){
+  return typeof value==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(Date.parse(value))&&new Date(value).toISOString().slice(0,10)===value;
+}
+async function readSchedule(path,repo=false){
+  const r=await fetch((repo?SCHEDULE_REPO:"")+path+"?t="+Date.now(),
+    {cache:"no-store",signal:AbortSignal.timeout(repo?7000:4500)});
+  if(!r.ok)throw new Error("Schedule request returned HTTP "+r.status);
+  const payload=await r.json();
+  if(!validDay(payload?.weekStart)||new Date(payload.weekStart).getUTCDay()!==1||!Array.isArray(payload.events)||payload.events.some(ev=>
+    !ev||typeof ev.title!=="string"||!ev.title.trim()||
+    (ev.start?typeof ev.start!=="string"||!/(Z|[+-]\d\d:\d\d)$/.test(ev.start)||!Number.isFinite(Date.parse(ev.start)):
+      !validDay(ev.date))||
+    (ev.labels!=null&&(!Array.isArray(ev.labels)||ev.labels.some(text=>typeof text!=="string"))))){
+    throw new Error("Schedule data has an unexpected format");
+  }
+  scheduleDataFromRepo.set(payload,repo);
+  return payload;
+}
+async function newestSchedule(path){
+  if(!isPublicSite){
+    try{return await readSchedule(path);}catch(error){
+      if(path!=="schedule.json")throw error;
+      return readSchedule(path,true);
+    }
+  }
+  const resolved=await Promise.allSettled([readSchedule(path),readSchedule(path,true)]);
+  const available=resolved.filter(result=>result.status==="fulfilled").map(result=>result.value);
+  if(!available.length)throw resolved[0].reason;
+  return available.sort((a,b)=>b.weekStart.localeCompare(a.weekStart)||
+    (Date.parse(b.updated)||0)-(Date.parse(a.updated)||0)||
+    Number(scheduleDataFromRepo.get(b))-Number(scheduleDataFromRepo.get(a)))[0];
+}
 async function load(){
   if(scheduleLoading)return;
   scheduleLoading=true;
@@ -2751,54 +2844,41 @@ async function load(){
   refreshScheduleButton.textContent="Refreshing…";
   setScheduleStatus("loading",data?"Checking for schedule updates":"Loading schedule");
 
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),12000);
-  let usedFallback=false;
   try{
-    let response;
-    let primaryError=null;
-    try{
-      response=await fetch("schedule.json?t="+Date.now(),{cache:"no-store",signal:controller.signal});
-      if(!response.ok)throw new Error("Schedule request returned HTTP "+response.status);
-    }catch(error){
-      primaryError=error;
-      // GitHub Pages/CDN can briefly fail to serve the relative asset.
-      // Fall back to the repository's raw schedule file so the page can
-      // still refresh instead of remaining stuck on an old cached copy.
-      response=await fetch("https://raw.githubusercontent.com/jasoncoker010101-cmd/got-schedule-tracker/main/schedule.json?t="+Date.now(),{cache:"no-store",signal:controller.signal});
-      if(!response.ok)throw new Error("Schedule unavailable from both the site and backup source ("+response.status+").");
-      usedFallback=true;
-    }
-    const nextData=await response.json();
-    if(!nextData||!Array.isArray(nextData.events))throw new Error("Schedule data has an unexpected format.");
+    const received=await newestSchedule("schedule.json");
+    const outdated=latestScheduleData&&(received.weekStart<latestScheduleData.weekStart||
+      (received.weekStart===latestScheduleData.weekStart&&
+        (Date.parse(received.updated)||0)<(Date.parse(latestScheduleData.updated)||0)));
+    const nextData=outdated?latestScheduleData:received;
+    const usedFallback=scheduleDataFromRepo.get(nextData);
 
     latestScheduleData=nextData;
     if(!viewingArchivedWeek){
       data=latestScheduleData;
       archiveWeekStart=data.weekStart||mondayOf(dayKey(new Date()));
     }
-    await loadScheduleOverrides();
+    loadScheduleOverrides().then(render);
     lastScheduleCheck=new Date();
     render();
     updateArchiveNavigation();
     resolveGameArtwork();
 
-    const sourceUpdated=data.updated?new Date(data.updated):null;
+    const sourceUpdated=nextData.updated?new Date(nextData.updated):null;
     const sourceAge=sourceUpdated&&!Number.isNaN(sourceUpdated.getTime())?Date.now()-sourceUpdated.getTime():null;
-    const sourceIsOld=sourceAge!==null&&sourceAge>8*24*60*60*1000;
-    setScheduleStatus(sourceIsOld||usedFallback?"warning":"ready",
-      sourceIsOld?"Schedule loaded, but the posted data is old":usedFallback?"Schedule loaded from backup source":"Schedule loaded",
-      data.events.length+" events");
+    const sourceIsOld=(sourceAge!==null&&sourceAge>8*24*60*60*1000)||addDays(nextData.weekStart,6)<dayKey(new Date());
+    setScheduleStatus(sourceIsOld?"warning":"ready",
+      sourceIsOld?"Schedule loaded, but the posted data is old":usedFallback?"Schedule synced from GitHub":"Schedule loaded",
+      nextData.events.length+" events");
   }catch(e){
     lastScheduleCheck=new Date();
     if(!data){
       document.getElementById("range").textContent="Couldn't load the schedule. Use Refresh to try again.";
+      document.getElementById("nextEventTitle").textContent="Schedule unavailable";
     }
     setScheduleStatus(data?"warning":"error",
       data?"Connection issue · showing the last loaded schedule":"Couldn't load the schedule",
       e?.name==="AbortError"?"request timed out":(e?.message||"check your connection"));
   }finally{
-    clearTimeout(timeout);
     scheduleLoading=false;
     refreshScheduleButton.disabled=false;
     refreshScheduleButton.textContent="↻ Refresh";
@@ -2848,10 +2928,8 @@ async function showScheduleWeek(weekStart,forceArchive=false){
   }
   label.textContent="Loading archived week…";
   try{
-    const response=await fetch("schedule/archive/"+weekStart+".json?t="+Date.now(),{cache:"no-store"});
-    if(!response.ok)throw new Error("No saved schedule was found for the week of "+weekStart+".");
-    const archived=await response.json();
-    if(!archived||!Array.isArray(archived.events))throw new Error("That archived schedule is invalid.");
+    const archived=await newestSchedule("schedule/archive/"+weekStart+".json");
+    if(archived.weekStart!==weekStart)throw new Error("The archived week did not match the date requested.");
     if(requestId!==archiveNavigationRequest)return;
     data=archived;
     viewingArchivedWeek=true;
@@ -2871,7 +2949,7 @@ async function showScheduleWeek(weekStart,forceArchive=false){
     if(requestId!==archiveNavigationRequest)return;
     requestedArchiveWeekStart=null;
     picker.value=data?.weekStart||currentStart;
-    label.textContent=error.message||"Archive unavailable";
+    label.textContent="Archive unavailable for the week of "+weekStart+".";
   }
 }
 
@@ -2906,6 +2984,18 @@ document.getElementById("currentScheduleWeek").addEventListener("click",()=>{
 refreshScheduleButton.addEventListener("click",()=>load());
 document.getElementById("exportCalendar").addEventListener("click",exportScheduleCalendar);
 document.getElementById("printSchedule").addEventListener("click",()=>window.print());
+document.querySelector(".site-foot").before(document.getElementById("activityFeed"));
+const flyerDialog=document.getElementById("scheduleFlyer");
+const flyerImage=document.getElementById("scheduleFlyerImage");
+const flyerError=document.getElementById("scheduleFlyerError");
+flyerImage.addEventListener("error",()=>{flyerImage.hidden=true;flyerError.hidden=false;});
+document.getElementById("openScheduleFlyer").addEventListener("click",event=>{
+  if(!event.currentTarget.dataset.src)return;
+  flyerError.hidden=true;
+  flyerImage.hidden=false;
+  flyerImage.src=event.currentTarget.dataset.src;
+  flyerDialog.showModal();
+});
 
 document.getElementById("scheduleSearch").addEventListener("input",applyScheduleFilters);
 document.getElementById("schedulePlatformFilter").addEventListener("change",applyScheduleFilters);
@@ -2920,8 +3010,10 @@ document.querySelectorAll("[data-schedule-mode]").forEach(button=>{
     applyScheduleFilters();
   });
 });
-document.getElementById("todayJump").addEventListener("click",()=>{
+document.getElementById("todayJump").addEventListener("click",async()=>{
+  if(viewingArchivedWeek&&latestScheduleData)await showScheduleWeek(latestScheduleData.weekStart);
   const todayCard = document.querySelector("#week .day.today");
+  if(!todayCard)document.getElementById("scheduleResultCount").textContent="Today is outside the posted schedule.";
   (todayCard || document.getElementById("weekTitle")).scrollIntoView({
     behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
     block:"center"
@@ -3008,12 +3100,18 @@ async function loadGames(){
 }
 
 async function loadLive(){
-  try{
-    const r=await fetch("live.json?t="+Date.now(),{cache:"no-store"});
-    liveFeed=r.ok ? await r.json() : null;
-  }catch(e){
-    liveFeed=null;
-  }
+  const mirrors=isPublicSite?[SCHEDULE_REPO,""]:[""];
+  const outcomes=await Promise.allSettled(mirrors.map(async base=>{
+    const r=await fetch(base+"live.json?t="+Date.now(),{cache:"no-store",signal:AbortSignal.timeout(4500)});
+    if(!r.ok)throw Error("Live status is unavailable");
+    const value=await r.json();
+    if(!value?.platforms||!Number.isFinite(Date.parse(value.updated)))throw Error("Invalid live status");
+    return value;
+  }));
+  const candidate=outcomes.filter(item=>item.status==="fulfilled").map(item=>item.value)
+    .sort((a,b)=>Date.parse(b.updated)-Date.parse(a.updated))[0];
+  if(candidate)liveFeed=candidate;
+  if(liveFeed&&Date.now()-Date.parse(liveFeed.updated)>3*60*60*1000)liveFeed=null;
   render();
 }
 
@@ -3031,7 +3129,7 @@ setInterval(render,60*1000);
   /* ===== TWITCH LIVE = RUMBLE LIVE (he streams on both at the same time) ===== */
 const SIMULCAST_PLATFORMS=["twitch","rumble"];
 const SIMULCAST_WINDOW_MS=8*60*60*1000;
-const twitchIsLive=()=>!!(liveFeed&&liveFeed.platforms&&liveFeed.platforms.twitch);
+const twitchIsLive=()=>liveFeed?.platforms?.twitch===true;
 
 currentLiveKeys=function(events,now){
   const keys=new Set();
