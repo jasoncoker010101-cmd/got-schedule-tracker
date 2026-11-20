@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-20T20:35:27.790658Z",
+  "updated": "2026-11-20T21:29:14.149109Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,34 +19,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 1,
-      "next_page": 2,
+      "page_checked": 2,
+      "next_page": 3,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "\ud83d\udd34Umm... Absolutely NO ONE expected THIS...\ud83d\udd34",
-          "channel_name": "MattMorseTV",
-          "channel_url": "https://rumble.com/c/MattMorseTV"
+          "title": "Mamdani to Close Riker's Island? No Conflict in Brian Cole Jr. Case! Halifax is a Poop-Hole & MORE!",
+          "channel_name": "vivafrei",
+          "channel_url": "https://rumble.com/user/vivafrei"
         },
         {
-          "title": "Alex Jones Live",
-          "channel_name": "The Alex Jones Show Live",
-          "channel_url": "https://rumble.com/c/TheAlexJonesShowLive"
+          "title": "WATCH HERE - ALL Alex Jones Network Shows & Commercial Free Replays",
+          "channel_name": "Ron Gibson Channel - Alex Jones Network Partner",
+          "channel_url": "https://rumble.com/c/RonGibsonChannel"
         },
         {
-          "title": "\ud83d\udd34DR DISRESPECT - GTA 6 - EVERY MISSION, YOU WIN",
-          "channel_name": "Dr Disrespect",
-          "channel_url": "https://rumble.com/c/DrDisrespect"
+          "title": "Now Streaming LIVE >>> 'The Effects of Generational Freemasonry, Root Cause of Eczema, Chronic Signs of Parasites, and Fever Treatment' | The Michelle Moore Show (Nov 20, 2026)",
+          "channel_name": "The Michelle Moore Show",
+          "channel_url": "https://rumble.com/c/TheMichelleMooreShow"
         },
         {
-          "title": "HOME OF REAL NEWS & HONEST VIEWS",
-          "channel_name": "RealAmericasVoice",
-          "channel_url": "https://rumble.com/user/RealAmericasVoice"
+          "title": "The Alex Jones Show FRIDAY LIVE SHOW STREAM 11/20/26",
+          "channel_name": "The Alex Jones Show",
+          "channel_url": "https://rumble.com/c/TheAlexJonesShowRumble"
         },
         {
-          "title": "\ud83d\udd34LIVE - GTA 6 IS HERE - 1ST SUBATHON EVER!",
-          "channel_name": "BobbyPoffGaming",
-          "channel_url": "https://rumble.com/c/BobbyPoffGaming"
+          "title": "Joe Oltmann Untamed | Joe\u2019s Conversation W/ Mark Cook: Enough Pretending | 11.20.26",
+          "channel_name": "UntamedNation",
+          "channel_url": "https://rumble.com/user/UntamedNation"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -62,8 +62,8 @@
     "state": "waiting",
     "twitch_seen_live": false,
     "rumble_seen_live": false,
-    "rumble_page": 2,
-    "next_rumble_check_at": "2026-11-20T20:40:27.790658Z",
+    "rumble_page": 3,
+    "next_rumble_check_at": "2026-11-20T21:34:14.149109Z",
     "message": "Waiting for the Twitch stream to start."
   }
 }
