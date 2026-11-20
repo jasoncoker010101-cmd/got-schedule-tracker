@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-19T11:38:24.610034Z",
+  "updated": "2026-11-20T11:58:49.146538Z",
   "checks": {
     "2026-11-12T20:30:00Z|one piece": {
       "status": "verified",
@@ -72,16 +72,32 @@
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-18T20:30:00Z|one piece": {
-      "status": "pending",
-      "message": "No matching Patreon post found yet. The tracker will check again automatically.",
-      "covered_episodes": [],
-      "missing_episodes": [
+      "status": "verified",
+      "message": "All announced episodes were found on Patreon.",
+      "url": "https://www.patreon.com/gotgames/posts/one-piece-41-45-175745731",
+      "posts": [
+        {
+          "title": "⚓ONE PIECE *EPISODES 41-45* | FULL LIVESTREAM REACTION! ⚓",
+          "url": "https://www.patreon.com/gotgames/posts/one-piece-41-45-175745731",
+          "episodes": [
+            41,
+            42,
+            43,
+            44,
+            45
+          ]
+        }
+      ],
+      "covered_episodes": [
         41,
         42,
         43,
         44
       ],
-      "checked_at": "2026-11-19T11:38:24.610034Z",
+      "extra_episodes": [
+        45
+      ],
+      "checked_at": "2026-11-20T11:58:49.146538Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-20T20:30:00Z|charlotte": {
@@ -95,7 +111,7 @@
         12,
         13
       ],
-      "checked_at": "2026-11-19T11:38:24.610034Z",
+      "checked_at": "2026-11-20T11:58:49.146538Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-21T20:30:00Z|hell s paradise": {
@@ -107,7 +123,7 @@
         11,
         12
       ],
-      "checked_at": "2026-11-19T11:38:24.610034Z",
+      "checked_at": "2026-11-20T11:58:49.146538Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     }
   }
