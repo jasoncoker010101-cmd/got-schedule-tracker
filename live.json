@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-20T22:24:53.709000Z",
+  "updated": "2026-11-20T23:18:41.844766Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,34 +19,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 3,
-      "next_page": 4,
+      "page_checked": 4,
+      "next_page": 5,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "The Consciousness Paradox, What if Everything you about Reality is Backwards with Ethan Lucas #646",
-          "channel_name": "TruthStream with Joe and Scott",
-          "channel_url": "https://rumble.com/c/TruthStream"
+          "title": "Deep House Vibes | Pure Emotional Escape",
+          "channel_name": "Feelthedeeplivethecalm",
+          "channel_url": "https://rumble.com/user/Feelthedeeplivethecalm"
         },
         {
-          "title": "Synthwave Radio \ud83c\udf0c - beats to chill/game to",
-          "channel_name": "Lofi Girl",
-          "channel_url": "https://rumble.com/c/LofiGirl"
+          "title": "Worldview Tube Live 24/7",
+          "channel_name": "WorldviewTube",
+          "channel_url": "https://rumble.com/c/WorldviewTube"
         },
         {
-          "title": "\ud83d\udd34GRIMM THEFT AUTO \u00b7 DAY 3 \u00b7 STREAM DOESN'T END UNTIL I BEAT GTA 6 \ud83c\udf34 GRIMM HOLLYWOOD \ud83c\udf34",
-          "channel_name": "GrimmHollywood",
-          "channel_url": "https://rumble.com/user/GrimmHollywood"
+          "title": "FRIDAY NIGHT LIGHT November 20, 2026",
+          "channel_name": "PatriotMikeCook",
+          "channel_url": "https://rumble.com/user/PatriotMikeCook"
         },
         {
-          "title": "UNSAFE with Ann Coulter: Top Stories You May Have Missed!",
-          "channel_name": "Ann Coulter",
-          "channel_url": "https://rumble.com/c/AnnCoulter"
+          "title": "Joey Cannoli Games 11-20-26: GTA VI Part 4: Spicy Latina Simulator",
+          "channel_name": "Joey Cannoli",
+          "channel_url": "https://rumble.com/c/JoeyCannoli"
         },
         {
-          "title": "SHE SHUT DOWN HER YOUTUBE??!!",
-          "channel_name": "Megan Fox Investigates",
-          "channel_url": "https://rumble.com/c/MeganFoxInvestigates"
+          "title": "\ud83d\ude0118+FRIEDAY IN THE LOUNGE\ud83d\udc40LETS SHINE BABY\ud83d\udc99#BUILDINGIT\ud83d\ude01GAMING. 420 SESH, AND WATCH PARTIES\ud83d\udc99",
+          "channel_name": "Cripiechuccles",
+          "channel_url": "https://rumble.com/user/Cripiechuccles"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -62,8 +62,8 @@
     "state": "waiting",
     "twitch_seen_live": false,
     "rumble_seen_live": false,
-    "rumble_page": 4,
-    "next_rumble_check_at": "2026-11-20T22:29:53.709000Z",
+    "rumble_page": 5,
+    "next_rumble_check_at": "2026-11-20T23:23:41.844766Z",
     "message": "Waiting for the Twitch stream to start."
   }
 }
