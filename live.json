@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-20T19:46:07.972476Z",
+  "updated": "2026-11-20T20:35:27.790658Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -9,35 +9,61 @@
     "twitch": {
       "ok": true,
       "live": false,
-      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
-      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
       "ok": true,
       "live": false,
-      "skipped": "No active scheduled Rumble event",
+      "page_checked": 1,
+      "next_page": 2,
+      "streams_scanned": 25,
+      "live_candidates": [
+        {
+          "title": "\ud83d\udd34Umm... Absolutely NO ONE expected THIS...\ud83d\udd34",
+          "channel_name": "MattMorseTV",
+          "channel_url": "https://rumble.com/c/MattMorseTV"
+        },
+        {
+          "title": "Alex Jones Live",
+          "channel_name": "The Alex Jones Show Live",
+          "channel_url": "https://rumble.com/c/TheAlexJonesShowLive"
+        },
+        {
+          "title": "\ud83d\udd34DR DISRESPECT - GTA 6 - EVERY MISSION, YOU WIN",
+          "channel_name": "Dr Disrespect",
+          "channel_url": "https://rumble.com/c/DrDisrespect"
+        },
+        {
+          "title": "HOME OF REAL NEWS & HONEST VIEWS",
+          "channel_name": "RealAmericasVoice",
+          "channel_url": "https://rumble.com/user/RealAmericasVoice"
+        },
+        {
+          "title": "\ud83d\udd34LIVE - GTA 6 IS HERE - 1ST SUBATHON EVER!",
+          "channel_name": "BobbyPoffGaming",
+          "channel_url": "https://rumble.com/c/BobbyPoffGaming"
+        }
+      ],
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "session_state": "ended",
-      "message": "The Twitch stream ended, so this Rumble event is marked ended."
+      "session_state": "waiting",
+      "message": "Waiting for the Twitch stream to start."
     }
   },
   "rumble_session": {
-    "event_key": "2026-11-18T20:30:00Z|rumble|ONE PIECE E41-44",
-    "title": "ONE PIECE E41-44",
-    "scheduled_start": "2026-11-18T20:30:00Z",
-    "state": "ended",
-    "twitch_seen_live": true,
+    "event_key": "2026-11-20T20:30:00Z|rumble|Charlotte E9-13",
+    "title": "Charlotte E9-13",
+    "scheduled_start": "2026-11-20T20:30:00Z",
+    "state": "waiting",
+    "twitch_seen_live": false,
     "rumble_seen_live": false,
-    "rumble_page": 4,
-    "next_rumble_check_at": null,
-    "message": "The Twitch stream ended, so this Rumble event is marked ended.",
-    "ended_at": "2026-11-18T23:33:58.302129Z"
+    "rumble_page": 2,
+    "next_rumble_check_at": "2026-11-20T20:40:27.790658Z",
+    "message": "Waiting for the Twitch stream to start."
   }
 }
