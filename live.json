@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-20T23:18:41.844766Z",
+  "updated": "2026-11-21T00:10:54.803632Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,34 +19,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 4,
-      "next_page": 5,
+      "page_checked": 5,
+      "next_page": 6,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "Deep House Vibes | Pure Emotional Escape",
-          "channel_name": "Feelthedeeplivethecalm",
-          "channel_url": "https://rumble.com/user/Feelthedeeplivethecalm"
+          "title": "The Patriot Party Podcast: D+669 GTF I Live at 730pm EST",
+          "channel_name": "The Patriot Party Podcast",
+          "channel_url": "https://rumble.com/c/ThePatriotPartyPodcast"
         },
         {
-          "title": "Worldview Tube Live 24/7",
-          "channel_name": "WorldviewTube",
-          "channel_url": "https://rumble.com/c/WorldviewTube"
+          "title": "Friday Night Jamz At The Cabin",
+          "channel_name": "TheCCCCabin",
+          "channel_url": "https://rumble.com/c/TheCCCCabin"
         },
         {
-          "title": "FRIDAY NIGHT LIGHT November 20, 2026",
-          "channel_name": "PatriotMikeCook",
-          "channel_url": "https://rumble.com/user/PatriotMikeCook"
+          "title": "STOCK MARKET COLLAPSE? WALL STREET SELLOFF ACCELERATES!",
+          "channel_name": "The Bek Lover Podcast",
+          "channel_url": "https://rumble.com/c/BekLoverPodcast"
         },
         {
-          "title": "Joey Cannoli Games 11-20-26: GTA VI Part 4: Spicy Latina Simulator",
-          "channel_name": "Joey Cannoli",
-          "channel_url": "https://rumble.com/c/JoeyCannoli"
+          "title": "The Afternoon Drive-BY w/ Michael Hagwood",
+          "channel_name": "ktoxradio1013",
+          "channel_url": "https://rumble.com/user/ktoxradio1013"
         },
         {
-          "title": "\ud83d\ude0118+FRIEDAY IN THE LOUNGE\ud83d\udc40LETS SHINE BABY\ud83d\udc99#BUILDINGIT\ud83d\ude01GAMING. 420 SESH, AND WATCH PARTIES\ud83d\udc99",
-          "channel_name": "Cripiechuccles",
-          "channel_url": "https://rumble.com/user/Cripiechuccles"
+          "title": "WE'RE DEEP IN DEPRESSION ARC!!!! LET'S WATCH THINGS!",
+          "channel_name": "EDAnime",
+          "channel_url": "https://rumble.com/user/EDAnime"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -62,8 +62,8 @@
     "state": "waiting",
     "twitch_seen_live": false,
     "rumble_seen_live": false,
-    "rumble_page": 5,
-    "next_rumble_check_at": "2026-11-20T23:23:41.844766Z",
+    "rumble_page": 6,
+    "next_rumble_check_at": "2026-11-21T00:15:54.803632Z",
     "message": "Waiting for the Twitch stream to start."
   }
 }
