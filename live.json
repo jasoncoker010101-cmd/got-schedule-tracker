@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21T21:25:40.924228Z",
+  "updated": "2026-11-21T22:14:02.778600Z",
   "platforms": {
     "twitch": true,
     "youtube": false,
@@ -20,34 +20,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 2,
-      "next_page": 3,
+      "page_checked": 3,
+      "next_page": 4,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "Mamdani to Close Riker's Island? No Conflict in Brian Cole Jr. Case! Halifax is a Poop-Hole & MORE!",
-          "channel_name": "vivafrei",
-          "channel_url": "https://rumble.com/user/vivafrei"
+          "title": "\ud83c\udf82 Birthday Chaos! Subs & Rants Control What Goes in My Mouth! \ud83d\ude08",
+          "channel_name": "Inked_Babe",
+          "channel_url": "https://rumble.com/user/Inked_Babe"
         },
         {
-          "title": "WATCH HERE - ALL Alex Jones Network Shows & Commercial Free Replays",
-          "channel_name": "Ron Gibson Channel - Alex Jones Network Partner",
-          "channel_url": "https://rumble.com/c/RonGibsonChannel"
+          "title": "Asmongold Live | SHIT HIT THE FAN",
+          "channel_name": "Asmongold_live",
+          "channel_url": "https://rumble.com/user/Asmongold_live"
         },
         {
-          "title": "Now Streaming LIVE >>> 'The Effects of Generational Freemasonry, Root Cause of Eczema, Chronic Signs of Parasites, and Fever Treatment' | The Michelle Moore Show (Nov 20, 2026)",
-          "channel_name": "The Michelle Moore Show",
-          "channel_url": "https://rumble.com/c/TheMichelleMooreShow"
+          "title": "BEWARE OF THE MATRIX",
+          "channel_name": "STRANGER THAN FICTION NEWS",
+          "channel_url": "https://rumble.com/c/c-360794"
         },
         {
-          "title": "The Alex Jones Show FRIDAY LIVE SHOW STREAM 11/20/26",
-          "channel_name": "The Alex Jones Show",
-          "channel_url": "https://rumble.com/c/TheAlexJonesShowRumble"
+          "title": "Conspiracy TV - 24/7 Conspiracies, Cover-Ups & Unexplained Mysteries.",
+          "channel_name": "Conspiracy TV",
+          "channel_url": "https://rumble.com/c/ConspiracyWorldUK"
         },
         {
-          "title": "Joe Oltmann Untamed | Joe\u2019s Conversation W/ Mark Cook: Enough Pretending | 11.20.26",
-          "channel_name": "UntamedNation",
-          "channel_url": "https://rumble.com/user/UntamedNation"
+          "title": "Joey Cannoli Games 11-20-26: GTA VI Part 5: I Hate Controllers, gimme mouse and keyboard",
+          "channel_name": "Joey Cannoli",
+          "channel_url": "https://rumble.com/c/JoeyCannoli"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -63,8 +63,8 @@
     "state": "waiting",
     "twitch_seen_live": true,
     "rumble_seen_live": false,
-    "rumble_page": 3,
-    "next_rumble_check_at": "2026-11-21T21:30:40.924228Z",
+    "rumble_page": 4,
+    "next_rumble_check_at": "2026-11-21T22:19:02.778600Z",
     "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
   }
 }
