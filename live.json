@@ -1,42 +1,70 @@
 {
-  "updated": "2026-11-21T20:02:00.892917Z",
+  "updated": "2026-11-21T20:46:14.533306Z",
   "platforms": {
-    "twitch": false,
+    "twitch": true,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": false,
-      "skipped": "No scheduled stream in the live-check window",
+      "live": true,
+      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
-      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
       "ok": true,
       "live": false,
-      "skipped": "No active scheduled Rumble event",
+      "page_checked": 1,
+      "next_page": 2,
+      "streams_scanned": 24,
+      "live_candidates": [
+        {
+          "title": "\ud83d\udd34Folks... Trump was 10 STEPS AHEAD !!!\ud83d\udd34",
+          "channel_name": "MattMorseTV",
+          "channel_url": "https://rumble.com/c/MattMorseTV"
+        },
+        {
+          "title": "RT DE Live-TV",
+          "channel_name": "RT DE",
+          "channel_url": "https://rumble.com/c/RTDE"
+        },
+        {
+          "title": "Cowboys Can HE FIX THE DEFENSE????? Mike Pettine + Q&A",
+          "channel_name": "Law Nation Sports",
+          "channel_url": "https://rumble.com/c/LawNationSports"
+        },
+        {
+          "title": "Alex Jones Live",
+          "channel_name": "The Alex Jones Show Live",
+          "channel_url": "https://rumble.com/c/TheAlexJonesShowLive"
+        },
+        {
+          "title": "Hulkanator Spaceshot Show-11/21/26 (1pm)",
+          "channel_name": "Spaceshot76",
+          "channel_url": "https://rumble.com/user/Spaceshot76"
+        }
+      ],
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
       "session_state": "waiting",
-      "message": "Waiting for the Twitch stream to start."
+      "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
     }
   },
   "rumble_session": {
-    "event_key": "2026-11-20T20:30:00Z|rumble|Charlotte E9-13",
-    "title": "Charlotte E9-13",
-    "scheduled_start": "2026-11-20T20:30:00Z",
+    "event_key": "2026-11-21T20:30:00Z|rumble|Hell's Paradise S2 E10-12",
+    "title": "Hell's Paradise S2 E10-12",
+    "scheduled_start": "2026-11-21T20:30:00Z",
     "state": "waiting",
-    "twitch_seen_live": false,
+    "twitch_seen_live": true,
     "rumble_seen_live": false,
-    "rumble_page": 9,
-    "next_rumble_check_at": "2026-11-21T03:31:47.774132Z",
-    "message": "Waiting for the Twitch stream to start."
+    "rumble_page": 2,
+    "next_rumble_check_at": "2026-11-21T20:51:14.533306Z",
+    "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
   }
 }
