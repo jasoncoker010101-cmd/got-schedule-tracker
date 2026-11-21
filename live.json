@@ -1,15 +1,14 @@
 {
-  "updated": "2026-11-21T22:14:02.778600Z",
+  "updated": "2026-11-21T22:59:09.973825Z",
   "platforms": {
-    "twitch": true,
+    "twitch": false,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": true,
-      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
+      "live": false,
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
@@ -20,51 +19,23 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 3,
-      "next_page": 4,
-      "streams_scanned": 25,
-      "live_candidates": [
-        {
-          "title": "\ud83c\udf82 Birthday Chaos! Subs & Rants Control What Goes in My Mouth! \ud83d\ude08",
-          "channel_name": "Inked_Babe",
-          "channel_url": "https://rumble.com/user/Inked_Babe"
-        },
-        {
-          "title": "Asmongold Live | SHIT HIT THE FAN",
-          "channel_name": "Asmongold_live",
-          "channel_url": "https://rumble.com/user/Asmongold_live"
-        },
-        {
-          "title": "BEWARE OF THE MATRIX",
-          "channel_name": "STRANGER THAN FICTION NEWS",
-          "channel_url": "https://rumble.com/c/c-360794"
-        },
-        {
-          "title": "Conspiracy TV - 24/7 Conspiracies, Cover-Ups & Unexplained Mysteries.",
-          "channel_name": "Conspiracy TV",
-          "channel_url": "https://rumble.com/c/ConspiracyWorldUK"
-        },
-        {
-          "title": "Joey Cannoli Games 11-20-26: GTA VI Part 5: I Hate Controllers, gimme mouse and keyboard",
-          "channel_name": "Joey Cannoli",
-          "channel_url": "https://rumble.com/c/JoeyCannoli"
-        }
-      ],
+      "skipped": "Twitch stream ended",
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "session_state": "waiting",
-      "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
+      "session_state": "ended",
+      "message": "The Twitch stream ended, so this Rumble event is marked ended."
     }
   },
   "rumble_session": {
     "event_key": "2026-11-21T20:30:00Z|rumble|Hell's Paradise S2 E10-12",
     "title": "Hell's Paradise S2 E10-12",
     "scheduled_start": "2026-11-21T20:30:00Z",
-    "state": "waiting",
+    "state": "ended",
     "twitch_seen_live": true,
     "rumble_seen_live": false,
     "rumble_page": 4,
-    "next_rumble_check_at": "2026-11-21T22:19:02.778600Z",
-    "message": "GOT Games is live on Twitch. Rumble is expected to start soon."
+    "next_rumble_check_at": null,
+    "message": "The Twitch stream ended, so this Rumble event is marked ended.",
+    "ended_at": "2026-11-21T22:59:09.973825Z"
   }
 }
