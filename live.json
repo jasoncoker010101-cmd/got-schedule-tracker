@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21T00:10:54.803632Z",
+  "updated": "2026-11-21T01:32:03.888724Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,34 +19,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 5,
-      "next_page": 6,
+      "page_checked": 6,
+      "next_page": 7,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "The Patriot Party Podcast: D+669 GTF I Live at 730pm EST",
-          "channel_name": "The Patriot Party Podcast",
-          "channel_url": "https://rumble.com/c/ThePatriotPartyPodcast"
+          "title": "Sulk Stream #742 Gas Station Stimulants",
+          "channel_name": "theincrediblesulk",
+          "channel_url": "https://rumble.com/user/theincrediblesulk"
         },
         {
-          "title": "Friday Night Jamz At The Cabin",
-          "channel_name": "TheCCCCabin",
-          "channel_url": "https://rumble.com/c/TheCCCCabin"
+          "title": "GenX Radio | GenXRadio.cc",
+          "channel_name": "GenX Radio",
+          "channel_url": "https://rumble.com/c/GenerationXRadio"
         },
         {
-          "title": "STOCK MARKET COLLAPSE? WALL STREET SELLOFF ACCELERATES!",
-          "channel_name": "The Bek Lover Podcast",
-          "channel_url": "https://rumble.com/c/BekLoverPodcast"
+          "title": "WHO'S FUNDING THIS? | Hive Mindset Ep. 29",
+          "channel_name": "BeeGamingBee",
+          "channel_url": "https://rumble.com/user/BeeGamingBee"
         },
         {
-          "title": "The Afternoon Drive-BY w/ Michael Hagwood",
-          "channel_name": "ktoxradio1013",
-          "channel_url": "https://rumble.com/user/ktoxradio1013"
+          "title": "11/20/26 Hard News Network Then & Now",
+          "channel_name": "HardNewsNetwork",
+          "channel_url": "https://rumble.com/user/HardNewsNetwork"
         },
         {
-          "title": "WE'RE DEEP IN DEPRESSION ARC!!!! LET'S WATCH THINGS!",
-          "channel_name": "EDAnime",
-          "channel_url": "https://rumble.com/user/EDAnime"
+          "title": "AGENT X11: EP: 680",
+          "channel_name": "AgentX11",
+          "channel_url": "https://rumble.com/user/AgentX11"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -62,8 +62,8 @@
     "state": "waiting",
     "twitch_seen_live": false,
     "rumble_seen_live": false,
-    "rumble_page": 6,
-    "next_rumble_check_at": "2026-11-21T00:15:54.803632Z",
+    "rumble_page": 7,
+    "next_rumble_check_at": "2026-11-21T01:37:03.888724Z",
     "message": "Waiting for the Twitch stream to start."
   }
 }
