@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21T03:26:47.774132Z",
+  "updated": "2026-11-21T04:30:02.558236Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -9,46 +9,19 @@
     "twitch": {
       "ok": true,
       "live": false,
+      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
+      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 8,
-      "next_page": 9,
-      "streams_scanned": 25,
-      "live_candidates": [
-        {
-          "title": "\ud83d\udd34 COMMUNITY GAME NIGHT - WE THINK | THE TRY TARDS",
-          "channel_name": "Eric_Shen",
-          "channel_url": "https://rumble.com/user/Eric_Shen"
-        },
-        {
-          "title": "Allah vs All of Us",
-          "channel_name": "DESTROYINGTHEIRSYSTEM",
-          "channel_url": "https://rumble.com/user/DESTROYINGTHEIRSYSTEM"
-        },
-        {
-          "title": "Thunder & Rain Storm | Meditation | Deep Sleep | Sounding Sleeply",
-          "channel_name": "SoundingSleeply",
-          "channel_url": "https://rumble.com/c/SoundingSleeply"
-        },
-        {
-          "title": "Hanging With Slay! - Thank God It's FriSLAY! (Fraturday Night Takeover)",
-          "channel_name": "SlayEveryGame",
-          "channel_url": "https://rumble.com/user/SlayEveryGame"
-        },
-        {
-          "title": "\ud83d\udcfb Original Music, Gaming, and Other Stuff MASHUP \ud83c\udfae",
-          "channel_name": "wildarms420",
-          "channel_url": "https://rumble.com/user/wildarms420"
-        }
-      ],
+      "skipped": "No active scheduled Rumble event",
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
       "session_state": "waiting",
