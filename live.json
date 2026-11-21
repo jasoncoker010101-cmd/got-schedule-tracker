@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21T02:31:02.105571Z",
+  "updated": "2026-11-21T03:26:47.774132Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -19,34 +19,34 @@
     "rumble": {
       "ok": true,
       "live": false,
-      "page_checked": 7,
-      "next_page": 8,
+      "page_checked": 8,
+      "next_page": 9,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "20NOV26 | Barry Morgenstein LIVE \u2022 Rock & Soul \u2022 Politics, Culture & Tonight\u2019s Headlines",
-          "channel_name": "The Don't Unfriend Me Show",
-          "channel_url": "https://rumble.com/c/theDUMshow"
+          "title": "\ud83d\udd34 COMMUNITY GAME NIGHT - WE THINK | THE TRY TARDS",
+          "channel_name": "Eric_Shen",
+          "channel_url": "https://rumble.com/user/Eric_Shen"
         },
         {
-          "title": "Doktor Kalt, paging Doktor Kalt...",
-          "channel_name": "\u00c6\u0197\u015e \u049c\u0394\u0141\u0166: \u0197\u0110\u0197\u00d8\u0166 \u01e4\u0394\u039c\u20ac\u0158",
-          "channel_url": "https://rumble.com/c/AEisKaltGaming"
+          "title": "Allah vs All of Us",
+          "channel_name": "DESTROYINGTHEIRSYSTEM",
+          "channel_url": "https://rumble.com/user/DESTROYINGTHEIRSYSTEM"
         },
         {
-          "title": "Sonic RacingCrossworlds",
-          "channel_name": "NubesALot",
-          "channel_url": "https://rumble.com/c/NubesALot"
+          "title": "Thunder & Rain Storm | Meditation | Deep Sleep | Sounding Sleeply",
+          "channel_name": "SoundingSleeply",
+          "channel_url": "https://rumble.com/c/SoundingSleeply"
         },
         {
-          "title": "Seventh Day Sabbath with YHWH OUR RIGHTEOUSNESS Chicago [Friday, November 20, 2026] 7:00 p.m. Central (Jews and Amalekites are Edomites, descendants of Esau. Jews are not Yisraelites)",
-          "channel_name": "YHWH OUR RIGHTEOUSNESS CHICAGO",
-          "channel_url": "https://rumble.com/c/c-1952254"
+          "title": "Hanging With Slay! - Thank God It's FriSLAY! (Fraturday Night Takeover)",
+          "channel_name": "SlayEveryGame",
+          "channel_url": "https://rumble.com/user/SlayEveryGame"
         },
         {
-          "title": "Grand Theft Auto VI REVIEW Bombs & Spoiler-free Impressions The Game Awards 2026 Xbox News Cast 281",
-          "channel_name": "Colteastwood",
-          "channel_url": "https://rumble.com/user/Colteastwood"
+          "title": "\ud83d\udcfb Original Music, Gaming, and Other Stuff MASHUP \ud83c\udfae",
+          "channel_name": "wildarms420",
+          "channel_url": "https://rumble.com/user/wildarms420"
         }
       ],
       "url": "https://rumble.com/c/GOTGames",
@@ -62,8 +62,8 @@
     "state": "waiting",
     "twitch_seen_live": false,
     "rumble_seen_live": false,
-    "rumble_page": 8,
-    "next_rumble_check_at": "2026-11-21T02:36:02.105571Z",
+    "rumble_page": 9,
+    "next_rumble_check_at": "2026-11-21T03:31:47.774132Z",
     "message": "Waiting for the Twitch stream to start."
   }
 }
