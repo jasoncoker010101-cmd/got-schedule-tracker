@@ -1,21 +1,20 @@
 {
-  "updated": "2026-11-22T20:06:48.957630Z",
+  "updated": "2026-11-22T20:53:42.908005Z",
   "platforms": {
-    "twitch": false,
+    "twitch": true,
     "youtube": false,
     "rumble": false
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": false,
-      "skipped": "No scheduled stream in the live-check window",
+      "live": true,
+      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
-      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
