@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-22T13:42:17.463757Z",
+  "updated": "2026-11-22T18:23:57.446219Z",
   "checks": {
     "2026-11-12T20:30:00Z|one piece": {
       "status": "verified",
@@ -97,7 +97,7 @@
       "extra_episodes": [
         45
       ],
-      "checked_at": "2026-11-22T13:42:17.463757Z",
+      "checked_at": "2026-11-22T18:23:57.446219Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-20T20:30:00Z|charlotte": {
@@ -111,19 +111,31 @@
         12,
         13
       ],
-      "checked_at": "2026-11-22T13:42:17.463757Z",
+      "checked_at": "2026-11-22T18:23:57.446219Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     },
     "2026-11-21T20:30:00Z|hell s paradise": {
-      "status": "pending",
-      "message": "No matching Patreon post found yet. The tracker will check again automatically.",
-      "covered_episodes": [],
-      "missing_episodes": [
+      "status": "verified",
+      "message": "All announced episodes were found on Patreon.",
+      "url": "https://www.patreon.com/gotgames/posts/hells-paradise-176013216",
+      "posts": [
+        {
+          "title": "Hell's Paradise S2 - Episodes 10-12 | LIVESTREAM REACTION!",
+          "url": "https://www.patreon.com/gotgames/posts/hells-paradise-176013216",
+          "episodes": [
+            10,
+            11,
+            12
+          ]
+        }
+      ],
+      "covered_episodes": [
         10,
         11,
         12
       ],
-      "checked_at": "2026-11-22T13:42:17.463757Z",
+      "extra_episodes": [],
+      "checked_at": "2026-11-22T18:23:57.446219Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     }
   }
