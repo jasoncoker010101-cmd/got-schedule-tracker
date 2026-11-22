@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-22T03:36:26.943231Z",
+  "updated": "2026-11-22T04:40:50.558228Z",
   "platforms": {
     "twitch": false,
     "youtube": false,
@@ -9,17 +9,19 @@
     "twitch": {
       "ok": true,
       "live": false,
+      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
+      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
       "ok": true,
       "live": false,
-      "skipped": "This scheduled Rumble session has already ended",
+      "skipped": "No active scheduled Rumble event",
       "url": "https://rumble.com/c/GOTGames",
       "channel_url": "https://rumble.com/c/GOTGames",
       "session_state": "ended",
