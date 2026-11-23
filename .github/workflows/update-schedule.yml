@@ -15,7 +15,7 @@ on:
       dry_run:
         description: "Check Discord and OCR without publishing any data"
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: write
