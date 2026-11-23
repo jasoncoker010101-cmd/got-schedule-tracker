@@ -43,16 +43,32 @@
       "status": "confirmed",
       "url": "",
       "patreon_check": {
-        "status": "pending",
-        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
-        "covered_episodes": [],
-        "missing_episodes": [
+        "status": "verified",
+        "message": "All announced episodes were found on Patreon.",
+        "url": "https://www.patreon.com/gotgames/posts/one-piece-41-45-175745731",
+        "posts": [
+          {
+            "title": "⚓ONE PIECE *EPISODES 41-45* | FULL LIVESTREAM REACTION! ⚓",
+            "url": "https://www.patreon.com/gotgames/posts/one-piece-41-45-175745731",
+            "episodes": [
+              41,
+              42,
+              43,
+              44,
+              45
+            ]
+          }
+        ],
+        "covered_episodes": [
           41,
           42,
           43,
           44
         ],
-        "checked_at": "2026-11-19T11:38:24.610034Z",
+        "extra_episodes": [
+          45
+        ],
+        "checked_at": "2026-11-22T18:23:57.446219Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
       }
     },
@@ -97,7 +113,7 @@
           12,
           13
         ],
-        "checked_at": "2026-11-19T11:38:24.610034Z",
+        "checked_at": "2026-11-22T18:23:57.446219Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
       }
     },
@@ -122,15 +138,27 @@
       "status": "confirmed",
       "url": "",
       "patreon_check": {
-        "status": "pending",
-        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
-        "covered_episodes": [],
-        "missing_episodes": [
+        "status": "verified",
+        "message": "All announced episodes were found on Patreon.",
+        "url": "https://www.patreon.com/gotgames/posts/hells-paradise-176013216",
+        "posts": [
+          {
+            "title": "Hell's Paradise S2 - Episodes 10-12 | LIVESTREAM REACTION!",
+            "url": "https://www.patreon.com/gotgames/posts/hells-paradise-176013216",
+            "episodes": [
+              10,
+              11,
+              12
+            ]
+          }
+        ],
+        "covered_episodes": [
           10,
           11,
           12
         ],
-        "checked_at": "2026-11-19T11:38:24.610034Z",
+        "extra_episodes": [],
+        "checked_at": "2026-11-22T18:23:57.446219Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
       }
     },
@@ -160,13 +188,13 @@
   "image": "schedule/images/3ff91a6ea083304740d91afb.png",
   "sourceUrl": "",
   "updated": "2026-11-19T17:01:38.823907Z",
-  "patreonChecked": "2026-11-19T11:38:24.610034Z",
+  "patreonChecked": "2026-11-22T18:23:57.446219Z",
   "patreonCheckSummary": {
     "source": "https://www.patreon.com/cw/gotgames/sitemap",
     "posts_scanned": 500,
     "events_checked": 3,
-    "verified": 0,
+    "verified": 2,
     "partial": 0,
-    "pending": 3
+    "pending": 1
   }
 }

@@ -1,0 +1,111 @@
+{
+  "weekStart": "2026-11-23",
+  "events": [
+    {
+      "title": "MHA: Two Heroes (Movie Part 2)",
+      "platform": "got",
+      "labels": [
+        "G.O.T Games"
+      ],
+      "start": "2026-11-23T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Wuthering Waves 2.5",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-11-24T20:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 3 E13",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-11-25T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "ONE PIECE E46-49",
+      "platform": "rumble",
+      "labels": [
+        "Rumble"
+      ],
+      "start": "2026-11-26T20:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "TBD",
+      "platform": "patreon",
+      "labels": [
+        "Patreon"
+      ],
+      "start": "2026-11-27T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Jojo's P7 (SBR) E11",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-11-27T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "My Hero Academia Season 4 E14",
+      "platform": "patreon",
+      "labels": [
+        "Patreon",
+        "G.O.T Games"
+      ],
+      "start": "2026-11-28T18:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Movie night (Chat vote)",
+      "platform": "twitch",
+      "labels": [
+        "Twitch"
+      ],
+      "start": "2026-11-28T20:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    },
+    {
+      "title": "Anime Tournament",
+      "platform": "twitch",
+      "labels": [
+        "Twitch",
+        "G.O.T Games"
+      ],
+      "start": "2026-11-29T20:30:00Z",
+      "status": "confirmed",
+      "url": ""
+    }
+  ],
+  "notes": [
+    "Streams at 8:30 PM GMT/3:30 PM EST",
+    "Subathon on hold due to twitch, restart with current amount when resolved.",
+    "Saturday slot is flexible.",
+    "Tanya to be caught up with as soon as available"
+  ],
+  "noStreamDays": [],
+  "sourceTimezone": "GMT",
+  "image": "schedule/images/6b06326895e682f3585b0d10.png",
+  "sourceUrl": "",
+  "updated": "2026-11-23T22:53:52.553857Z"
+}

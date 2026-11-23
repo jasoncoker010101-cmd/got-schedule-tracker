@@ -1,13 +1,13 @@
 {
-  "weekStart": "2026-11-16",
+  "weekStart": "2026-11-23",
   "events": [
     {
-      "title": "My Hero Academia Season 5 E11",
+      "title": "MHA: Two Heroes (Movie Part 2)",
       "platform": "got",
       "labels": [
         "G.O.T Games"
       ],
-      "start": "2026-11-16T18:30:00Z",
+      "start": "2026-11-23T18:30:00Z",
       "status": "confirmed",
       "url": ""
     },
@@ -18,59 +18,30 @@
         "Twitch",
         "G.O.T Games"
       ],
-      "start": "2026-11-17T20:30:00Z",
+      "start": "2026-11-24T20:30:00Z",
       "status": "confirmed",
       "url": ""
     },
     {
-      "title": "My Hero Academia Season 5 E12",
+      "title": "My Hero Academia Season 3 E13",
       "platform": "patreon",
       "labels": [
         "Patreon",
         "G.O.T Games"
       ],
-      "start": "2026-11-18T18:30:00Z",
+      "start": "2026-11-25T18:30:00Z",
       "status": "confirmed",
       "url": ""
     },
     {
-      "title": "ONE PIECE E41-44",
+      "title": "ONE PIECE E46-49",
       "platform": "rumble",
       "labels": [
         "Rumble"
       ],
-      "start": "2026-11-18T20:30:00Z",
+      "start": "2026-11-26T20:30:00Z",
       "status": "confirmed",
-      "url": "",
-      "patreon_check": {
-        "status": "verified",
-        "message": "All announced episodes were found on Patreon.",
-        "url": "https://www.patreon.com/gotgames/posts/one-piece-41-45-175745731",
-        "posts": [
-          {
-            "title": "⚓ONE PIECE *EPISODES 41-45* | FULL LIVESTREAM REACTION! ⚓",
-            "url": "https://www.patreon.com/gotgames/posts/one-piece-41-45-175745731",
-            "episodes": [
-              41,
-              42,
-              43,
-              44,
-              45
-            ]
-          }
-        ],
-        "covered_episodes": [
-          41,
-          42,
-          43,
-          44
-        ],
-        "extra_episodes": [
-          45
-        ],
-        "checked_at": "2026-11-22T18:23:57.446219Z",
-        "source": "https://www.patreon.com/cw/gotgames/sitemap"
-      }
+      "url": ""
     },
     {
       "title": "TBD",
@@ -78,89 +49,41 @@
       "labels": [
         "Patreon"
       ],
-      "start": "2026-11-20T18:30:00Z",
+      "start": "2026-11-27T18:30:00Z",
       "status": "confirmed",
       "url": ""
     },
     {
-      "title": "Jojo's P7 (SBR) E10",
+      "title": "Jojo's P7 (SBR) E11",
       "platform": "patreon",
       "labels": [
         "Patreon",
         "G.O.T Games"
       ],
-      "start": "2026-11-20T18:30:00Z",
+      "start": "2026-11-27T18:30:00Z",
       "status": "confirmed",
       "url": ""
     },
     {
-      "title": "Charlotte E9-13",
-      "platform": "rumble",
-      "labels": [
-        "Rumble"
-      ],
-      "start": "2026-11-20T20:30:00Z",
-      "status": "confirmed",
-      "url": "",
-      "patreon_check": {
-        "status": "pending",
-        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
-        "covered_episodes": [],
-        "missing_episodes": [
-          9,
-          10,
-          11,
-          12,
-          13
-        ],
-        "checked_at": "2026-11-22T18:23:57.446219Z",
-        "source": "https://www.patreon.com/cw/gotgames/sitemap"
-      }
-    },
-    {
-      "title": "My Hero Academia Season 5 E13",
+      "title": "My Hero Academia Season 4 E14",
       "platform": "patreon",
       "labels": [
         "Patreon",
         "G.O.T Games"
       ],
-      "start": "2026-11-21T18:30:00Z",
+      "start": "2026-11-28T18:30:00Z",
       "status": "confirmed",
       "url": ""
     },
     {
-      "title": "Hell's Paradise S2 E10-12",
-      "platform": "rumble",
+      "title": "Movie night (Chat vote)",
+      "platform": "twitch",
       "labels": [
-        "Rumble"
+        "Twitch"
       ],
-      "start": "2026-11-21T20:30:00Z",
+      "start": "2026-11-28T20:30:00Z",
       "status": "confirmed",
-      "url": "",
-      "patreon_check": {
-        "status": "verified",
-        "message": "All announced episodes were found on Patreon.",
-        "url": "https://www.patreon.com/gotgames/posts/hells-paradise-176013216",
-        "posts": [
-          {
-            "title": "Hell's Paradise S2 - Episodes 10-12 | LIVESTREAM REACTION!",
-            "url": "https://www.patreon.com/gotgames/posts/hells-paradise-176013216",
-            "episodes": [
-              10,
-              11,
-              12
-            ]
-          }
-        ],
-        "covered_episodes": [
-          10,
-          11,
-          12
-        ],
-        "extra_episodes": [],
-        "checked_at": "2026-11-22T18:23:57.446219Z",
-        "source": "https://www.patreon.com/cw/gotgames/sitemap"
-      }
+      "url": ""
     },
     {
       "title": "Anime Tournament",
@@ -169,7 +92,7 @@
         "Twitch",
         "G.O.T Games"
       ],
-      "start": "2026-11-22T20:30:00Z",
+      "start": "2026-11-29T20:30:00Z",
       "status": "confirmed",
       "url": ""
     }
@@ -178,23 +101,11 @@
     "Streams at 8:30 PM GMT/3:30 PM EST",
     "Subathon on hold due to twitch, restart with current amount when resolved.",
     "Saturday slot is flexible.",
-    "Tanya to be caught up with as soon as available",
-    "MHA movie 2 scheduled for next monday"
+    "Tanya to be caught up with as soon as available"
   ],
-  "noStreamDays": [
-    "2026-11-19"
-  ],
+  "noStreamDays": [],
   "sourceTimezone": "GMT",
-  "image": "schedule/images/3ff91a6ea083304740d91afb.png",
+  "image": "schedule/images/6b06326895e682f3585b0d10.png",
   "sourceUrl": "",
-  "updated": "2026-11-19T17:01:38.823907Z",
-  "patreonChecked": "2026-11-22T18:23:57.446219Z",
-  "patreonCheckSummary": {
-    "source": "https://www.patreon.com/cw/gotgames/sitemap",
-    "posts_scanned": 500,
-    "events_checked": 3,
-    "verified": 2,
-    "partial": 0,
-    "pending": 1
-  }
+  "updated": "2026-11-23T22:53:52.553857Z"
 }
