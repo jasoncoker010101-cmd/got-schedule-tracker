@@ -41,7 +41,20 @@
       ],
       "start": "2026-11-26T20:30:00Z",
       "status": "confirmed",
-      "url": ""
+      "url": "",
+      "patreon_check": {
+        "status": "pending",
+        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
+        "covered_episodes": [],
+        "missing_episodes": [
+          46,
+          47,
+          48,
+          49
+        ],
+        "checked_at": "2026-11-24T11:17:27.550591Z",
+        "source": "https://www.patreon.com/cw/gotgames/sitemap"
+      }
     },
     {
       "title": "TBD",
@@ -107,5 +120,14 @@
   "sourceTimezone": "GMT",
   "image": "schedule/images/6b06326895e682f3585b0d10.png",
   "sourceUrl": "",
-  "updated": "2026-11-23T22:53:52.553857Z"
+  "updated": "2026-11-23T22:53:52.553857Z",
+  "patreonChecked": "2026-11-24T11:17:27.550591Z",
+  "patreonCheckSummary": {
+    "source": "https://www.patreon.com/cw/gotgames/sitemap",
+    "posts_scanned": 500,
+    "events_checked": 1,
+    "verified": 0,
+    "partial": 0,
+    "pending": 1
+  }
 }

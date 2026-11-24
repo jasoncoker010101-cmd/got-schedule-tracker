@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-22T18:23:57.446219Z",
+  "updated": "2026-11-24T11:17:27.550591Z",
   "checks": {
     "2026-11-12T20:30:00Z|one piece": {
       "status": "verified",
@@ -136,6 +136,19 @@
       ],
       "extra_episodes": [],
       "checked_at": "2026-11-22T18:23:57.446219Z",
+      "source": "https://www.patreon.com/cw/gotgames/sitemap"
+    },
+    "2026-11-26T20:30:00Z|one piece": {
+      "status": "pending",
+      "message": "No matching Patreon post found yet. The tracker will check again automatically.",
+      "covered_episodes": [],
+      "missing_episodes": [
+        46,
+        47,
+        48,
+        49
+      ],
+      "checked_at": "2026-11-24T11:17:27.550591Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     }
   }
