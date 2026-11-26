@@ -1,43 +1,47 @@
 {
-  "updated": "2026-11-26T19:49:53.453531Z",
+  "updated": "2026-11-26T20:43:46.229007Z",
   "platforms": {
-    "twitch": false,
+    "twitch": true,
     "youtube": false,
-    "rumble": false
+    "rumble": true
   },
   "details": {
     "twitch": {
       "ok": true,
-      "live": false,
-      "skipped": "No scheduled stream in the live-check window",
+      "live": true,
+      "title": "\ud83d\udd25\ud83d\udd25 DON'T LOOK.... IT'S THE CHEEKIEST OF *ANIME* TIME!\ud83d\udd25\ud83d\udd25",
       "url": "https://www.twitch.tv/gotgames_tb"
     },
     "youtube": {
       "ok": true,
       "live": false,
-      "skipped": "No scheduled stream in the live-check window",
       "url": "https://www.youtube.com/@GOTGames/live"
     },
     "rumble": {
       "ok": true,
-      "live": false,
-      "skipped": "No active scheduled Rumble event",
-      "url": "https://rumble.com/c/GOTGames",
+      "live": true,
+      "title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6",
+      "url": "https://rumble.com/v7iyv7u--the-anme-reactor-king-of-the-world-is-here-.html",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "session_state": "ended",
-      "message": "The Twitch stream ended, so this Rumble event is marked ended."
+      "channel_name": "G.O.T Games",
+      "viewers": 123,
+      "page_checked": 1,
+      "next_page": 2,
+      "session_state": "live",
+      "message": "Rumble is live."
     }
   },
   "rumble_session": {
-    "event_key": "2026-11-21T20:30:00Z|rumble|Hell's Paradise S2 E10-12",
-    "title": "Hell's Paradise S2 E10-12",
-    "scheduled_start": "2026-11-21T20:30:00Z",
-    "state": "ended",
+    "event_key": "2026-11-26T20:30:00Z|rumble|ONE PIECE E46-49",
+    "title": "ONE PIECE E46-49",
+    "scheduled_start": "2026-11-26T20:30:00Z",
+    "state": "live",
     "twitch_seen_live": true,
-    "rumble_seen_live": false,
-    "rumble_page": 4,
-    "next_rumble_check_at": null,
-    "message": "The Twitch stream ended, so this Rumble event is marked ended.",
-    "ended_at": "2026-11-21T22:59:09.973825Z"
+    "rumble_seen_live": true,
+    "rumble_page": 2,
+    "next_rumble_check_at": "2026-11-26T20:48:46.229007Z",
+    "message": "Rumble is live.",
+    "rumble_stream_url": "https://rumble.com/v7iyv7u--the-anme-reactor-king-of-the-world-is-here-.html",
+    "rumble_stream_title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6"
   }
 }
