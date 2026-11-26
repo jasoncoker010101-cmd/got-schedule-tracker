@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-25T22:37:59.731248Z",
+  "updated": "2026-11-26T12:37:45.660091Z",
   "checks": {
     "2026-11-12T20:30:00Z|one piece": {
       "status": "verified",
@@ -148,7 +148,7 @@
         48,
         49
       ],
-      "checked_at": "2026-11-25T22:37:59.731248Z",
+      "checked_at": "2026-11-26T12:37:45.660091Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     }
   }
