@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26T21:38:23.741741Z",
+  "updated": "2026-11-26T22:38:19.604758Z",
   "platforms": {
     "twitch": true,
     "youtube": false,
@@ -20,34 +20,34 @@
     "rumble": {
       "ok": true,
       "live": true,
-      "page_checked": 2,
-      "next_page": 3,
+      "page_checked": 3,
+      "next_page": 4,
       "streams_scanned": 25,
       "live_candidates": [
         {
-          "title": "Joe Oltmann Untamed | Joe\u2019s Conversation W/ David Clements: Give Thanks, Stand Firm | 11.26.26",
-          "channel_name": "UntamedNation",
-          "channel_url": "https://rumble.com/user/UntamedNation"
+          "title": "24/7 Real Country Music Radio | CountryMusicRdo.com",
+          "channel_name": "Real Country Music Radio",
+          "channel_url": "https://rumble.com/c/CountryMusicRdo"
         },
         {
-          "title": "GTA 6 PC Port Live Race! NotNozy/Hyphennn/Elisuhhh/ZSlayer",
-          "channel_name": "SirBumble",
-          "channel_url": "https://rumble.com/user/SirBumble"
+          "title": "The War Room Live",
+          "channel_name": "THE WAR ROOM LIVE",
+          "channel_url": "https://rumble.com/c/TheWarRoomLive"
         },
         {
-          "title": "\ud83d\udd34GRIMM THEFT AUTO \u00b7 DAY 9 \u00b7 STREAM DOESN'T END UNTIL I BEAT GTA 6 \ud83c\udf34 GRIMM HOLLYWOOD \ud83c\udf34",
-          "channel_name": "GrimmHollywood",
-          "channel_url": "https://rumble.com/user/GrimmHollywood"
+          "title": "PAUL ENGLISH LIVE #167 \u00b7 paulenglishlive.com\u00b7",
+          "channel_name": "Paul English Live",
+          "channel_url": "https://rumble.com/c/PaulEnglishLive"
         },
         {
-          "title": "ALEX JONES NETWORK LIVE",
-          "channel_name": "ALEX JONES NETWORK LIVE",
-          "channel_url": "https://rumble.com/c/AlexJonesNetworkLive"
+          "title": "GTA 6 Modding Stream (mudkipz)",
+          "channel_name": "sgtmudkipz",
+          "channel_url": "https://rumble.com/user/sgtmudkipz"
         },
         {
-          "title": "Detroit Retro",
-          "channel_name": "RealPatriotsParty",
-          "channel_url": "https://rumble.com/c/RealPatriotsParty"
+          "title": "NVIDIA FORK! https://github.com/polackangry/POLSKAGUROM",
+          "channel_name": "ThisIsMyDog",
+          "channel_url": "https://rumble.com/user/ThisIsMyDog"
         }
       ],
       "url": "https://rumble.com/v7iyv7u--the-anme-reactor-king-of-the-world-is-here-.html",
@@ -63,8 +63,8 @@
     "state": "live",
     "twitch_seen_live": true,
     "rumble_seen_live": true,
-    "rumble_page": 3,
-    "next_rumble_check_at": "2026-11-26T21:43:23.741741Z",
+    "rumble_page": 4,
+    "next_rumble_check_at": "2026-11-26T22:43:19.604758Z",
     "message": "Rumble is live.",
     "rumble_stream_url": "https://rumble.com/v7iyv7u--the-anme-reactor-king-of-the-world-is-here-.html",
     "rumble_stream_title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6"
