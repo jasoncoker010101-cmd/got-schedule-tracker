@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26T20:43:46.229007Z",
+  "updated": "2026-11-26T21:38:23.741741Z",
   "platforms": {
     "twitch": true,
     "youtube": false,
@@ -20,13 +20,38 @@
     "rumble": {
       "ok": true,
       "live": true,
-      "title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6",
+      "page_checked": 2,
+      "next_page": 3,
+      "streams_scanned": 25,
+      "live_candidates": [
+        {
+          "title": "Joe Oltmann Untamed | Joe\u2019s Conversation W/ David Clements: Give Thanks, Stand Firm | 11.26.26",
+          "channel_name": "UntamedNation",
+          "channel_url": "https://rumble.com/user/UntamedNation"
+        },
+        {
+          "title": "GTA 6 PC Port Live Race! NotNozy/Hyphennn/Elisuhhh/ZSlayer",
+          "channel_name": "SirBumble",
+          "channel_url": "https://rumble.com/user/SirBumble"
+        },
+        {
+          "title": "\ud83d\udd34GRIMM THEFT AUTO \u00b7 DAY 9 \u00b7 STREAM DOESN'T END UNTIL I BEAT GTA 6 \ud83c\udf34 GRIMM HOLLYWOOD \ud83c\udf34",
+          "channel_name": "GrimmHollywood",
+          "channel_url": "https://rumble.com/user/GrimmHollywood"
+        },
+        {
+          "title": "ALEX JONES NETWORK LIVE",
+          "channel_name": "ALEX JONES NETWORK LIVE",
+          "channel_url": "https://rumble.com/c/AlexJonesNetworkLive"
+        },
+        {
+          "title": "Detroit Retro",
+          "channel_name": "RealPatriotsParty",
+          "channel_url": "https://rumble.com/c/RealPatriotsParty"
+        }
+      ],
       "url": "https://rumble.com/v7iyv7u--the-anme-reactor-king-of-the-world-is-here-.html",
       "channel_url": "https://rumble.com/c/GOTGames",
-      "channel_name": "G.O.T Games",
-      "viewers": 123,
-      "page_checked": 1,
-      "next_page": 2,
       "session_state": "live",
       "message": "Rumble is live."
     }
@@ -38,8 +63,8 @@
     "state": "live",
     "twitch_seen_live": true,
     "rumble_seen_live": true,
-    "rumble_page": 2,
-    "next_rumble_check_at": "2026-11-26T20:48:46.229007Z",
+    "rumble_page": 3,
+    "next_rumble_check_at": "2026-11-26T21:43:23.741741Z",
     "message": "Rumble is live.",
     "rumble_stream_url": "https://rumble.com/v7iyv7u--the-anme-reactor-king-of-the-world-is-here-.html",
     "rumble_stream_title": "\ud83c\udfc6\ud83c\udfc6 THE AN*ME REACTOR KING OF THE WORLD IS HERE!!! \ud83c\udfc6\ud83c\udfc6"
