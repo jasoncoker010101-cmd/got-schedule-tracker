@@ -43,16 +43,32 @@
       "status": "confirmed",
       "url": "",
       "patreon_check": {
-        "status": "pending",
-        "message": "No matching Patreon post found yet. The tracker will check again automatically.",
-        "covered_episodes": [],
-        "missing_episodes": [
+        "status": "verified",
+        "message": "All announced episodes were found on Patreon.",
+        "url": "https://www.patreon.com/gotgames/posts/one-piece-46-50-176488388",
+        "posts": [
+          {
+            "title": "⚓ONE PIECE *EPISODES 46-50* | FULL LIVESTREAM REACTION! ⚓",
+            "url": "https://www.patreon.com/gotgames/posts/one-piece-46-50-176488388",
+            "episodes": [
+              46,
+              47,
+              48,
+              49,
+              50
+            ]
+          }
+        ],
+        "covered_episodes": [
           46,
           47,
           48,
           49
         ],
-        "checked_at": "2026-11-27T09:53:15.315592Z",
+        "extra_episodes": [
+          50
+        ],
+        "checked_at": "2026-11-27T14:02:46.333438Z",
         "source": "https://www.patreon.com/cw/gotgames/sitemap"
       }
     },
@@ -121,13 +137,13 @@
   "image": "schedule/images/6b06326895e682f3585b0d10.png",
   "sourceUrl": "",
   "updated": "2026-11-23T22:53:52.553857Z",
-  "patreonChecked": "2026-11-27T09:53:15.315592Z",
+  "patreonChecked": "2026-11-27T14:02:46.333438Z",
   "patreonCheckSummary": {
     "source": "https://www.patreon.com/cw/gotgames/sitemap",
     "posts_scanned": 500,
     "events_checked": 1,
-    "verified": 0,
+    "verified": 1,
     "partial": 0,
-    "pending": 1
+    "pending": 0
   }
 }
