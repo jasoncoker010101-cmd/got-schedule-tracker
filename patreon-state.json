@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-27T14:02:46.333438Z",
+  "updated": "2026-11-27T14:56:33.389197Z",
   "checks": {
     "2026-11-12T20:30:00Z|one piece": {
       "status": "verified",
@@ -164,7 +164,7 @@
       "extra_episodes": [
         50
       ],
-      "checked_at": "2026-11-27T14:02:46.333438Z",
+      "checked_at": "2026-11-27T14:56:33.389197Z",
       "source": "https://www.patreon.com/cw/gotgames/sitemap"
     }
   }
